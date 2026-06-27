@@ -499,6 +499,75 @@
     }
   }
 
+
+  /* 기출문제 단일 버튼과 모바일 문제 제목 줄맞춤 */
+  .single-action-box .unit-menu-actions{
+    grid-template-columns:1fr;
+  }
+  .single-action-box .quick-menu-btn{
+    width:100%;
+  }
+
+  @media(max-width:600px){
+    .single-action-box{
+      grid-column:span 2;
+    }
+    .single-action-box .unit-menu-actions{
+      grid-template-columns:1fr !important;
+    }
+    .single-action-box .quick-menu-btn{
+      width:100%;
+    }
+
+    .question-card-head{
+      display:grid !important;
+      grid-template-columns:auto minmax(0,1fr) auto;
+      align-items:start;
+      column-gap:.55rem;
+      row-gap:.35rem;
+    }
+    .question-num{
+      grid-column:1;
+      grid-row:1;
+      min-width:1.55rem;
+      flex:none;
+    }
+    .question-text{
+      grid-column:2;
+      grid-row:1;
+      max-width:100%;
+      flex:none;
+    }
+    .score-badge{
+      grid-column:3;
+      grid-row:1;
+      align-self:start;
+      margin-left:.25rem;
+    }
+    .result-badge{
+      grid-column:2 / 4;
+      grid-row:2;
+      justify-self:start;
+      margin-left:0;
+    }
+  }
+
+  @media(max-width:420px){
+    .question-card-head{
+      grid-template-columns:auto minmax(0,1fr);
+    }
+    .score-badge{
+      grid-column:2;
+      grid-row:2;
+      justify-self:start;
+      margin-left:0;
+    }
+    .result-badge{
+      grid-column:2;
+      grid-row:3;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1073,7 +1142,7 @@ function renderMenu(){
   });
 
   const pastBox=document.createElement("div");
-  pastBox.className="unit-menu-box";
+  pastBox.className="unit-menu-box single-action-box";
 
   const pastTitle=document.createElement("div");
   pastTitle.className="unit-menu-title";
