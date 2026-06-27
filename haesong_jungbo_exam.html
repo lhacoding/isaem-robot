@@ -732,6 +732,48 @@
     }
   }
 
+
+  /* 짧은 순서형 선택지는 박스 안에서 줄바꿈되지 않도록 별도 처리 */
+  .choice-list.sequence-list{
+    display:flex !important;
+    flex-wrap:wrap;
+    gap:.38rem .45rem !important;
+    align-items:stretch;
+  }
+  .choice-list.sequence-list .choice-btn{
+    width:auto !important;
+    flex:0 0 auto !important;
+    max-width:100%;
+    white-space:nowrap !important;
+    word-break:keep-all !important;
+    overflow-wrap:normal !important;
+    padding:.36rem .5rem !important;
+    min-height:34px;
+  }
+  .choice-list.sequence-list .choice-btn > span:last-child{
+    white-space:nowrap !important;
+    word-break:keep-all !important;
+    overflow-wrap:normal !important;
+    flex:0 0 auto !important;
+  }
+
+  @media(max-width:600px){
+    .choice-list.sequence-list{
+      gap:.34rem .38rem !important;
+    }
+    .choice-list.sequence-list .choice-btn{
+      font-size:.78rem;
+      padding:.32rem .42rem !important;
+    }
+  }
+
+  @media(max-width:380px){
+    .choice-list.sequence-list .choice-btn{
+      font-size:.74rem;
+      padding:.3rem .36rem !important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1504,7 +1546,11 @@ function renderQuestions(){
         const plain=String(choice).replace(/<[^>]*>/g,"").trim();
         return plain.length>18 || /<(pre|div|table|code)/i.test(String(choice));
       });
-      choices.className="choice-list"+(hasLongChoice?" full":"");
+      const hasShortSequenceChoice=q.choices.some(choice=>{
+        const plain=String(choice).replace(/<[^>]*>/g,"").trim();
+        return plain.includes("→") && plain.length<=22;
+      });
+      choices.className="choice-list"+(hasLongChoice?" full":"")+(hasShortSequenceChoice && !hasLongChoice?" sequence-list":"");
 
       const circ=["","①","②","③","④","⑤"];
       q.choices.forEach((choice,choiceIndex)=>{
