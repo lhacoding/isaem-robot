@@ -435,11 +435,68 @@
   }
 
   @media(max-width:380px){
-    .sticky-menu-inner{grid-template-columns:1fr}
     .choice-list{grid-template-columns:1fr}
     .question-text{flex-basis:100%;max-width:100%}
     .question-num{flex-basis:auto}
     .score-badge{font-size:.76rem}
+  }
+
+
+  /* 모바일 단원 메뉴 압축 배치 */
+  @media(max-width:600px){
+    .header{
+      margin-bottom:.75rem;
+    }
+    .sticky-menu-wrap{
+      padding:.55rem;
+      margin-bottom:.9rem;
+    }
+    .sticky-menu-inner{
+      display:grid !important;
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:.45rem !important;
+    }
+    .unit-menu-box{
+      padding:.45rem !important;
+      border-radius:10px;
+      min-width:0;
+    }
+    .unit-menu-title{
+      font-size:.78rem;
+      padding:.38rem .42rem;
+      margin-bottom:.35rem;
+      border-radius:8px;
+      line-height:1.25;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .unit-menu-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.3rem;
+    }
+    .quick-menu-btn{
+      font-size:.73rem;
+      padding:.36rem .2rem;
+      min-height:34px;
+      border-radius:8px;
+      min-width:0;
+    }
+  }
+
+  @media(max-width:360px){
+    .sticky-menu-inner{
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:.35rem !important;
+    }
+    .unit-menu-title{
+      font-size:.72rem;
+    }
+    .quick-menu-btn{
+      font-size:.68rem;
+      min-height:32px;
+    }
   }
 
 </style>
