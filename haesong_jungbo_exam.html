@@ -588,6 +588,42 @@
     justify-content:center;
   }
 
+
+  /* 모의고사 1·2·3 버튼 한 줄 배치 */
+  .mock-menu-actions{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:.3rem;
+  }
+  .mock-menu-actions .quick-menu-btn{
+    width:100%;
+    min-width:0;
+    padding:.38rem .15rem;
+  }
+
+  @media(max-width:600px){
+    .mock-menu-actions{
+      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+      gap:.25rem !important;
+    }
+    .mock-menu-actions .quick-menu-btn{
+      font-size:.72rem;
+      padding:.34rem .1rem;
+      min-height:34px;
+    }
+  }
+
+  @media(max-width:360px){
+    .mock-menu-actions{
+      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+      gap:.22rem !important;
+    }
+    .mock-menu-actions .quick-menu-btn{
+      font-size:.68rem;
+      padding:.32rem .05rem;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1160,14 +1196,14 @@ function renderMenu(){
   sticky.appendChild(pastBox);
 
   const mockBox=document.createElement("div");
-  mockBox.className="unit-menu-box";
+  mockBox.className="unit-menu-box mock-menu-box";
 
   const mockTitle=document.createElement("div");
   mockTitle.className="unit-menu-title";
   mockTitle.textContent="모의고사";
 
   const mockActions=document.createElement("div");
-  mockActions.className="unit-menu-actions";
+  mockActions.className="unit-menu-actions mock-menu-actions";
 
   ["mock1","mock2","mock3"].forEach((section,idx)=>{
     const key=`전체 모의고사|${section}`;
