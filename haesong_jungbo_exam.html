@@ -513,7 +513,7 @@
 
   @media(max-width:600px){
     .single-action-box{
-      grid-column:span 2;
+      grid-column:auto;
     }
     .single-action-box .unit-menu-actions{
       grid-template-columns:1fr !important;
@@ -572,6 +572,22 @@
     }
   }
 
+
+  /* 정답·오답 개수만 간단히 표시 */
+  .side-panel{
+    margin:.8rem 0 1rem;
+  }
+  .stat-grid{
+    margin-top:0;
+    padding:0;
+  }
+  .stat{
+    min-height:58px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
 </style>
 </head>
 <body>
@@ -601,23 +617,7 @@
       </main>
 
       <aside class="side-panel">
-        <div class="progress-box">
-          <div class="progress-label">
-            <span>현재 메뉴 진행률</span>
-            <span id="progressText">0 / 0</span>
-          </div>
-          <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-        </div>
-
-        <div class="progress-box">
-          <div class="progress-label">
-            <span>전체 진행률</span>
-            <span id="totalProgressText">0%</span>
-          </div>
-          <div class="progress-track"><div id="totalProgressFill" class="progress-fill"></div></div>
-        </div>
-
-        <div class="stat-grid">
+<div class="stat-grid">
           <div class="stat"><div id="correctCount" class="num">0</div><div class="txt">정답</div></div>
           <div class="stat"><div id="wrongCount" class="num">0</div><div class="txt">오답</div></div>
         </div>
@@ -1467,10 +1467,10 @@ function showFeedback(questionIndex,isCorrect,choiceIndex){
 function updateProgress(){
   const answered=userAnswers.filter(v=>v!==undefined).length;
 
-  document.getElementById("progressText").textContent=`${answered} / ${currentQuestions.length}`;
-  document.getElementById("progressFill").style.width=currentQuestions.length ? `${answered/currentQuestions.length*100}%` : "0%";
-  document.getElementById("correctCount").textContent=score;
-  document.getElementById("wrongCount").textContent=answered-score;
+  const correctEl=document.getElementById("correctCount");
+  const wrongEl=document.getElementById("wrongCount");
+  if(correctEl) correctEl.textContent=score;
+  if(wrongEl) wrongEl.textContent=answered-score;
 
   const completion=document.getElementById("completionBox");
   const finishBtn=document.getElementById("finishBtn");
@@ -1497,8 +1497,10 @@ function updateTotalProgress(){
   const done=solvedIds.length;
   const percent=total ? Math.round(done/total*100) : 0;
 
-  document.getElementById("totalProgressText").textContent=`${percent}%`;
-  document.getElementById("totalProgressFill").style.width=`${percent}%`;
+  const totalProgressText=document.getElementById("totalProgressText");
+  const totalProgressFill=document.getElementById("totalProgressFill");
+  if(totalProgressText) totalProgressText.textContent=`${percent}%`;
+  if(totalProgressFill) totalProgressFill.style.width=`${percent}%`;
 }
 
 function finishQuiz(){
