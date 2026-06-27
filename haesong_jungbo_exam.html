@@ -185,6 +185,7 @@
   }
   .question-card.correct .result-badge{display:inline-block;background:#dcfce7;color:var(--correct)}
   .question-card.wrong .result-badge{display:inline-block;background:#fee2e2;color:var(--wrong)}
+  .score-badge{display:inline-block;font-size:.8rem;font-weight:800;color:var(--wrong);background:#fff1f2;border-radius:999px;padding:.18rem .7rem;white-space:nowrap;margin-left:.45rem}
   .question-text{
     font-size:.96rem;
     flex:1;
@@ -195,6 +196,17 @@
     margin-bottom:.8rem;
   }
   u{text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-color:var(--warning)}
+  .question-blocks{
+    width:100%;
+    margin:.7rem 0 0;
+  }
+  .question-blocks .q-box,
+  .question-blocks .code-block,
+  .question-blocks .sort-array{
+    margin-left:0;
+    margin-right:0;
+  }
+
   .q-box{
     background:#f8fafc;
     border:1px solid var(--code-border);
@@ -351,6 +363,7 @@
     .choice-list.full{grid-template-columns:1fr}
     .question-num{min-width:auto}
     .result-badge{margin-left:0}
+    .score-badge{margin-left:0}
     .completion-box{display:block;text-align:center}
     .completion-box .action{width:100%;margin-top:.7rem}
     .actions button.action{flex:1 1 100%}
@@ -454,6 +467,13 @@ const sectionNames={
   mock1:"모의고사 1",
   mock2:"모의고사 2",
   mock3:"모의고사 3"
+};
+
+const pastScoreMap={
+  p1:"5.0점", p2:"5.0점", p3:"5.0점", p4:"5.0점", p5:"4.7점",
+  p6:"5.0점", p7:"5.0점", p8:"5.0점", p9:"5.0점", p10:"6.1점",
+  p11:"5.0점", p12:"5.0점", p13:"5.7점", p14:"6.2점", p15:"4.3점",
+  p16:"5.5점", p17:"6.5점", p18:"4.1점", p19:"3.3점", p20:"3.6점"
 };
 
 const baseQuestions=[
@@ -1053,13 +1073,38 @@ function renderQuestions(){
     const badge=document.createElement("span");
     badge.className="result-badge";
 
+    const scoreBadge=document.createElement("span");
+    scoreBadge.className="score-badge";
+    scoreBadge.textContent = pastScoreMap[q.id] || "";
+    if(!scoreBadge.textContent) scoreBadge.style.display = "none";
+
+    const tempQuestion=document.createElement("div");
+    tempQuestion.innerHTML=q.question;
+
+    const questionBlocks=document.createElement("div");
+    questionBlocks.className="question-blocks";
+
+    tempQuestion.querySelectorAll('.q-box, .code-block, .sort-array').forEach(block=>{
+      if(block.classList && block.classList.contains('q-box')){
+        const hasStructured = block.querySelector('ul,ol,li,pre,table');
+        if(!hasStructured && /<br\s*\/?/i.test(block.innerHTML)){
+          const lines = block.innerHTML.split(/<br\s*\/?>(?:\s*)/i).map(v=>v.trim()).filter(Boolean);
+          if(lines.length >= 2){
+            block.innerHTML = '<ul>' + lines.map(line=>`<li>${line}</li>`).join('') + '</ul>';
+          }
+        }
+      }
+      questionBlocks.appendChild(block);
+    });
+
     const question=document.createElement("div");
     question.className="question-text";
-    question.innerHTML=q.question;
+    question.innerHTML=tempQuestion.innerHTML.trim();
 
     head.appendChild(num);
     head.appendChild(question);
     head.appendChild(badge);
+    head.appendChild(scoreBadge);
 
     const choices=document.createElement("div");
     const isPastQ10 = q.id === "p10";
@@ -1125,6 +1170,9 @@ function renderQuestions(){
     `;
 
     card.appendChild(head);
+    if(questionBlocks.childElementCount){
+      card.appendChild(questionBlocks);
+    }
     card.appendChild(choices);
     card.appendChild(feedback);
     list.appendChild(card);
