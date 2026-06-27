@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인천해송고등학교 정보 시험</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f9fc;
+    --surface: #ffffff;
+    --border: #e2e6ed;
+    --accent: #2563eb;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --code-bg: #f1f5f9;
+    --code-border: #cbd5e1;
+    --score-color: #dc2626;
+    --correct: #16a34a;
+    --wrong: #dc2626;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem 1rem;
+  }
+
+  .exam-wrapper { max-width: 860px; margin: 0 auto; }
+
+  .exam-header {
+    background: var(--accent);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .exam-header .school { font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.3rem; }
+  .exam-header h1 { font-size: 2rem; font-weight: 700; }
+  .exam-header .meta { font-size: 0.85rem; opacity: 0.8; margin-top: 0.3rem; }
+  .exam-header .hint {
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.82rem;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .exam-header .hint strong { font-size: 1rem; display: block; margin-bottom: 0.2rem; }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin: 2rem 0 0.8rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* 카드 */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .q-card.correct { border-color: var(--correct); box-shadow: 0 2px 12px rgba(22,163,74,0.1); }
+  .q-card.wrong   { border-color: var(--wrong);   box-shadow: 0 2px 12px rgba(220,38,38,0.1); }
+
+  .q-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .q-num-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 1.8rem;
+  }
+  .q-text { font-size: 0.95rem; flex: 1; }
+  .q-score {
+    font-size: 0.78rem;
+    color: var(--score-color);
+    font-weight: 600;
+    background: #fff1f2;
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  /* 결과 배지 */
+  .result-badge {
+    display: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.2rem 0.75rem;
+    border-radius: 20px;
+  }
+  .q-card.correct .result-badge { display: inline-block; background: #dcfce7; color: var(--correct); }
+  .q-card.wrong   .result-badge { display: inline-block; background: #fee2e2; color: var(--wrong); }
+
+  /* 지문 박스 */
+  .q-box {
+    background: #f8fafc;
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    margin: 0.6rem 0;
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+  .q-box li { list-style: none; padding-left: 1.2rem; position: relative; }
+  .q-box li::before { content: 'o'; position: absolute; left: 0; color: var(--text-muted); }
+
+  /* 코드 블록 */
+  .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    margin: 0.6rem 0;
+    font-size: 0.84rem;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* 10번 표 */
+  .code-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.87rem;
+    margin: 0.6rem 0;
+  }
+  .code-table th {
+    background: #f1f5f9;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .code-table td {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .code-table tr:nth-child(even) td { background: #fafbfc; }
+  .code-table .code-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    white-space: pre;
+  }
+  /* 10번 선택지 행 — 클릭 가능 */
+  .code-table tr.choice-row { cursor: pointer; }
+  .code-table tr.choice-row:hover td { background: #eff6ff; }
+  .code-table tr.choice-row.selected-correct td { background: #dcfce7 !important; }
+  .code-table tr.choice-row.selected-wrong   td { background: #fee2e2 !important; }
+  .code-table tr.choice-row.show-correct     td { background: #dcfce7 !important; }
+
+  /* ===== 선택지 ===== */
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.4rem 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .choices.full {
+    grid-template-columns: 1fr;
+  }
+
+  /* 클릭 가능한 선택지 버튼 */
+  .choice-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: 0.83rem;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.4rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    color: var(--text);
+    line-height: 1.4;
+    width: 100%;
+    word-break: keep-all;
+    white-space: normal;
+  }
+  .choices.full .choice-btn {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .choice-btn:hover  { background: #eff6ff; border-color: var(--accent); }
+  .choice-btn:active { transform: scale(0.97); }
+
+  /* 선택된 상태 */
+  .choice-btn.selected-correct {
+    background: #dcfce7;
+    border-color: var(--correct);
+    color: var(--correct);
+    font-weight: 600;
+  }
+  .choice-btn.selected-wrong {
+    background: #fee2e2;
+    border-color: var(--wrong);
+    color: var(--wrong);
+    font-weight: 600;
+  }
+  /* 정답인데 내가 안 고른 경우 — 오답 제출 후 정답 강조 */
+  .choice-btn.show-correct {
+    background: #dcfce7;
+    border-color: var(--correct);
+    color: var(--correct);
+    font-weight: 600;
+  }
+
+  .choice-icon { font-size: 1rem; flex-shrink: 0; }
+  .choice-num  { color: var(--text-muted); font-size: 0.82rem; flex-shrink: 0; }
+  .choice-btn.selected-correct .choice-num,
+  .choice-btn.selected-wrong   .choice-num,
+  .choice-btn.show-correct     .choice-num { color: inherit; }
+
+  /* 정렬 배열 */
+  .sort-array { display: flex; gap: 0.4rem; margin: 0.6rem 0; flex-wrap: wrap; }
+  .sort-cell {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.4rem 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    background: white;
+    min-width: 2.4rem;
+    text-align: center;
+  }
+
+  /* 점수 요약 */
+  .score-summary {
+    margin-top: 2.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+  }
+  .score-summary .s-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .score-summary .s-nums  { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
+  .score-summary .s-sub   { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.3rem; }
+  .reset-btn {
+    margin-top: 1rem;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1.4rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .exam-header { flex-direction: column; gap: 1rem; }
+    .choices { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="exam-wrapper">
+
+  <div class="exam-header">
+    <div>
+      <div class="school">🏫 인천해송고등학교</div>
+      <h1>정보</h1>
+      <div class="meta">2025학년도 1학기 기말고사 · 총 20문항</div>
+    </div>
+
+  </div>
+
+  <!-- 1쪽 -->
+  <div class="section-label">1쪽 — 네트워크 · 데이터 · 암호화</div>
+
+  <!-- Q1 정답:1 -->
+  <div class="q-card" data-q="1" data-answer="1">
+    <div class="q-header">
+      <span class="q-num-label">1.</span>
+      <span class="q-text">무선 네트워크 기술의 종류 중 다음의 특징에 해당하는 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box"><ul>
+      <li>출입 통제 및 티켓 판매에 활용</li>
+      <li>스마트 폰을 사용한 비용 지불 기술에 활용</li>
+      <li>10cm 내의 거리에서 데이터를 접촉하지 않고 전송</li>
+      <li>전자기 유도 현상에 기초하여 다른 기기와 전파를 주고받음</li>
+    </ul></div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> NFC</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> RFID</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> WiFi</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 미러링</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 블루투스</button>
+    </div>
+  </div>
+
+  <!-- Q2 정답:1 -->
+  <div class="q-card" data-q="2" data-answer="1">
+    <div class="q-header">
+      <span class="q-num-label">2.</span>
+      <span class="q-text">네트워크 장비의 역할에 대한 설명으로 옳지 <u>않은</u> 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices full">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 이더넷 : 무선 주파수를 사용하여 다양한 컴퓨팅 시스템들을 연결한다.</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 방화벽 : 외부로부터 불법 접근이나 해킹으로부터 장치들을 보호한다.</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 무선AP : 와이파이 기술을 이용하여 인터넷에 연결할 수 있도록 한다.</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 라우터 : 서로 다른 네트워크 사이에 위치하면서 데이터를 전송할 수 있게 한다.</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 스위칭 허브 : 여러 대의 컴퓨팅 기기가 하나의 인터넷 라인을 공유해 동시에 인터넷 접근이 가능하게 한다.</button>
+    </div>
+  </div>
+
+  <!-- Q3 정답:2 -->
+  <div class="q-card" data-q="3" data-answer="2">
+    <div class="q-header">
+      <span class="q-num-label">3.</span>
+      <span class="q-text">다음 상황에서 해송이가 사용한 이미지 압축 파일 형식은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box">해송이는 조별 과제를 위해 사진을 조원들에게 보내야 했다. 하지만 사진의 용량이 너무 커서 전송이 지연되었다. 해송이는 사진 파일 용량을 줄이기 위해 압축 시 256색 이상의 색상에서만 손실이 발생하는 압축 형식으로 보내고자 한다.</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> BMP</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> GIF</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> WAV</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> PNG</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> JPEG</button>
+    </div>
+  </div>
+
+  <!-- Q4 정답:2 -->
+  <div class="q-card" data-q="4" data-answer="2">
+    <div class="q-header">
+      <span class="q-num-label">4.</span>
+      <span class="q-text">디지털 데이터 압축에 관한 설명으로 옳은 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices full">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 런-랭스 알고리즘은 문자열 압축에만 사용된다.</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> MP3 파일은 사람이 잘 듣지 못하는 대역의 신호를 제거해 파일의 크기를 줄인다.</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> BMP 파일은 사람 눈으로 인식하지 못하는 범위의 정보를 제거하여 파일의 크기를 줄인다.</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> PNG 파일은 반복되는 새 정보를 더 적은 비트로 줄여 표현하는 손실 압축 알고리즘을 사용한다.</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 아날로그 신호를 디지털 값으로 변환하는 과정에서 샘플 추출 간격이 넓을수록 원음에 가까운 소리를 표현할 수 있다.</button>
+    </div>
+  </div>
+
+  <!-- Q5 정답:3 -->
+  <div class="q-card" data-q="5" data-answer="3">
+    <div class="q-header">
+      <span class="q-num-label">5.</span>
+      <span class="q-text">다음 조건으로 카이사르 암호 원리에 의해 인코딩된 암호문은?</span>
+      <span class="q-score">[4.7점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box">평문 : APPLE<br>키값 : 3</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> BQQMP</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> CRRNG</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> DSSOH</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> ETTPI</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> FUUQJ</button>
+    </div>
+  </div>
+
+  <!-- Q6 정답:3 -->
+  <div class="q-card" data-q="6" data-answer="3">
+    <div class="q-header">
+      <span class="q-num-label">6.</span>
+      <span class="q-text">다음에서 설명하는 용어로 옳은 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box">다양한 유형의 대규모 데이터를 효과적으로 저장하고 통계, 컴퓨터 과학, 기계학습 등의 데이터 과학 기술로 가치를 추출하여 활용하는 포괄적인 개념이다.</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 데이터 공유</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 데이터 압축</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 빅데이터 분석</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 데이터 암호화</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 데이터 시각화</button>
+    </div>
+  </div>
+
+  <!-- 2쪽 -->
+  <div class="section-label">2쪽 — 데이터 분석 · 모델링 · 정렬 · 파이썬 기초</div>
+
+  <!-- Q7 정답:4 -->
+  <div class="q-card" data-q="7" data-answer="4">
+    <div class="q-header">
+      <span class="q-num-label">7.</span>
+      <span class="q-text">데이터를 분석하는 과정에서 다음에서 설명하는 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box"><ul>
+      <li>분석에 적합한 형태로 데이터를 가공하는 과정이다.</li>
+      <li>평균, 중앙값, 최빈값 등을 이용해 데이터를 요약한다.</li>
+      <li>데이터에 포함된 결측치를 찾아 분석에 적합한 형태로 가공한다.</li>
+    </ul></div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 문제 정의하기</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 데이터 수집하기</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 공유 및 평가하기</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 데이터 전처리하기</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 데이터 시각화하기</button>
+    </div>
+  </div>
+
+  <!-- Q8 정답:3 -->
+  <div class="q-card" data-q="8" data-answer="3">
+    <div class="q-header">
+      <span class="q-num-label">8.</span>
+      <span class="q-text">다음에서 설명하는 모델링 방법을 이용한 모델링 사례가 <u>아닌</u> 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box">데이터 간 연결 관계를 노드와 간선으로 표현하는 구조로 데이터의 방향성을 표현할 수 있고, 데이터 간의 관계를 표시할 수도 있다.</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 항공 노선도</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 인물 관계도</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 동물의 분류도</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 지하철 노선도</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 놀이공원 지도</button>
+    </div>
+  </div>
+
+  <!-- Q9 정답:1 -->
+  <div class="q-card" data-q="9" data-answer="1">
+    <div class="q-header">
+      <span class="q-num-label">9.</span>
+      <span class="q-text">정렬 알고리즘 중 선택 정렬을 이용하여 다음 데이터를 오름차순 정렬할 때 데이터의 총 교환 횟수는?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="sort-array">
+      <div class="sort-cell">32</div><div class="sort-cell">15</div>
+      <div class="sort-cell">11</div><div class="sort-cell">23</div>
+      <div class="sort-cell">48</div><div class="sort-cell">19</div>
+    </div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 3회</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 4회</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 5회</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 6회</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 7회</button>
+    </div>
+  </div>
+
+  <!-- Q10 정답:4 (표 형태 — 행 클릭) -->
+  <div class="q-card" data-q="10" data-answer="4">
+    <div class="q-header">
+      <span class="q-num-label">10.</span>
+      <span class="q-text">다음 프로그램을 실행했을 때, 출력 결과가 옳은 것은?</span>
+      <span class="q-score">[6.1점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <table class="code-table">
+      <thead><tr><th>번호</th><th>프로그램</th><th>출력 결과</th></tr></thead>
+      <tbody>
+        <tr class="choice-row" data-n="1"><td>①</td><td class="code-cell">a+=10
+print(a)</td><td>10</td></tr>
+        <tr class="choice-row" data-n="2"><td>②</td><td class="code-cell">for b in len("hello"):
+    print(b)</td><td>h<br>e<br>l<br>l<br>o</td></tr>
+        <tr class="choice-row" data-n="3"><td>③</td><td class="code-cell">c=[]*3
+c[0]=10
+print(c)</td><td>[10]</td></tr>
+        <tr class="choice-row" data-n="4"><td>④</td><td class="code-cell">d=[1, 'hello', 2&gt;1]
+print(d)</td><td>[1, 'hello', True]</td></tr>
+        <tr class="choice-row" data-n="5"><td>⑤</td><td class="code-cell">pi = 3.14
+r=input("반지름값:")
+f=pi*r*r
+print("원의 넓이=", f)</td><td>반지름값: 10<br>원의 넓이=314.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Q11 정답:2 -->
+  <div class="q-card" data-q="11" data-answer="2">
+    <div class="q-header">
+      <span class="q-num-label">11.</span>
+      <span class="q-text">다음 입장료 조건에 의한 놀이공원의 입장료를 출력하는 프로그램을 구현할 때 (가)에 해당하는 코드는?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="q-box"><strong>&lt;입장료 조건&gt;</strong><ul>
+      <li>나이가 9세 미만은 3만원</li>
+      <li>나이가 9세 이상 18세 미만은 4만원</li>
+      <li>나이가 18세 이상은 5만원</li>
+    </ul></div>
+    <div class="code-block">age = int(input("나이입력: "))
+if age &lt; 9 :
+    enter_fee=30000
+elif <span style="background:#fef08a;padding:0 4px;border-radius:3px;">(가)</span> :
+    enter_fee=40000
+else :
+    enter_fee=50000
+print("입장료는", enter_fee, "입니다.")</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> age &gt;= 9</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> age &lt; 18</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> age &gt; 18</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> age &lt;= 18</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> age &gt;= 18</button>
+    </div>
+  </div>
+
+  <!-- 3쪽 -->
+  <div class="section-label">3쪽 — 파이썬 심화</div>
+
+  <!-- Q12 정답:3 -->
+  <div class="q-card" data-q="12" data-answer="3">
+    <div class="q-header">
+      <span class="q-num-label">12.</span>
+      <span class="q-text">다음 변숫값으로 print문을 실행했을 때, 오류가 발생하는 것은?</span>
+      <span class="q-score">[5.0점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="code-block">a = 25
+b = 4
+c = 'haesong'
+d = 'great'</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> print(a%b)</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> print(c+d)</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> print(c-b)</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> print(b**4)</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> print(d*4)</button>
+    </div>
+  </div>
+
+  <!-- Q13 정답:5 -->
+  <div class="q-card" data-q="13" data-answer="5">
+    <div class="q-header">
+      <span class="q-num-label">13.</span>
+      <span class="q-text">다음 프로그램을 실행했을 때, 출력되는 결과는?</span>
+      <span class="q-score">[5.7점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="code-block">fruit=['망고','바나나','포도','사과','바나나','귤','키위']
+fruit.append('토마토')
+fruit.remove('바나나')
+fruit.sort()
+print(fruit[2])</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 귤</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 망고</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 포도</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 토마토</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 바나나</button>
+    </div>
+  </div>
+
+  <!-- Q14 정답:4 -->
+  <div class="q-card" data-q="14" data-answer="4">
+    <div class="q-header">
+      <span class="q-num-label">14.</span>
+      <span class="q-text">다음 프로그램에 대한 설명으로 옳지 <u>않은</u> 것은?</span>
+      <span class="q-score">[6.2점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="code-block">sum=0
+num=1
+while num&lt;=20:
+  if num % 3 == 0:
+    sum += num
+  num +=1
+print(sum)</div>
+    <div class="choices full">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 최종 출력값은 63이다.</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 3의 배수의 합을 구하는 프로그램이다.</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> num +=1이 없으면 무한 루프에 빠진다.</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 반복문은 sum의 값이 3의 배수인 경우에만 동작한다.</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> sum += num은 num의 값이 3의 배수일 때만 실행된다.</button>
+    </div>
+  </div>
+
+  <!-- Q15 정답:5 -->
+  <div class="q-card" data-q="15" data-answer="5">
+    <div class="q-header">
+      <span class="q-num-label">15.</span>
+      <span class="q-text">파이썬 변수 이름으로 적당하지 <u>않은</u> 것은?</span>
+      <span class="q-score">[4.3점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 가격</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> true</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> _name</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> year2025</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 1st_value</button>
+    </div>
+  </div>
+
+  <!-- Q16 정답:2 -->
+  <div class="q-card" data-q="16" data-answer="2">
+    <div class="q-header">
+      <span class="q-num-label">16.</span>
+      <span class="q-text">다음 프로그램을 실행했을 때, 출력되는 결과는?</span>
+      <span class="q-score">[5.5점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="code-block">total = 0
+for i in range(1, 20):
+    if i % 5 != 0:
+        continue
+    total += i
+print(total)</div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 20</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 30</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 50</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 60</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 100</button>
+    </div>
+  </div>
+
+  <!-- Q17 정답:5 -->
+  <div class="q-card" data-q="17" data-answer="5">
+    <div class="q-header">
+      <span class="q-num-label">17.</span>
+      <span class="q-text">다음 프로그램을 실행했을 때, (가) 부분의 출력 결과는?</span>
+      <span class="q-score">[6.5점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="code-block">a = [8, 5, 9, 2, 4, 3]
+print("초기: ", a)
+n = len(a)
+count = 0
+for i in range(0, n-1):
+    for j in range(0, n-i-1):
+        if a[j] &gt; a[j + 1]:
+            a[j], a[j + 1] = a[j + 1], a[j]
+            count += 1
+print(a)
+print("횟수: ", count)</div>
+    <div class="q-box">
+      <strong>&lt;출력 결과&gt;</strong><br>
+      초기: [8, 5, 9, 2, 4, 3]<br>
+      [2, 3, 4, 5, 8, 9]<br>
+      횟수: <span style="background:#fef08a;padding:0 4px;border-radius:3px;">(가)</span>
+    </div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 10</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 11</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 12</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 13</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 15</button>
+    </div>
+  </div>
+
+  <!-- 4쪽 -->
+  <div class="section-label">4쪽 — 공개 데이터 · 디지털 윤리 · 정보 보안</div>
+
+  <!-- Q18 정답:4 -->
+  <div class="q-card" data-q="18" data-answer="4">
+    <div class="q-header">
+      <span class="q-num-label">18.</span>
+      <span class="q-text">국민의 모든 생활과 연관되어 있는 정보로 공공의 이익을 위해 공개해야 하는 정보가 <u>아닌</u> 것은?</span>
+      <span class="q-score">[4.1점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 교통 정보</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 날씨 정보</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 재난 정보</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 위치 정보</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 식품 안전 정보</button>
+    </div>
+  </div>
+
+  <!-- Q19 정답:1 -->
+  <div class="q-card" data-q="19" data-answer="1">
+    <div class="q-header">
+      <span class="q-num-label">19.</span>
+      <span class="q-text">디지털 윤리는 디지털 사회에서 올바른 행동과 가치를 지키는 것을 의미한다. 이에 맞는 기본 소양으로 볼 수 <u>없는</u> 것은?</span>
+      <span class="q-score">[3.3점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices full">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 사이버 불링</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 저작권 이해</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 미디어 문해력</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 개인 정보 보호</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 온라인 행동과 네티켓</button>
+    </div>
+  </div>
+
+  <!-- Q20 정답:5 -->
+  <div class="q-card" data-q="20" data-answer="5">
+    <div class="q-header">
+      <span class="q-num-label">20.</span>
+      <span class="q-text">정보 보안을 위협하는 유형이 <u>아닌</u> 것은?</span>
+      <span class="q-score">[3.6점]</span>
+      <span class="result-badge"></span>
+    </div>
+    <div class="choices full">
+      <button class="choice-btn" data-n="1"><span class="choice-num">①</span> 위조</button>
+      <button class="choice-btn" data-n="2"><span class="choice-num">②</span> 변조</button>
+      <button class="choice-btn" data-n="3"><span class="choice-num">③</span> 접근과 유출</button>
+      <button class="choice-btn" data-n="4"><span class="choice-num">④</span> 훼손과 파괴</button>
+      <button class="choice-btn" data-n="5"><span class="choice-num">⑤</span> 사용자 인증</button>
+    </div>
+  </div>
+
+  <!-- 점수 요약 -->
+  <div class="score-summary">
+    <div class="s-label">채점 현황</div>
+    <div class="s-nums" id="scoreDisplay">— / 20</div>
+    <div class="s-sub" id="scoreDetail">보기 번호를 클릭해서 채점해보세요</div>
+    <br>
+    <button class="reset-btn" onclick="resetAll()">↺ 초기화</button>
+  </div>
+
+</div>
+
+<script>
+const CIRCLE = ['','①','②','③','④','⑤'];
+const state = {}; // qNum → {selected, answered}
+
+function getCard(el) { return el.closest('.q-card'); }
+
+// 일반 선택지 버튼 클릭
+document.querySelectorAll('.choice-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const card = getCard(btn);
+    if (card.dataset.answered) return; // 이미 답한 문제 잠금
+
+    const q = parseInt(card.dataset.q);
+    const correct = parseInt(card.dataset.answer);
+    const chosen = parseInt(btn.dataset.n);
+    card.dataset.answered = '1';
+
+    const badge = card.querySelector('.result-badge');
+
+    // 모든 버튼 비활성화 스타일
+    card.querySelectorAll('.choice-btn').forEach(b => {
+      b.style.pointerEvents = 'none';
+      const n = parseInt(b.dataset.n);
+      if (n === correct && chosen !== correct) {
+        b.classList.add('show-correct'); // 정답 표시
+      }
+    });
+
+    if (chosen === correct) {
+      btn.classList.add('selected-correct');
+      card.classList.add('correct');
+      badge.textContent = '✅ 정답!';
+    } else {
+      btn.classList.add('selected-wrong');
+      card.classList.add('wrong');
+      badge.textContent = `❌ 오답 — 정답: ${CIRCLE[correct]}`;
+    }
+
+    state[q] = chosen === correct ? 'correct' : 'wrong';
+    updateScore();
+  });
+});
+
+// 10번 표 행 클릭
+document.querySelectorAll('.choice-row').forEach(row => {
+  row.addEventListener('click', () => {
+    const card = getCard(row);
+    if (card.dataset.answered) return;
+
+    const correct = parseInt(card.dataset.answer);
+    const chosen = parseInt(row.dataset.n);
+    card.dataset.answered = '1';
+
+    const badge = card.querySelector('.result-badge');
+
+    card.querySelectorAll('.choice-row').forEach(r => {
+      r.style.pointerEvents = 'none';
+      const n = parseInt(r.dataset.n);
+      if (n === correct && chosen !== correct) r.classList.add('show-correct');
+    });
+
+    if (chosen === correct) {
+      row.classList.add('selected-correct');
+      card.classList.add('correct');
+      badge.textContent = '✅ 정답!';
+    } else {
+      row.classList.add('selected-wrong');
+      card.classList.add('wrong');
+      badge.textContent = `❌ 오답 — 정답: ${CIRCLE[correct]}`;
+    }
+
+    state[10] = chosen === correct ? 'correct' : 'wrong';
+    updateScore();
+  });
+});
+
+function updateScore() {
+  const answered = Object.keys(state).length;
+  const correct  = Object.values(state).filter(v => v === 'correct').length;
+  document.getElementById('scoreDisplay').textContent =
+    answered > 0 ? `${correct} / ${answered}문항 채점` : '— / 20';
+  document.getElementById('scoreDetail').textContent =
+    answered > 0
+      ? `정답 ${correct}개 · 오답 ${answered - correct}개 · 미채점 ${20 - answered}문항`
+      : '보기 번호를 클릭해서 채점해보세요';
+}
+
+function resetAll() {
+  document.querySelectorAll('.q-card').forEach(card => {
+    delete card.dataset.answered;
+    card.classList.remove('correct', 'wrong');
+    card.querySelector('.result-badge').textContent = '';
+    card.querySelectorAll('.choice-btn').forEach(b => {
+      b.classList.remove('selected-correct', 'selected-wrong', 'show-correct');
+      b.style.pointerEvents = '';
+    });
+    card.querySelectorAll('.choice-row').forEach(r => {
+      r.classList.remove('selected-correct', 'selected-wrong', 'show-correct');
+      r.style.pointerEvents = '';
+    });
+  });
+  for (const k in state) delete state[k];
+  updateScore();
+}
+</script>
+</body>
+</html>
