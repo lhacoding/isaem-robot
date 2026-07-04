@@ -1091,6 +1091,54 @@
 }
 </style>
 
+
+<style id="past-2026-menu-table-fix">
+  .past-menu-actions{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:.3rem !important;
+  }
+  .past-menu-actions .quick-menu-btn{
+    width:100%;
+    min-width:0;
+  }
+  .question-blocks .q-box table{
+    width:100%;
+    min-width:0;
+    border-collapse:collapse;
+    background:#fff;
+  }
+  .question-blocks .q-box th,
+  .question-blocks .q-box td{
+    border:1px solid var(--border);
+    padding:.48rem .55rem;
+    text-align:left;
+    vertical-align:top;
+    word-break:keep-all;
+    overflow-wrap:anywhere;
+  }
+  .question-blocks .q-box th{
+    background:#f1f5f9;
+    color:#172744;
+    font-weight:900;
+  }
+  @media(max-width:600px){
+    .past-menu-actions{
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:.25rem !important;
+    }
+    .question-blocks .q-box table{
+      font-size:.76rem;
+      table-layout:fixed;
+    }
+    .question-blocks .q-box th,
+    .question-blocks .q-box td{
+      padding:.42rem .38rem;
+      line-height:1.35;
+    }
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1163,7 +1211,8 @@ const unitOrder=[
 const sectionNames={
   concept:"개념",
   review:"복습",
-  past:"기출문제",
+  past:"2025 기출문제",
+  past2026:"2026 기출문제",
   mock1:"모의고사 1",
   mock2:"모의고사 2",
   mock3:"모의고사 3"
@@ -1173,7 +1222,8 @@ const pastScoreMap={
   p1:"5.0점", p2:"5.0점", p3:"5.0점", p4:"5.0점", p5:"4.7점",
   p6:"5.0점", p7:"5.0점", p8:"5.0점", p9:"5.0점", p10:"6.1점",
   p11:"5.0점", p12:"5.0점", p13:"5.7점", p14:"6.2점", p15:"4.3점",
-  p16:"5.5점", p17:"6.5점", p18:"4.1점", p19:"3.3점", p20:"3.6점"
+  p16:"5.5점", p17:"6.5점", p18:"4.1점", p19:"3.3점", p20:"3.6점",
+  y2026q1:"3.8점", y2026q2:"3.9점", y2026q3:"4.4점", y2026q4:"4.8점", y2026q5:"4.0점", y2026q6:"4.5점", y2026q7:"4.8점", y2026q8:"4.9점", y2026q9:"4.1점", y2026q10:"4.9점", y2026q11:"5.1점", y2026q12:"4.6점", y2026q13:"4.6점", y2026q14:"4.7점", y2026q15:"4.7점", y2026q16:"4.7점", y2026q17:"4.1점", y2026q18:"5.1점", y2026q19:"4.7점", y2026q20:"5.2점", y2026q21:"4.2점", y2026q22:"4.2점"
 };
 
 const baseQuestions=
@@ -6175,6 +6225,547 @@ const pastExamQuestions=
   }
 ];
 
+const past2026Questions=
+[
+  {
+    "id": "y2026q1",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "다음은 유선 네트워크에 대한 설명이다. (가), (나)에 들어갈 내용으로 옳은 것은?<div class=\"q-box\">(가) 또는 (나)와/과 같은 각종 연결 도구를 사용하여 네트워크에 접속할 다양한 컴퓨팅 시스템을 <u>선으로 연결하는 방식</u>이다.</div>",
+    "choices": [
+      "(가) 광 케이블 / (나) 이더넷 케이블",
+      "(가) 광 케이블 / (나) 액세스 포인트",
+      "(가) 액세스 포인트 / (나) 이더넷 케이블",
+      "(가) 액세스 포인트 / (나) 블루투스(Bluetooth)",
+      "(가) 이더넷 케이블 / (나) 블루투스(Bluetooth)"
+    ],
+    "answer": 0,
+    "explanation": "유선 네트워크는 선을 이용해 장치를 연결하므로 광 케이블, 이더넷 케이블이 알맞다.",
+    "keywords": [
+      "유선 네트워크",
+      "선 연결",
+      "광 케이블",
+      "이더넷 케이블"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q2",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "사물 인터넷에 사용되는 기술에 대한 설명이다. 옳은 것만을 보기에서 있는 대로 고른 것은?<div class=\"q-box\"><div class=\"source-title\">&lt;보기&gt;</div>\n<p>ㄱ. 컴퓨터를 켜면 자동으로 바이러스를 체크하고 치료하는 기술이다.</p>\n<p>ㄴ. 전송 및 저장되는 데이터의 보안 및 해킹 방지를 위해 암호화 등 보안 기술을 사용한다.</p>\n<p>ㄷ. 주변 환경의 데이터를 감지하고 측정하기 위해 온도 센서, 압력 센서, 빛 센서 등을 사용한다.</p>\n<p>ㄹ. 각종 센서로 모은 데이터를 관리하기 위해 데이터베이스, 클라우드 컴퓨팅 기술 등을 사용한다.</p></div>",
+    "choices": [
+      "ㄱ, ㄴ",
+      "ㄴ, ㄷ",
+      "ㄴ, ㄷ, ㄹ",
+      "ㄱ, ㄴ, ㄹ",
+      "ㄱ, ㄴ, ㄷ, ㄹ"
+    ],
+    "answer": 2,
+    "explanation": "사물 인터넷에는 보안 기술, 센서 기술, 데이터 관리 기술이 사용된다. ㄱ은 바이러스 백신 프로그램에 가까운 설명이다.",
+    "keywords": [
+      "사물 인터넷",
+      "보안",
+      "센서",
+      "데이터베이스",
+      "클라우드"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q3",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "유무선 네트워크에 관한 설명으로 옳은 것은?",
+    "choices": [
+      "유선 네트워크는 무선 네트워크에 비해 보안에 약하다.",
+      "전자태그 기술을 사용하여 고속도로 하이패스, 상품 정보 인식 등에 활용한다.",
+      "NFC는 100M 이내에서 무선으로 데이터를 주고받을 수 있는 무선 기술이다.",
+      "방화벽은 유선 랜과 무선 랜을 연결하는 장치로 와이파이 기술을 이용하여 인터넷을 사용할 수 있도록 한다.",
+      "라우터는 가까운 거리에서 노트북이나 휴대 전화 등으로 데이터를 주고받을 수 있도록 랜을 무선화한 기술이다."
+    ],
+    "answer": 1,
+    "explanation": "전자태그 기술은 고속도로 하이패스나 상품 정보 인식 등에 활용된다.",
+    "keywords": [
+      "전자태그",
+      "RFID",
+      "하이패스",
+      "상품 정보 인식"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q4",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "런-렝스 인코딩에 대한 설명으로 옳지 않은 것은?",
+    "choices": [
+      "문자열을 압축하는 비손실 압축 알고리즘이다.",
+      "압축된 문자를 복원할 때 원본대로 복원할 수 있다.",
+      "반복되는 문자가 길게 나타날수록 압축 효율이 높다.",
+      "반복 문자 개수와 반복 문자의 쌍으로 표현하는 알고리즘이다.",
+      "문자가 떨어져 있는 같은 패턴도 압축이 가능하다는 장점이 있다."
+    ],
+    "answer": 4,
+    "explanation": "런-렝스 인코딩은 연속해서 반복되는 문자를 개수와 문자 쌍으로 압축한다. 떨어져 있는 같은 패턴을 압축하는 방식은 아니다.",
+    "keywords": [
+      "런-렝스",
+      "비손실",
+      "반복 문자",
+      "연속성"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q5",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "이미지를 디지털 데이터로 표현하는 방식 중 비트맵 표현 방식에 대한 설명으로 옳지 않은 것은?",
+    "choices": [
+      "GIF, JPG 등의 파일 형식을 사용한다.",
+      "여러 화소를 모아서 표현하는 방식이다.",
+      "해상도가 높을수록 저장 공간도 많이 사용한다.",
+      "단위 면적에 표현하는 화소 수가 많을수록 화질이 좋아진다.",
+      "수학식을 활용하기 때문에 확대해도 계단 현상이 발생하지 않아 좋은 화질을 유지한다."
+    ],
+    "answer": 4,
+    "explanation": "비트맵은 화소를 모아 이미지를 표현하므로 확대하면 계단 현상이 생길 수 있다. 수학식으로 표현해 확대에 강한 방식은 벡터 방식이다.",
+    "keywords": [
+      "비트맵",
+      "화소",
+      "해상도",
+      "저장 공간",
+      "계단 현상"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q6",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "보기에서 설명하는 이미지 압축 파일 형식으로 옳은 것은?<div class=\"q-box\"><div class=\"source-title\">&lt;보기&gt;</div>\n<ul>\n<li>8비트 컬러를 사용한다.</li>\n<li>비교적 파일 크기가 작다.</li>\n<li>손실 압축 방식과 비손실 압축 방식을 사용한다.</li>\n<li>지원 가능한 색상이 다른 파일 형식에 비해 한정적이다.</li>\n</ul></div>",
+    "choices": [
+      "PNG",
+      "GIF",
+      "BMP",
+      "MP3",
+      "WAV"
+    ],
+    "answer": 1,
+    "explanation": "8비트 컬러와 제한된 색상 수, 비교적 작은 파일 크기는 GIF의 대표적인 특징이다.",
+    "keywords": [
+      "GIF",
+      "8비트",
+      "색상 제한",
+      "이미지 압축"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q7",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "소리를 압축하여 표현하는 방식에 대한 설명으로 옳지 않은 것은?",
+    "choices": [
+      "FLAC은 비손실 압축 방식을 사용한다.",
+      "WAV는 가장 효율이 좋은 손실 압축 방식이다.",
+      "AAC는 비트 전송률로 음원의 음질을 조절해 압축할 수 있다.",
+      "MP3는 사람이 잘 듣지 못하는 대역의 신호를 제거해 용량을 줄인다.",
+      "손실 압축을 사용하면 비손실 압축보다 파일의 용량을 더 작게 할 수 있다."
+    ],
+    "answer": 1,
+    "explanation": "WAV는 일반적으로 압축 효율이 좋은 손실 압축 방식으로 보지 않는다. 손실 압축의 대표 예는 MP3, AAC 등이다.",
+    "keywords": [
+      "WAV",
+      "FLAC",
+      "MP3",
+      "AAC",
+      "손실 압축"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q8",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "고대·근대 암호화 활용 사례에 관한 설명이다. 옳은 것은?",
+    "choices": [
+      "에니그마는 톱니바퀴를 사용하는 기계식 암호기로 대표적인 전치 암호 방식이다.",
+      "스키테일 암호는 치환 암호 방식을 사용하여 굵기와 길이가 같은 막대를 사용한다.",
+      "카이사르 알고리즘을 사용하면 복호화가 쉬워 키값 없이 암호문을 해독할 수 있다.",
+      "카이사르 암호는 키를 사용하여 평행 이동한 문자로 암호화하는 치환 암호 방식이다.",
+      "스키테일 암호와 카이사르 암호는 키값을 활용하여 위치를 변경한 후 복호화하는 방식을 사용한다."
+    ],
+    "answer": 3,
+    "explanation": "카이사르 암호는 정해진 키만큼 문자를 평행 이동하여 다른 문자로 바꾸는 치환 암호 방식이다.",
+    "keywords": [
+      "카이사르 암호",
+      "키",
+      "평행 이동",
+      "치환 암호"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q9",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "암호화와 복호화의 과정이다. (가), (나), (다)에 들어갈 용어를 나열한 것으로 옳은 것은?<div class=\"q-box\"><p>비밀번호 2020 → 암호화 → 암호문 → 복호화 → 비밀번호 2020</p>\n<p>(가)　　　　　　　　　　　(나)　　　　　　　　　　　(다)</p></div>",
+    "choices": [
+      "(가) 평문 / (나) 암호문 / (다) 평문",
+      "(가) 평문 / (나) 암호문 / (다) 암호문",
+      "(가) 평문 / (나) 평문 / (다) 암호문",
+      "(가) 암호문 / (나) 암호문 / (다) 평문",
+      "(가) 암호문 / (나) 평문 / (다) 암호문"
+    ],
+    "answer": 0,
+    "explanation": "암호화 전 원래 데이터는 평문이고, 암호화된 결과는 암호문이다. 복호화 후에는 다시 평문이 된다.",
+    "keywords": [
+      "평문",
+      "암호화",
+      "암호문",
+      "복호화"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q10",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "데이터를 버블 정렬 알고리즘을 사용하여 오름차순으로 정렬하려고 한다. 교환 횟수는?<div class=\"q-box\"><p>정렬 전 카드: 18　15　10　13</p>\n<p>정렬 후 카드: 10　13　15　18</p></div>",
+    "choices": [
+      "1회",
+      "3회",
+      "5회",
+      "6회",
+      "7회"
+    ],
+    "answer": 2,
+    "explanation": "버블 정렬의 교환 횟수는 역순 쌍의 수와 같다. 18은 15, 10, 13과 교환되고 15는 10, 13과 교환되어 총 5회이다.",
+    "keywords": [
+      "버블 정렬",
+      "오름차순",
+      "교환",
+      "역순 쌍"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q11",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "이산화탄소 농도(CO₂)와 해수면 온도와의 관계에 대해서 분석하려고 한다. 그래프로 시각화한 자료에 대한 설명으로 옳은 것은?<div class=\"q-box\">단, r²: 최소제곱선</div><div class=\"q-box\"><table class=\"code-table\">\n<thead>\n<tr>\n<th>그래프</th>\n<th>내용</th>\n<th>r²</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>그래프 1</td>\n<td>안면도 CO₂ - 해수면 온도(서해)</td>\n<td>0.002</td>\n</tr>\n<tr>\n<td>그래프 2</td>\n<td>고산 CO₂ - 해수면 온도(남해)</td>\n<td>0.483</td>\n</tr>\n</tbody>\n</table></div>",
+    "choices": [
+      "남해의 이산화탄소 농도와 해수면 온도는 반비례한다.",
+      "서해의 이산화탄소 농도가 높을수록 해수면 온도가 높다.",
+      "남해의 이산화탄소 농도와 해수면 온도간의 연관성이 매우 높다.",
+      "서해의 해수면 온도와 이산화탄소 농도는 직접적인 연관성이 낮은 편이다.",
+      "남해와 서해 모두 해수면 온도와 이산화탄소 농도는 직접적인 연관성이 높은 유의미한 결과를 보여 준다."
+    ],
+    "answer": 3,
+    "explanation": "서해 그래프의 r² 값은 0.002로 매우 작으므로 두 변수의 직접적인 연관성이 낮다고 볼 수 있다.",
+    "keywords": [
+      "r²",
+      "연관성",
+      "서해",
+      "0.002",
+      "낮은 관계"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q12",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "연산자를 사용하여 코딩한 출력 결과가 틀린 것은?",
+    "choices": [
+      "print(15 // 4) → 3",
+      "print(20 / 5 * 2) → 8",
+      "print(4 ** 2 / 4) → 4.0",
+      "print(25 % 3 + 1) → 2",
+      "print(15 > 2 or 5 > 16) → True"
+    ],
+    "answer": 1,
+    "explanation": "파이썬에서 / 연산을 사용하면 결과가 실수형으로 출력된다. 따라서 20 / 5 * 2의 출력은 8이 아니라 8.0이다.",
+    "keywords": [
+      "산술 연산자",
+      "/",
+      "실수형",
+      "8.0"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q13",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 실행 후 출력되는 결과값으로 옳은 것은?<pre class=\"code-block\">for i in range(1, 6):\n    if i % 3 != 0:\n        continue\n    print(i, end=&#x27; &#x27;)</pre>",
+    "choices": [
+      "3",
+      "3 6",
+      "1 2 3",
+      "1 2 4 5",
+      "1 2 3 4 5"
+    ],
+    "answer": 0,
+    "explanation": "range(1, 6)은 1부터 5까지 반복한다. 3으로 나누어떨어지지 않는 값은 continue로 건너뛰므로 3만 출력된다.",
+    "keywords": [
+      "range",
+      "continue",
+      "나머지",
+      "3의 배수"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q14",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "놀이공원 앱에서 나이를 입력하면 처리 조건에 따라 입장권 가격을 출력하는 프로그램을 작성하려고 한다. 수정이 필요한 행을 고른 것은?<div class=\"q-box\"><p>입장권의 가격</p>\n<ul>\n<li>어린이, 청소년(18세 이하): 30,000원</li>\n<li>성인: 40,000원</li>\n</ul></div><pre class=\"code-block\">1행  age = str(input(&quot;나이를 입력하세요.&quot;))\n2행  if age &lt;= 18:\n3행      print(&quot;입장권 가격은 30,000원입니다.&quot;)\n4행  elif:\n5행      print(&quot;입장권 가격은 40,000원입니다.&quot;)</pre>",
+    "choices": [
+      "1, 2",
+      "1, 4",
+      "2, 3",
+      "2, 4",
+      "3, 4"
+    ],
+    "answer": 1,
+    "explanation": "나이는 숫자로 비교해야 하므로 1행은 int(input(...)) 형태가 알맞다. 조건 없이 나머지를 처리하려면 4행은 elif가 아니라 else를 사용해야 한다.",
+    "keywords": [
+      "int",
+      "문자열 비교 오류",
+      "if",
+      "else"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q15",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 코딩에서 실행 결과가 오른쪽과 같을 때 빈칸에 들어갈 값으로 옳은 것은?<div class=\"q-box\">중간 결과값 생략하여 표시함.</div><pre class=\"code-block\">dan = int(input(&quot;숫자입력: &quot;))\n\nfor i in range(1, 가):\n    result = dan * i\n    print(dan, &quot;*&quot;, i, &quot;=&quot;, 나)</pre><div class=\"q-box\"><div class=\"source-title\">실행 결과</div>\n<p>숫자입력: 5</p>\n<p>5 * 1 = 5</p>\n<p>5 * 2 = 10</p>\n<p>.</p>\n<p>.</p>\n<p>5 * 9 = 45</p></div>",
+    "choices": [
+      "(가) 5 / (나) dan * i",
+      "(가) 9 / (나) \"dan * i\"",
+      "(가) 9 / (나) result",
+      "(가) 10 / (나) \"dan * i\"",
+      "(가) 10 / (나) result"
+    ],
+    "answer": 4,
+    "explanation": "1부터 9까지 출력하려면 range(1, 10)을 사용해야 한다. 계산값은 result 변수에 저장되어 있으므로 나에는 result가 들어간다.",
+    "keywords": [
+      "range(1",
+      "10)",
+      "구구단",
+      "result",
+      "변수 출력"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q16",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 코딩에서 실행 결과 sum의 출력 결과로 옳은 것은?<pre class=\"code-block\">sum = 0\ncount = 0\n\nwhile count &lt;= 10:\n    sum = sum + count\n    count = count + 2\n\nprint(sum)</pre>",
+    "choices": [
+      "10",
+      "20",
+      "30",
+      "40",
+      "42"
+    ],
+    "answer": 2,
+    "explanation": "count는 0, 2, 4, 6, 8, 10 순서로 더해진다. 합은 0+2+4+6+8+10=30이다.",
+    "keywords": [
+      "while",
+      "누적합",
+      "count",
+      "2씩 증가"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q17",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "다음 코딩에서 각 입력에 따른 출력 결과로 틀린 것은?<pre class=\"code-block\">dust = int(input(&quot;미세먼지 농도: &quot;))\ntemp = int(input(&quot;현재 기온: &quot;))\n\nif dust &gt;= 80 or temp &lt;= -10:\n    print(&quot;외출을 삼가고 실내에 머무르세요.&quot;)\n\nelif dust &lt; 30 and 15 &lt;= temp &lt;= 25:\n    print(&quot;가벼운 차림으로 산책을 즐기세요.&quot;)\n\nelif dust &gt;= 50:\n    print(&quot;마스크를 꼭 착용하고 외출하세요.&quot;)\n\nelse:\n    print(&quot;기온에 맞는 옷을 입고 외출하세요.&quot;)</pre>",
+    "choices": [
+      "입력: 미세먼지 농도 90, 현재기온 20<br/>출력: 외출을 삼가고 실내에 머무르세요.",
+      "입력: 미세먼지 농도 25, 현재기온 20<br/>출력: 가벼운 차림으로 산책을 즐기세요.",
+      "입력: 미세먼지 농도 25, 현재기온 30<br/>출력: 기온에 맞는 옷을 입고 외출하세요.",
+      "입력: 미세먼지 농도 60, 현재기온 20<br/>출력: 기온에 맞는 옷을 입고 외출하세요.",
+      "입력: 미세먼지 농도 65, 현재기온 -12<br/>출력: 외출을 삼가고 실내에 머무르세요."
+    ],
+    "answer": 3,
+    "explanation": "미세먼지 농도 60은 dust >= 50 조건에 해당하므로 “마스크를 꼭 착용하고 외출하세요.”가 출력되어야 한다.",
+    "keywords": [
+      "if-elif-else",
+      "or",
+      "and",
+      "조건 순서"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q18",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 코딩에서 순서대로 실행하여 각 번호에 해당하는 print문의 출력되는 내용이 옳은 것은?<pre class=\"code-block\">fruit = [&quot;사과&quot;, &quot;배&quot;, &quot;딸기&quot;, &quot;참외&quot;, &quot;포도&quot;]\n\nfruit.pop()\nprint(fruit)          # ①\n\nfruit.append(&quot;복숭아&quot;)\nprint(fruit)          # ②\n\nfruit.insert(2, &quot;망고&quot;)\nprint(fruit)          # ③\n\nfruit.remove(&quot;배&quot;)\nprint(fruit)          # ④\n\nprint(len(fruit))     # ⑤</pre>",
+    "choices": [
+      "['사과', '배', '딸기', '참외']",
+      "['사과', '배', '딸기', '참외', '포도', '복숭아']",
+      "['사과', '망고', '배', '딸기', '참외', '복숭아']",
+      "['사과', '망고', '딸기', '참외', '복숭아', '배']",
+      "['사과', '배', '망고', '딸기', '참외', '복숭아']"
+    ],
+    "answer": 0,
+    "explanation": "pop()은 마지막 요소인 포도를 제거한다. 따라서 첫 번째 출력은 ['사과', '배', '딸기', '참외']이다.",
+    "keywords": [
+      "리스트",
+      "pop",
+      "append",
+      "insert",
+      "remove"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q19",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 코딩에서 실행 후 출력값을 모두 더한 것은?<pre class=\"code-block\">def circle(r):\n    return r**2 * 3.14\n\ndef square(a, b):\n    return a*b\n\ndef tri(m, n):\n    return 0.5 * m * n\n\nprint(int(circle(3)))\nprint(square(5, 3))\nprint(tri(5, 4))</pre>",
+    "choices": [
+      "10",
+      "18.84",
+      "29.26",
+      "43.84",
+      "53.0"
+    ],
+    "answer": 4,
+    "explanation": "int(circle(3))은 int(28.26)이므로 28, square(5,3)은 15, tri(5,4)는 10.0이다. 모두 더하면 53.0이다.",
+    "keywords": [
+      "함수",
+      "return",
+      "int",
+      "원",
+      "사각형",
+      "삼각형"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q20",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "프로그램 코딩에 대한 설명으로 옳은 것은?<pre class=\"code-block\">res = 0\n\nfor i in range(1, 30, 1):\n    if i % 9 != 0:\n        continue\n    res = res + i\n\nprint(&quot;i = &quot;, i, &quot;결과값 = &quot;, res)</pre>",
+    "choices": [
+      "i의 출력값은 30이다.",
+      "i는 9만큼씩 증가한다.",
+      "res의 출력값은 3이다.",
+      "9의 배수 합을 출력하는 프로그램이다.",
+      "continue문을 만나면 반복문을 빠져나간다."
+    ],
+    "answer": 3,
+    "explanation": "i가 9의 배수가 아닐 때는 continue로 건너뛰고, 9의 배수일 때만 res에 더한다. 따라서 9의 배수 합을 구하는 프로그램이다.",
+    "keywords": [
+      "continue",
+      "9의 배수",
+      "누적합",
+      "range"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q21",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "보기는 정보 보안 기술에 관한 설명이다. 옳게 연결한 것은?<div class=\"q-box\"><div class=\"source-title\">&lt;보기&gt;</div>\n<p>ㄱ. 시스템에 접속하는 사람의 자격을 확인하는 것으로 지식 기반, 소유 기반, 생체 기반으로 나뉜다.</p>\n<p>ㄴ. 데이터를 분산 네트워크 내의 사슬형 구조로 된 데이터 저장 환경에서 관리하므로 데이터 가로채기, 수정, 삭제가 거의 불가능하다.</p></div>",
+    "choices": [
+      "ㄱ 방화벽 / ㄴ 사용자 인증",
+      "ㄱ 블록체인 / ㄴ 침입 방지 시스템",
+      "ㄱ 사용자 인증 / ㄴ 블록체인 보안",
+      "ㄱ 클라우드 접근 / ㄴ 사물 인터넷 기술",
+      "ㄱ 침입 탐지 시스템 / ㄴ 바이러스 백신 프로그램"
+    ],
+    "answer": 2,
+    "explanation": "접속하는 사람의 자격을 확인하는 기술은 사용자 인증이다. 분산 네트워크의 사슬형 데이터 저장 구조는 블록체인 보안에 해당한다.",
+    "keywords": [
+      "사용자 인증",
+      "지식 기반",
+      "소유 기반",
+      "생체 기반",
+      "블록체인"
+    ],
+    "importance": "기출"
+  },
+  {
+    "id": "y2026q22",
+    "unit": "2026 기출문제",
+    "section": "past2026",
+    "menuLabel": "2026 기출문제 풀어보기",
+    "type": "2026 기출",
+    "question": "다음은 학교에서 정보를 수집한 사례이다. 정보의 사용과 개인 정보 보호를 고려한 가장 적절한 조치로 옳은 것은?<div class=\"q-box\"><p>학교에서 학생들의 건강 상태를 파악하기 위하여 설문조사를 하였다.</p>\n<p>설문에는 키, 몸무게, 질병명 등의 정보가 포함되어 있다.</p>\n<p>이후 설문 결과를 토대로 전교생에게 건강 관련 통계를 공유하려고 한다.</p></div>",
+    "choices": [
+      "모든 설문 응답 내용을 이름과 함께 공개한다.",
+      "모든 설문 데이터는 개인정보 수집 동의 없이 영구 보관한다.",
+      "통계를 공개하지만 개인을 식별할 수 없도록 이름 부분을 익명 처리한다.",
+      "건강 문제의 심각성을 알리기 위해 일부 학생들만 실명으로 사례를 공개한다.",
+      "보다 나은 정보 결과를 얻기 위해 동의 없이 외부 기관에 데이터를 제공하여 처리한다."
+    ],
+    "answer": 2,
+    "explanation": "건강 정보는 민감한 개인정보이므로 통계를 공유할 때 개인을 식별할 수 없도록 익명 처리해야 한다.",
+    "keywords": [
+      "개인정보",
+      "건강 정보",
+      "익명 처리",
+      "통계 공개"
+    ],
+    "importance": "기출"
+  }
+];
+
 const mock1Questions=
 [
   {
@@ -7587,6 +8178,7 @@ const mock3Questions=
 const allQuestions=[
   ...baseQuestions,
   ...pastExamQuestions,
+  ...past2026Questions,
   ...mock1Questions,
   ...mock2Questions,
   ...mock3Questions
@@ -7664,21 +8256,27 @@ function renderMenu(){
   });
 
   const pastBox=document.createElement("div");
-  pastBox.className="unit-menu-box single-action-box";
+  pastBox.className="unit-menu-box past-menu-box";
 
   const pastTitle=document.createElement("div");
   pastTitle.className="unit-menu-title";
   pastTitle.textContent="기출문제";
 
   const pastActions=document.createElement("div");
-  pastActions.className="unit-menu-actions";
+  pastActions.className="unit-menu-actions past-menu-actions";
 
-  const pastBtn=document.createElement("button");
-  pastBtn.className="quick-menu-btn"+(currentMenuKey==="기출문제|past"?" active":"");
-  pastBtn.textContent="풀어보기";
-  pastBtn.onclick=()=>startMockTest("past");
+  [
+    {section:"past", label:"2025"},
+    {section:"past2026", label:"2026"}
+  ].forEach(item=>{
+    const key=item.section==="past" ? "2025 기출문제|past" : "2026 기출문제|past2026";
+    const btn=document.createElement("button");
+    btn.className="quick-menu-btn"+(currentMenuKey===key?" active":"");
+    btn.textContent=item.label;
+    btn.onclick=()=>startMockTest(item.section);
+    pastActions.appendChild(btn);
+  });
 
-  pastActions.appendChild(pastBtn);
   pastBox.appendChild(pastTitle);
   pastBox.appendChild(pastActions);
   sticky.appendChild(pastBox);
@@ -7736,9 +8334,17 @@ function startSection(unit,section){
 }
 
 function startMockTest(section){
-  currentUnit = section==="past" ? "기출문제" : "전체 모의고사";
   currentSection=section;
-  currentMenuKey = section==="past" ? "기출문제|past" : `전체 모의고사|${section}`;
+  if(section==="past"){
+    currentUnit="2025 기출문제";
+    currentMenuKey="2025 기출문제|past";
+  }else if(section==="past2026"){
+    currentUnit="2026 기출문제";
+    currentMenuKey="2026 기출문제|past2026";
+  }else{
+    currentUnit="전체 모의고사";
+    currentMenuKey=`전체 모의고사|${section}`;
+  }
   currentQuestions=allQuestions.filter(q=>q.section===section);
   startQuizBase();
 }
@@ -7775,7 +8381,8 @@ function startConceptWrongRetry(){
 }
 
 function getQuizTitle(){
-  if(currentSection==="past") return "기출문제 풀어보기";
+  if(currentSection==="past") return "2025 기출문제 풀어보기";
+  if(currentSection==="past2026") return "2026 기출문제 풀어보기";
   if(["mock1","mock2","mock3"].includes(currentSection)) return sectionNames[currentSection];
   return `${shortUnitName(currentUnit)} · ${sectionNames[currentSection] || currentSection}`;
 }
@@ -8111,7 +8718,7 @@ function retryWrongAnswers(){
 }
 
 function restartCurrentQuiz(){
-  if(["past","mock1","mock2","mock3"].includes(currentSection)){
+  if(["past","past2026","mock1","mock2","mock3"].includes(currentSection)){
     startMockTest(currentSection);
   }else{
     startSection(currentUnit,currentSection);
