@@ -774,7 +774,323 @@
     }
   }
 
+
+
+  /* ===== 제목 영역 디자인 수정: 네이비 + 청록 포인트 ===== */
+  .header{
+    position:relative !important;
+    overflow:hidden !important;
+    isolation:isolate;
+    color:#fff;
+    border-radius:18px !important;
+    padding:1.55rem 2.15rem 1.85rem !important;
+    margin-bottom:1.05rem !important;
+    background:
+      radial-gradient(circle at 86% 28%, rgba(80,205,196,.22) 0%, rgba(80,205,196,.09) 25%, transparent 48%),
+      linear-gradient(135deg,#151c39 0%,#21305b 55%,#3b4f73 100%) !important;
+    border:1px solid rgba(255,255,255,.14) !important;
+    box-shadow:0 10px 22px rgba(15,23,42,.14) !important;
+  }
+  .header::before{
+    content:"";
+    position:absolute;
+    right:-12%;
+    top:-55%;
+    width:48%;
+    height:170%;
+    background:radial-gradient(circle,rgba(255,255,255,.09),transparent 62%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .header::after{
+    content:"";
+    position:absolute;
+    left:2.15rem;
+    bottom:.95rem;
+    width:min(420px,calc(100% - 4.3rem));
+    height:2px;
+    border-radius:999px;
+    background:linear-gradient(90deg,rgba(80,205,196,.95),rgba(80,205,196,.32),transparent);
+    box-shadow:0 0 10px rgba(80,205,196,.2);
+    pointer-events:none;
+    z-index:0;
+  }
+  .header > *{
+    position:relative;
+    z-index:1;
+  }
+  .header .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:.35rem;
+    color:#dffefa !important;
+    background:rgba(80,205,196,.13) !important;
+    border:1px solid rgba(80,205,196,.35);
+    padding:.34rem .72rem;
+    border-radius:999px;
+    margin-bottom:.68rem;
+    font-size:.8rem;
+    font-weight:900;
+    line-height:1.25;
+    letter-spacing:-.01em;
+  }
+  .header h1{
+    margin:0;
+    max-width:780px;
+    color:#fff !important;
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+    padding:0 !important;
+    font-size:clamp(2.05rem,4.8vw,3rem) !important;
+    line-height:1.12;
+    font-weight:950;
+    letter-spacing:-.065em;
+    word-break:keep-all;
+  }
+  .header .subtitle{
+    max-width:760px;
+    margin-top:.58rem;
+    color:rgba(255,255,255,.88) !important;
+    font-size:clamp(.92rem,1.9vw,1.08rem);
+    font-weight:700;
+    line-height:1.45;
+    letter-spacing:-.025em;
+    word-break:keep-all;
+  }
+  @media(max-width:600px){
+    .header{
+      padding:1.22rem 1.15rem 1.55rem !important;
+      border-radius:16px !important;
+      margin-bottom:.8rem !important;
+    }
+    .header::before{
+      right:-30%;
+      width:70%;
+    }
+    .header::after{
+      left:1.15rem;
+      bottom:.78rem;
+      width:min(290px,calc(100% - 2.3rem));
+    }
+    .header .badge{
+      font-size:.74rem;
+      padding:.31rem .6rem;
+      margin-bottom:.58rem;
+    }
+    .header h1{
+      font-size:clamp(1.72rem,7.6vw,2.35rem) !important;
+      line-height:1.16;
+      letter-spacing:-.06em;
+    }
+    .header .subtitle{
+      font-size:.86rem;
+      line-height:1.45;
+      margin-top:.5rem;
+    }
+  }
+  @media(max-width:360px){
+    .header h1{
+      font-size:clamp(1.58rem,7.8vw,2.05rem) !important;
+    }
+    .header .subtitle{
+      font-size:.82rem;
+    }
+  }
+
+
+
+/* =========================================================
+   최종 상단 제목 + 선택 버튼 색상 통일
+   - 제목: 2028_ad 스타일과 동일한 네이비/청록 계열
+   - 선택된 개념·복습·기출·모의고사 버튼: 파랑 → 네이비+청록 포인트
+   ========================================================= */
+.header{
+  position:relative !important;
+  overflow:hidden !important;
+  display:block !important;
+  color:#ffffff !important;
+  border-radius:22px !important;
+  padding:24px 28px 29px !important;
+  margin-bottom:1.05rem !important;
+  background:
+    radial-gradient(circle at 86% 28%, rgba(80,205,196,.20) 0%, rgba(80,205,196,.08) 24%, transparent 46%),
+    linear-gradient(135deg,#161d3d 0%,#24325c 55%,#3d4f74 100%) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:0 10px 22px rgba(15,23,42,.14) !important;
+  isolation:isolate !important;
+}
+.header::before{
+  content:"" !important;
+  position:absolute !important;
+  right:-12% !important;
+  top:-55% !important;
+  width:48% !important;
+  height:170% !important;
+  background:radial-gradient(circle,rgba(255,255,255,.08),transparent 62%) !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+.header::after{
+  content:"" !important;
+  position:absolute !important;
+  left:28px !important;
+  right:28px !important;
+  bottom:16px !important;
+  width:auto !important;
+  height:2px !important;
+  border-radius:999px !important;
+  background:linear-gradient(90deg,rgba(80,205,196,.96) 0%,rgba(80,205,196,.92) 18%,rgba(80,205,196,.72) 46%,rgba(80,205,196,.36) 68%,rgba(80,205,196,.12) 84%,rgba(80,205,196,.02) 100%) !important;
+  box-shadow:0 0 10px rgba(80,205,196,.18) !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+.header > *{
+  position:relative !important;
+  z-index:1 !important;
+}
+.header .badge{
+  display:none !important;
+}
+.header h1{
+  margin:0 !important;
+  max-width:980px !important;
+  color:#ffffff !important;
+  font-size:clamp(28px,3.6vw,42px) !important;
+  line-height:1.08 !important;
+  font-weight:900 !important;
+  letter-spacing:-.06em !important;
+  text-shadow:none !important;
+  word-break:keep-all !important;
+}
+.header .subtitle{
+  margin:9px 0 0 !important;
+  max-width:900px !important;
+  color:rgba(255,255,255,.90) !important;
+  font-size:clamp(13px,1.35vw,15.5px) !important;
+  line-height:1.5 !important;
+  font-weight:700 !important;
+  letter-spacing:-.025em !important;
+  word-break:keep-all !important;
+}
+
+/* 메뉴 버튼 기본 톤: 제목과 어울리도록 기존 파란색보다 차분한 네이비 계열 */
+.quick-menu-btn{
+  border-color:#d6deeb !important;
+  background:#f5f8fc !important;
+  color:#233657 !important;
+  box-shadow:none !important;
+}
+.quick-menu-btn:hover{
+  border-color:#b8c5d9 !important;
+  background:#eef4fb !important;
+  color:#172744 !important;
+  transform:translateY(-1px);
+}
+
+/* 선택된 개념·복습·기출·모의고사 버튼 */
+.quick-menu-btn.active{
+  position:relative !important;
+  overflow:hidden !important;
+  background:#172744 !important;
+  border-color:#172744 !important;
+  color:#ffffff !important;
+  box-shadow:0 5px 12px rgba(23,39,68,.16) !important;
+}
+.quick-menu-btn.active::after{
+  content:none !important;
+  display:none !important;
+}
+
+/* 선택된 버튼이 있는 단원 박스도 아주 약하게 강조 */
+.unit-menu-box:has(.quick-menu-btn.active){
+  border-color:#bcc8dc !important;
+  background:linear-gradient(180deg,#ffffff 0%,#f7fafc 100%) !important;
+  box-shadow:0 6px 14px rgba(23,39,68,.07) !important;
+}
+.unit-menu-box:has(.quick-menu-btn.active) .unit-menu-title{
+  color:#172744 !important;
+  background:#eef4fb !important;
+  border-color:#d6deeb !important;
+}
+
+@media(max-width:600px){
+  .header{
+    padding:20px 18px 25px !important;
+    border-radius:18px !important;
+    margin-bottom:.8rem !important;
+  }
+  .header::before{
+    right:-30% !important;
+    width:70% !important;
+  }
+  .header::after{
+    left:18px !important;
+    right:18px !important;
+    bottom:13px !important;
+  }
+  .header h1{
+    font-size:clamp(25px,8vw,32px) !important;
+    line-height:1.12 !important;
+  }
+  .header .subtitle{
+    margin-top:7px !important;
+    font-size:clamp(12.5px,3.4vw,14px) !important;
+    line-height:1.45 !important;
+  }
+  .quick-menu-btn.active::after{
+    content:none !important;
+    display:none !important;
+  }
+}
+
 </style>
+
+<style id="navy-accent-unification-fix">
+/* 강조 색상 통일: 제목·선택 버튼·문제 번호를 같은 네이비 계열로 맞춤 */
+:root{
+  --accent:#172744;
+  --accent-dark:#0f1d33;
+  --accent-soft:#f1f5fb;
+}
+
+/* 단원/유형 메뉴 버튼 */
+.quick-menu-btn:hover{
+  border-color:#172744 !important;
+  background:#f1f5fb !important;
+  color:#172744 !important;
+}
+.quick-menu-btn.active{
+  background:#172744 !important;
+  border-color:#172744 !important;
+  color:#ffffff !important;
+  box-shadow:0 4px 10px rgba(23,39,68,.16) !important;
+}
+
+/* 문제 번호 및 소제목 강조선 */
+.question-num{
+  color:#172744 !important;
+}
+.quiz-title-bar{
+  border-left-color:#172744 !important;
+}
+
+/* 진행바, 결과 점수, 정답/오답 통계 숫자 */
+.progress-fill{
+  background:#172744 !important;
+}
+.result-score,
+.stat .num{
+  color:#172744 !important;
+}
+
+/* 선택지 hover도 제목 톤과 어울리게 정리 */
+.choice-btn:hover:not(:disabled){
+  background:#f1f5fb !important;
+  border-color:#172744 !important;
+}
+</style>
+
 </head>
 <body>
 <div class="app">
