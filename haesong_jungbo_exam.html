@@ -1139,6 +1139,41 @@
   }
 </style>
 
+
+
+
+
+
+
+
+<style id="unit-menu-width-overflow-condense-fix">
+/* 메뉴 제목 기본 상태: 장평 그대로, 1줄 유지 */
+.unit-menu-title{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+  letter-spacing:normal !important;
+  transform:none !important;
+}
+
+/* 텍스트만 감싸서 측정/압축한다. 메뉴 박스 자체는 변형하지 않는다. */
+.unit-title-text{
+  display:inline-block;
+  max-width:none;
+  white-space:nowrap;
+  transform:none;
+  transform-origin:left center;
+  letter-spacing:normal;
+}
+
+/* 한 줄 기준으로 글자 폭이 버튼 폭을 넘는 경우에만 JS가 붙이는 클래스 */
+.unit-menu-title.need-condense .unit-title-text{
+  transform:scaleX(var(--title-scale, .90));
+  width:var(--title-width, 111.11%);
+  letter-spacing:var(--title-letter, -0.04em);
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -8771,5 +8806,118 @@ function downloadWrongNote(){
 renderMenu();
 startSection(unitOrder[0],"concept");
 </script>
+
+
+
+
+
+
+
+<script id="unit-menu-width-overflow-condense-script">
+(function(){
+  var busy = false;
+
+  function ensureTitleSpan(el){
+    var span = el.querySelector(':scope > .unit-title-text');
+    if(span) return span;
+
+    var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    el.textContent = '';
+    span = document.createElement('span');
+    span.className = 'unit-title-text';
+    span.textContent = text;
+    el.appendChild(span);
+    return span;
+  }
+
+  function contentWidth(el){
+    var style = window.getComputedStyle(el);
+    var pl = parseFloat(style.paddingLeft) || 0;
+    var pr = parseFloat(style.paddingRight) || 0;
+    return Math.max(1, el.clientWidth - pl - pr);
+  }
+
+  function measureNaturalWidth(el, span){
+    /* 기존 압축을 완전히 제거한 '원래 글자폭'만 측정 */
+    el.classList.remove('need-condense');
+    el.style.removeProperty('--title-scale');
+    el.style.removeProperty('--title-width');
+    el.style.removeProperty('--title-letter');
+
+    span.style.transform = 'none';
+    span.style.width = 'auto';
+    span.style.letterSpacing = 'normal';
+    span.style.whiteSpace = 'nowrap';
+
+    var width = span.scrollWidth;
+
+    span.style.transform = '';
+    span.style.width = '';
+    span.style.letterSpacing = '';
+    span.style.whiteSpace = '';
+
+    return width;
+  }
+
+  function applyMenuCondense(){
+    if(busy) return;
+    busy = true;
+
+    document.querySelectorAll('.unit-menu-title').forEach(function(el){
+      var span = ensureTitleSpan(el);
+
+      el.classList.remove('need-condense');
+      el.style.removeProperty('--title-scale');
+      el.style.removeProperty('--title-width');
+      el.style.removeProperty('--title-letter');
+
+      var available = contentWidth(el);
+      var natural = measureNaturalWidth(el, span);
+
+      /* 핵심 조건:
+         원래 글자가 한 줄 안에 들어가면 압축 금지.
+         한 줄 폭을 넘는 경우에만 필요한 만큼 압축. */
+      if(natural > available + 1){
+        var scale = available / natural;
+
+        /* 너무 납작해지지 않도록 하한선 */
+        scale = Math.max(0.72, Math.min(0.98, scale));
+
+        el.classList.add('need-condense');
+        el.style.setProperty('--title-scale', scale.toFixed(3));
+        el.style.setProperty('--title-width', (100 / scale).toFixed(2) + '%');
+
+        if(scale < 0.80){
+          el.style.setProperty('--title-letter', '-0.085em');
+        }else if(scale < 0.90){
+          el.style.setProperty('--title-letter', '-0.055em');
+        }else{
+          el.style.setProperty('--title-letter', '-0.025em');
+        }
+      }
+    });
+
+    busy = false;
+  }
+
+  function schedule(){
+    requestAnimationFrame(applyMenuCondense);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', schedule);
+  }else{
+    schedule();
+  }
+
+  window.addEventListener('resize', schedule);
+
+  var menu = document.getElementById('stickyMenu');
+  if(menu && 'MutationObserver' in window){
+    new MutationObserver(schedule).observe(menu, {childList:true, subtree:true});
+  }
+})();
+</script>
+
 </body>
 </html>
