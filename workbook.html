@@ -1030,7 +1030,7 @@ function renderDraft() {
       ${selectedBanner()}
       <div class="workspace-layout">
       ${sectionSidebar([
-        ["draft-student", "기본 정보"],
+        ["draft-student", "학생 정보 입력"],
         ["draft-topic-section", "1. 탐구 주제"],
         ["draft-motivation-section", "2. 탐구 동기 및 목적"],
         ["draft-question-section", "3. 핵심 질문 및 예상·가설"],
@@ -1040,7 +1040,7 @@ function renderDraft() {
       ], "탐구 기획서 항목")}
       <div class="workspace-content">
       <section class="form-card section-anchor" id="draft-student">
-        <span class="form-card-number">STUDENT</span><h3>기본 정보</h3><p class="guide">이 정보는 이 노트북에만 저장되고 Word 파일의 표지에 사용됩니다.</p>
+        <span class="form-card-number">학생</span><h3>정보 입력</h3><p class="guide">이 정보는 이 노트북에만 저장되고 Word 파일의 표지에 사용됩니다.</p>
         <div class="field-grid">
           ${[["student-grade","학년"],["student-class","반"],["student-number","번호"],["student-name","이름"]].map(([id,label]) => `<label><span class="field-label">${label}</span><input data-field="${id}" value="${escapeAttr(state.fields[id] ?? "")}" placeholder="${label}"></label>`).join("")}
         </div>
