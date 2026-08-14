@@ -1387,86 +1387,129 @@ function selfEvaluationItems(selected) {
   const [courseSubject = "관련 교과", courseUnit = concept] = String(topic.course ?? "관련 교과 · 핵심 개념").split(" · ");
   const career = String(topic.careers ?? `${selected.major.label} 관련 진로`).split("·")[0];
   const sourceHint = topic.sourceHint ?? "학술논문·공공기관 자료·전문기관 보고서";
-  const motivationText = plainFieldText(`${state.fields["draft-motivation"] ?? ""} ${state.fields.final01 ?? ""}`);
-  const theoryText = plainFieldText(state.fields.final03);
-  const analysisText = plainFieldText(`${state.fields.final05 ?? ""} ${state.fields.final06 ?? ""}`);
-  const futureText = plainFieldText(`${state.fields["draft-expectation"] ?? ""} ${state.fields.final07 ?? ""}`);
-  const hasCourseConnection = /교과|수업|단원|배우|배웠|학습/.test(`${motivationText} ${theoryText}`);
-  const hasUnresolvedPart = Boolean(plainFieldText(state.fields.final06)) || /한계|부족|명확|어려|보완|추가/.test(analysisText);
-  const hasCareerConnection = /진로|전공|직업|분야|공학자|연구원|엔지니어|의사|약사|간호|교사|디자이너/.test(`${motivationText} ${futureText}`);
-  const hasInquiryImpact = Boolean(futureText);
-  const items = [];
-  if (hasCourseConnection) items.push({
-    id: "self-unit",
-    title: `${courseUnit} 단원과의 연결`,
-    examples: [`${courseUnit} 단원의 ${concept}`, `${courseSubject} 수업의 ${withJosa(concept, "과")} ${concept2}`, `${withJosa(concept, "과")} 실제 사례의 관계`],
-    prefix: "",
-    suffix: "을 배우며 교과 개념이 실제 상황과 연결될 수 있다는 점에 관심을 갖게 되었다.",
-  });
-  items.push({
-    id: "self-interest",
-    title: `${concept}에서 관심이 생긴 내용`,
-    examples: [`${withJosa(concept, "이")} 실제 현상에 미치는 영향`, `${q}라는 문제`, `${career} 분야에서 ${withJosa(concept, "을")} 활용하는 방식`],
-    prefix: "특히",
-    suffix: "에 대해 더 알아보고 싶다는 생각이 들었다.",
-  });
-  items.push({
-    id: "self-question",
-    title: `${concept}에서 생긴 탐구 질문`,
-    examples: [`${q}라는 점`, `${withJosa(concept, "과")} ${concept2}의 관계가 조건에 따라 어떻게 달라지는지`, `연구 자료마다 결과가 달라지는 이유가 무엇인지`],
-    prefix: "이 과정에서",
-    suffix: "이 궁금해져 스스로 탐구 질문을 세웠다.",
-  });
-  items.push({
-    id: "self-method",
-    title: `${concept}의 관계를 확인한 탐구 방법`,
-    examples: [`${withJosa(sourceHint, "를")} 찾아 ${withJosa(compare1, "과")} ${withJosa(compare2, "를")} 비교하는`, `검색 결과에서 핵심 근거를 추출해 마인드맵으로 구조화하는`, `${withJosa(comparison.slice(0,3).join("·"), "을")} 같은 표에 정리하는`],
-    prefix: "이를 해결하기 위해",
-    suffix: " 방법을 활용하여 자료를 찾고 내용을 정리하였다.",
-  });
-  if (hasUnresolvedPart) items.push({
-    id: "self-problem",
-    title: `${concept} 자료에서 해결이 필요했던 부분`,
-    examples: [`연구마다 ${withJosa(compare1, "과")} ${withJosa(compare2, "이")} 다른`, `${withJosa(concept, "과")} 다른 영향 요인을 구분하는`, `자료의 적용 범위와 연구 한계를 판단하는`],
-    prefix: "탐구 중",
-    suffix: " 부분이 명확하지 않아 이를 해결할 필요가 있다고 판단하였다.",
-  });
-  items.push({
-    id: "self-materials",
-    title: `${withJosa(concept, "을")} 확인하기 위해 활용한 자료`,
-    examples: [sourceHint, `교과서·공공기관 공식자료·학술논문`, `서로 다른 대상과 조건을 다룬 원자료`],
-    prefix: "관련 내용을 확인하기 위해",
-    suffix: "를 살펴보고 필요한 정보를 비교하였다.",
-  });
-  items.push({
-    id: "self-learning",
-    title: `${concept} 탐구로 알게 된 지식`,
-    examples: [`${concept}의 영향은 ${withJosa(compare1, "과")} ${compare2}에 따라 달라질 수 있다는 점`, `${q}에 대해 한 가지 조건만으로 결론을 내리기 어렵다는 점`, `${concept} 관련 결과는 자료의 조건과 한계를 함께 확인해야 한다는 점`],
-    prefix: "그 결과",
-    suffix: "을 알게 되었고, 처음의 궁금증을 구체적으로 설명할 수 있었다.",
-  });
-  items.push({
-    id: "self-growth",
-    title: `${concept} 탐구 과정에서 성장한 능력`,
-    examples: [`${withJosa(compare1, "과")} ${withJosa(compare2, "를")} 같은 기준으로 비교하는`, `AI가 제시한 정보를 원자료와 대조하여 신뢰도를 확인하는`, `연구 결과의 적용 범위와 한계를 해석하는`],
-    prefix: "이와 같은 탐구를 통해",
-    suffix: " 능력이 향상되었다.",
-  });
-  if (hasCareerConnection) items.push({
-    id: "self-career",
-    title: `${career} 진로와의 연결`,
-    examples: [`${career} 분야`, `${selected.major.label}의 설계·연구 분야`, `${withJosa(concept, "을")} 활용하는 ${selected.category.label} 분야`],
-    prefix: "또한 평소 관심을 갖고 있던",
-    suffix: "와 교과 내용을 연결해 볼 수 있었다.",
-  });
-  if (hasInquiryImpact) items.push({
-    id: "self-impact",
-    title: `${concept} 탐구가 만든 후속 관심`,
-    examples: [`${withJosa(concept, "을")} 실제 사례에 적용해 보는 후속 탐구를 계획하는`, `${career} 분야에서 근거를 활용하는 방법을 더 알아보는`, `${withJosa(q, "와")} 연결된 새로운 질문을 찾아보는`],
-    prefix: "이번 활동은",
-    suffix: " 계기가 되었다.",
-  });
-  return items;
+
+  return [
+    {
+      id: "self-unit",
+      title: "배운 단원",
+      examples: [
+        `${courseUnit} 단원의 ${concept}`,
+        `${courseSubject} 수업에서 다룬 ${withJosa(concept, "과")} ${concept2}`,
+        `${withJosa(concept, "과")} 실제 사례의 관계`
+      ],
+      prefix: "",
+      linkedPrefix: "",
+      suffix: "을 배우며 교과 개념이 실제 상황과 연결될 수 있다는 점에 관심을 갖게 되었다.",
+    },
+    {
+      id: "self-interest",
+      title: "관심이 생긴 내용",
+      examples: [
+        `${withJosa(concept, "이")} 실제 현상에 미치는 영향`,
+        `${withJosa(concept, "과")} ${concept2}의 관계`,
+        `${selected.major.label} 분야에서 ${withJosa(concept, "이")} 활용되는 방식`
+      ],
+      prefix: "",
+      linkedPrefix: "그중",
+      suffix: "에 관심이 생겨 관련 내용을 더 알아보고 싶었다.",
+    },
+    {
+      id: "self-question",
+      title: "궁금했던 내용",
+      examples: [
+        `‘${q}?’`,
+        `‘${withJosa(concept, "과")} ${concept2}의 관계는 조건에 따라 어떻게 달라질까?’`,
+        `‘자료마다 결과가 다르게 나타나는 이유는 무엇일까?’`
+      ],
+      prefix: "",
+      linkedPrefix: "이 과정에서",
+      suffix: "라는 궁금증이 생겨 탐구 질문으로 구체화하였다.",
+    },
+    {
+      id: "self-method",
+      title: "탐구 방법",
+      examples: [
+        `${sourceHint}에서 ${withJosa(compare1, "과")} ${withJosa(compare2, "를")} 비교하는 방법`,
+        `핵심 근거를 찾아 핵심어로 정리한 뒤 관계를 구조화하는 방법`,
+        `${withJosa(comparison.slice(0,3).join("·"), "을")} 같은 기준으로 표에 정리하는 방법`
+      ],
+      prefix: "",
+      linkedPrefix: "이를 확인하기 위해",
+      suffix: "을 활용해 자료를 찾고 핵심 내용을 정리하였다.",
+    },
+    {
+      id: "self-problem",
+      title: "해결하고 싶은 부분",
+      examples: [
+        `자료마다 ${withJosa(compare1, "과")} ${withJosa(compare2, "이")} 다른 이유`,
+        `${withJosa(concept, "과")} 다른 영향 요인을 구분하는 기준`,
+        `자료의 적용 범위와 연구 한계를 판단하는 기준`
+      ],
+      prefix: "탐구 과정에서",
+      linkedPrefix: "자료를 정리하는 과정에서",
+      suffix: "이 명확하지 않아 추가 자료를 통해 확인하였다.",
+    },
+    {
+      id: "self-materials",
+      title: "활용한 자료",
+      examples: [
+        sourceHint,
+        `${courseSubject} 교과서와 공공기관 공식자료`,
+        `${withJosa(q, "와")} 관련된 학술논문과 원자료`
+      ],
+      prefix: "",
+      linkedPrefix: "근거를 확인하기 위해",
+      suffix: "를 활용해 필요한 정보를 비교하고 근거를 확인하였다.",
+    },
+    {
+      id: "self-learning",
+      title: "알게 된 지식",
+      examples: [
+        `${concept}의 영향은 ${withJosa(compare1, "과")} ${compare2}에 따라 달라질 수 있다는 점`,
+        `${q}에 대해 하나의 조건만으로 결론을 내리기 어렵다는 점`,
+        `${concept} 관련 결과를 해석할 때 자료의 조건과 한계를 함께 확인해야 한다는 점`
+      ],
+      prefix: "자료를 비교한 결과",
+      linkedPrefix: "자료를 비교한 결과",
+      suffix: "을 알게 되었고, 처음의 궁금증을 구체적으로 설명할 수 있었다.",
+    },
+    {
+      id: "self-growth",
+      title: "성장한 능력",
+      examples: [
+        `${withJosa(compare1, "과")} ${withJosa(compare2, "를")} 같은 기준으로 비교하는 능력`,
+        `여러 자료에서 필요한 근거를 선별하고 정리하는 능력`,
+        `연구 결과의 적용 범위와 한계를 해석하는 능력`
+      ],
+      prefix: "탐구 과정에서",
+      linkedPrefix: "이 과정에서",
+      suffix: "이 향상되었다.",
+    },
+    {
+      id: "self-career",
+      title: "관심 분야 연결",
+      examples: [
+        `${career} 분야`,
+        `${selected.major.label}의 설계·연구 분야`,
+        `${withJosa(concept, "을")} 활용하는 ${selected.category.label} 분야`
+      ],
+      prefix: "",
+      linkedPrefix: "또한",
+      suffix: "와 교과 내용의 연결을 확인하며 관심 분야에 대한 이해를 넓혔다.",
+    },
+    {
+      id: "self-impact",
+      title: "탐구의 영향",
+      examples: [
+        `${withJosa(concept, "을")} 실제 사례에 적용하는 방법을 더 알아보고 싶어진`,
+        `${career} 분야에서 탐구 결과가 어떻게 활용되는지 더 알아보고 싶어진`,
+        `${withJosa(q, "와")} 연결된 새로운 질문을 후속 탐구로 이어 가고 싶어진`
+      ],
+      prefix: "이번 탐구는",
+      linkedPrefix: "이번 탐구는",
+      suffix: " 계기가 되었다.",
+    },
+  ];
 }
 
 const SELF_PART_FIELDS = new Set(["self-unit","self-interest","self-question","self-method","self-problem","self-materials","self-learning","self-growth","self-career","self-impact"]);
@@ -1525,7 +1568,7 @@ function guidedSelfRow(number, id, title, examples, prefix, suffix) {
   const resolvedSuffix = resolveLeadingJosa(value, suffix);
   return `<article class="guided-self-row">
     <h4><span>${String(number)}</span>${escapeHTML(title)}</h4>
-    <div class="guided-example-list">${examples.map((text,index) => `<button type="button" class="guided-example-button" data-example-target="${id}" data-example="${escapeAttr(encodeURIComponent(text))}"><b>${index + 1}</b>${escapeHTML(text)}</button>`).join("")}</div>
+    <div class="guided-example-list">${examples.map((text,index) => `<button type="button" class="guided-example-button" data-example-target="${id}" data-example="${escapeAttr(encodeURIComponent(text))}"><b>예시 ${index + 1}</b>${escapeHTML(text)}</button>`).join("")}</div>
     <label class="guided-sentence"><span>${escapeHTML(prefix)}</span><input aria-label="${escapeAttr(title)} 입력" data-field="${id}" value="${escapeAttr(value)}" placeholder="예시를 누르거나 짧은 말로 직접 입력"><span data-josa-for="${escapeAttr(id)}" data-josa-template="${escapeAttr(suffix)}">${escapeHTML(resolvedSuffix)}</span></label>
   </article>`;
 }
@@ -1533,11 +1576,15 @@ function guidedSelfRow(number, id, title, examples, prefix, suffix) {
 function composeSelfEvaluation() {
   const selected = activeTopic();
   if (!selected) return "";
-  return selfEvaluationItems(selected).map((item) => {
-    const value = String(state.fields[item.id] ?? "").trim();
-    if (!value) return "";
-    return `${item.prefix ? `${item.prefix} ` : ""}${value}${resolveLeadingJosa(value, item.suffix)}`;
-  }).filter(Boolean).join(" ");
+
+  const filled = selfEvaluationItems(selected)
+    .map((item) => ({ ...item, value: String(state.fields[item.id] ?? "").trim() }))
+    .filter((item) => item.value);
+
+  return filled.map((item, index) => {
+    const prefix = index > 0 ? (item.linkedPrefix ?? item.prefix ?? "") : (item.prefix ?? "");
+    return `${prefix ? `${prefix} ` : ""}${item.value}${resolveLeadingJosa(item.value, item.suffix)}`;
+  }).join(" ");
 }
 
 function updateSelfCount() {
@@ -1583,22 +1630,20 @@ function renderSelfEvaluation() {
       <section class="hero"><p class="eyebrow">5 · SELF EVALUATION</p><h1>완성한 보고서를 보며 <span class="highlight">탐구 과정과 성장</span>을 돌아보세요.</h1><p>앞에서 작성한 보고서의 핵심 내용이 아래에 자동 정리됩니다. 이를 참고하여 자신의 실제 활동을 중심으로 자기평가서를 작성하세요.</p></section>
       <div class="workspace-layout">
       ${sectionSidebar([
-        ["self-summary", "탐구내용 요약정리"],
-        ["self-writing", "자기평가서 작성하기"],
-        ["self-builder", "STEP 1. 자기평가서 내용 채우기"],
-        ["self-output", "STEP 2. 자동으로 완성된 자기평가서"],
-        ["self-download", "작성한 자료를 Word 파일로 꼭 내려받으세요."],
+        ["self-summary", "1. 탐구내용 요약정리"],
+        ["self-builder", "2. 자기평가서 내용 채우기"],
+        ["self-output", "3. 자기평가서 완성하기"],
+        ["self-download", "4. 다운받기"],
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
-      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><p class="eyebrow">REPORT SUMMARY</p><h3>탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}<p class="summary-guide">핵심 질문·탐구 방법·주요 결과·결론을 한 페이지 분량으로 간결하게 정리합니다.</p><div class="report-actions"><button type="button" class="secondary-button" data-nav="report">보고서 완성에서 수정하기</button></div></div></section>
-      <div class="section-head self-writing-title section-anchor" id="self-writing"><div><h2>자기평가서 작성하기</h2><p>선택한 주제와 실제 탐구 내용에 필요한 항목만 제시됩니다. 예시를 누르거나 짧은 말·구로 직접 작성하세요.</p></div></div>
-      <section class="form-card guided-self-builder section-anchor" id="self-builder"><span class="form-card-number">1.</span><h3>자기평가서 내용 채우기</h3><div class="guided-self-list">
+      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><p class="eyebrow">REPORT SUMMARY</p><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}<p class="summary-guide">핵심 질문·탐구 방법·주요 결과·결론을 한 페이지 분량으로 간결하게 정리합니다.</p><div class="report-actions"><button type="button" class="secondary-button" data-nav="report">보고서 완성에서 수정하기</button></div></div></section>
+      <section class="form-card guided-self-builder section-anchor" id="self-builder"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><p class="guide">각 항목에는 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 누른 뒤 자신의 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 연결됩니다.</p><div class="guided-self-list">
         ${items.map((item,index) => guidedSelfRow(index + 1,item.id,item.title,item.examples,item.prefix,item.suffix)).join("")}
       </div></section>
-      <section class="form-card section-anchor" id="self-output"><span class="form-card-number">2.</span><h3>자동으로 완성된 자기평가서</h3><p class="guide">위 항목으로 만들어진 문장을 학생 자신의 표현으로 수정해 완성하세요. 직접 수정한 문장은 자동으로 덮어쓰지 않습니다.</p><div class="report-actions"><button type="button" class="generate-button" data-generate-self>위 항목으로 문장 다시 만들기</button><span class="character-count" id="self-count">0자</span></div><p class="self-sync-note" id="self-sync-note"></p><textarea class="generated-box" data-field="self-output" rows="11" placeholder="위의 빈칸을 채우면 자기평가서가 자동으로 만들어집니다.">${escapeHTML(state.fields["self-output"] ?? "")}</textarea></section>
+      <section class="form-card section-anchor" id="self-output"><span class="form-card-number">3.</span><h3>자기평가서 완성하기</h3><p class="guide">입력한 항목을 바탕으로 문장을 연결합니다. 첫 문장에는 불필요한 연결어를 붙이지 않고, 앞뒤 내용에 따라 연결 표현을 조정합니다. 완성된 문장은 자신의 실제 활동과 표현에 맞게 다시 다듬어 주세요.</p><div class="report-actions"><button type="button" class="generate-button" data-generate-self>위 항목으로 문장 다시 만들기</button><span class="character-count" id="self-count">0자</span></div><p class="self-sync-note" id="self-sync-note"></p><textarea class="generated-box" data-field="self-output" rows="11" placeholder="위의 빈칸을 채우면 자기평가서가 자동으로 만들어집니다.">${escapeHTML(state.fields["self-output"] ?? "")}</textarea></section>
       <section class="final-download-card section-anchor" id="self-download" aria-labelledby="final-download-title">
-        <p class="download-required-label">수업 종료 전 필수</p>
-        <h2 id="final-download-title">작성한 자료를 Word 파일로 꼭 내려받으세요.</h2>
+        <p class="download-required-label">4. 다운받기</p>
+        <h2 id="final-download-title">작성한 자료를 Word 파일로 내려받기</h2>
         <p>자동 저장 내용은 현재 기기의 이 브라우저에만 남으며 다른 기기에서는 불러올 수 없습니다. 브라우저 기록이 지워지면 복구하기 어려우므로 아래의 두 파일을 모두 저장하세요.</p>
         <div class="download-file-list">
           <div><b>1. 완성 보고서</b><span>탐구 동기부터 참고자료까지 작성한 제출용 보고서</span></div>
@@ -1841,15 +1886,18 @@ function sampleMindmapHTML() {
 
 function sampleGuidedSelfHTML() {
   const rows = [
-    { title:"탐구를 시작한 계기", examples:["제품마다 유효성분이 다르게 표시된 점","같은 두통약인데 아세트아미노펜과 이부프로펜으로 성분이 나뉘는 점","두통이 있을 때 어떤 성분을 선택해야 하는지 궁금했던 점"], prefix:"두통약 포장지를 살펴보다가", chosen:"같은 두통약인데 아세트아미노펜과 이부프로펜으로 성분이 나뉘는 점", suffix:"에 관심이 생겨 아세트아미노펜과 이부프로펜의 선택 기준을 탐구하였다." },
-    { title:"처음에 했던 생각", examples:["소염 작용이 있는 이부프로펜이 항상 더 효과적일 것이라","두 성분의 효과가 비슷해 아무거나 선택해도 괜찮을 것이라","아세트아미노펜이 위 부담이 적어 항상 더 안전할 것이라"], prefix:"처음에는", chosen:"소염 작용이 있는 이부프로펜이 항상 더 효과적일 것이라", suffix:"고 생각했지만, 자료를 찾으면서 효과만으로 약을 선택하기 어렵다는 점을 알게 되었다." },
-    { title:"자료를 정리한 방법", examples:["작용 기전·임상 효과·안전성","두통 유형·효과·부작용","성분 특성·임상 비교·복용 시 주의점"], prefix:"두 성분의 선택 기준을 알아보기 위해 관련 자료를 찾아 핵심어를 뽑고, 특히", chosen:"작용 기전·임상 효과·안전성", suffix:" 관련 내용을 중심으로 마인드맵을 구성하였다." },
-    { title:"근거를 다시 확인한 과정", examples:["Cochrane의 긴장형 두통 연구와 NICE 가이드라인","FDA·DailyMed의 성분별 주의사항","Cochrane·NICE·FDA 및 2023년 체계적 문헌고찰"], prefix:"마인드맵에서 근거가 더 필요했던 부분은", chosen:"Cochrane·NICE·FDA 및 2023년 체계적 문헌고찰", suffix:" 등을 찾아 원자료와 다시 비교하였다." },
-    { title:"자료 비교에서 주의한 점", examples:["연구 대상·약물 용량·평가 시간","두통 유형·복용량·통증 평가 기준","연구 대상·제형·효과를 측정한 시점"], prefix:"자료를 비교할 때에는", chosen:"연구 대상·약물 용량·평가 시간", suffix:"이 서로 다른 연구의 수치를 바로 비교하지 않도록 주의하였다." },
-    { title:"가장 중요하게 확인한 결과", examples:["긴장형 두통에서 두 성분의 뚜렷한 우열이 확인되지 않았다는 것","효과 차이보다 개인의 위장관·신장·간 관련 위험 조건이 선택에 중요하다는 것","성분별 작용과 주의해야 하는 부작용의 조건이 서로 다르다는 것"], prefix:"가장 중요하게 확인한 결과는", chosen:"효과 차이보다 개인의 위장관·신장·간 관련 위험 조건이 선택에 중요하다는 것", suffix:"이었다." },
-    { title:"내가 내린 결론", examples:["한 성분이 항상 더 좋은 것이 아니라 두통 양상과 개인의 위험 조건에 따라 선택 기준이 달라진다","위장관·신장 부담이 걱정되면 아세트아미노펜을, 근육통·염증이 동반되고 관련 위험이 없다면 이부프로펜을 우선 고려할 수 있다","약효만 비교하기보다 유효성분과 개인의 건강 상태를 함께 확인해야 한다"], prefix:"이를 바탕으로", chosen:"한 성분이 항상 더 좋은 것이 아니라 두통 양상과 개인의 위험 조건에 따라 선택 기준이 달라진다", suffix:"고 결론을 내렸다." },
+    { title:"배운 단원", examples:["화학 결합과 분자의 구조","생명과학의 항상성과 약물 작용","화학에서 배운 분자 구조와 물질의 성질"], prefix:"", chosen:"화학에서 배운 분자 구조와 물질의 성질", suffix:"을 배우며 교과 개념이 실제 약물의 특성과 연결될 수 있다는 점에 관심을 갖게 되었다." },
+    { title:"관심이 생긴 내용", examples:["두통약마다 유효성분이 다르게 표시되는 점","아세트아미노펜과 이부프로펜의 작용 차이","같은 두통약이라도 주의사항이 다른 이유"], prefix:"그중", chosen:"아세트아미노펜과 이부프로펜의 작용 차이", suffix:"에 관심이 생겨 관련 내용을 더 알아보고 싶었다." },
+    { title:"궁금했던 내용", examples:["두 성분 중 어떤 상황에서 어떤 성분을 선택해야 하는지","두 성분의 진통 효과에 실제 차이가 있는지","작용 기전의 차이가 부작용과 어떤 관련이 있는지"], prefix:"이 과정에서", chosen:"두 성분 중 어떤 상황에서 어떤 성분을 선택해야 하는지", suffix:"가 궁금해져 이를 탐구 질문으로 구체화하였다." },
+    { title:"탐구 방법", examples:["작용 기전·임상 효과·안전성을 같은 기준으로 비교하는","원자료에서 핵심 근거를 찾아 마인드맵으로 구조화하는","연구 대상·용량·평가 시간을 표로 정리하여 비교하는"], prefix:"이를 확인하기 위해", chosen:"작용 기전·임상 효과·안전성을 같은 기준으로 비교하는", suffix:" 방법을 활용해 자료를 찾고 핵심 내용을 정리하였다." },
+    { title:"해결하고 싶은 부분", examples:["서로 다른 연구의 통증 소실률을 바로 비교해도 되는지","효과 차이와 개인별 부작용 위험을 어떻게 함께 판단할지","제형 차이와 실제 진통 효과를 어떻게 구분할지"], prefix:"자료를 정리하는 과정에서", chosen:"서로 다른 연구의 통증 소실률을 바로 비교해도 되는지", suffix:"가 명확하지 않아 추가 자료를 통해 확인하였다." },
+    { title:"활용한 자료", examples:["Cochrane의 긴장형 두통 연구와 FDA 안전자료","NICE·FDA·DailyMed의 의약품 정보","Cochrane·PubMed·공공기관 공식자료"], prefix:"근거를 확인하기 위해", chosen:"Cochrane·PubMed·공공기관 공식자료", suffix:"를 살펴보며 필요한 정보를 비교하고 근거를 확인하였다." },
+    { title:"알게 된 지식", examples:["한 성분이 모든 상황에서 항상 더 좋은 것은 아니라는 점","두 성분의 효과 차이보다 개인의 위험 조건이 선택에 중요할 수 있다는 점","연구의 대상·용량·평가 시간이 다르면 수치를 직접 비교하기 어렵다는 점"], prefix:"자료를 비교한 결과", chosen:"한 성분이 모든 상황에서 항상 더 좋은 것은 아니라는 점", suffix:"을 알게 되었고, 처음의 궁금증을 구체적으로 설명할 수 있었다." },
+    { title:"성장한 능력", examples:["서로 다른 연구를 같은 기준으로 비교하는","원자료를 확인하여 근거의 신뢰도를 판단하는","자료의 적용 범위와 한계를 해석하는"], prefix:"이 과정에서", chosen:"서로 다른 연구를 같은 기준으로 비교하는", suffix:" 능력이 향상되었다." },
+    { title:"관심 분야 연결", examples:["의약품과 생명·화학 분야","약학·생명과학 연구 분야","화학 지식이 활용되는 의약품 개발 분야"], prefix:"또한", chosen:"의약품과 생명·화학 분야", suffix:"와 교과 내용이 연결되는 지점을 확인하며 관심 분야에 대한 이해를 넓혔다." },
+    { title:"탐구의 영향", examples:["약물의 효과뿐 아니라 연구 조건과 안전성을 함께 확인하고 싶어진","의약품 선택 기준을 다른 성분에도 적용해 보고 싶어진","근거 자료를 직접 확인하는 탐구를 계속해 보고 싶어진"], prefix:"이번 탐구는", chosen:"의약품 선택 기준을 다른 성분에도 적용해 보고 싶어진", suffix:" 계기가 되었다." },
   ];
-  return `<div class="sample-guided-builder"><h3>1. 자기평가서 내용 채우기</h3><p class="sample-guided-help">짧은 말이나 구를 넣어도 됩니다. 문장 전체는 자동으로 이어지므로 학생은 자신에게 해당하는 부분만 입력하면 됩니다.</p>${rows.map((row,index) => `<article class="sample-guided-row"><h4><span>${String(index + 1)}</span>${escapeHTML(row.title)}</h4><ol class="sample-guided-examples">${row.examples.map((example,i) => `<li class="${example === row.chosen ? "chosen" : ""}"><b>${i + 1}</b>${escapeHTML(example)}</li>`).join("")}</ol><p class="sample-guided-sentence">${escapeHTML(row.prefix)} <mark>${escapeHTML(row.chosen)}</mark>${escapeHTML(row.suffix)}</p></article>`).join("")}</div>`;
+  return `<div class="sample-guided-builder"><h3>1. 자기평가서 내용 채우기</h3><p class="sample-guided-help">10개 항목을 기본 구조로 사용하되, 실제 탐구 내용과 맞지 않는 항목은 비워 둘 수 있습니다. 입력한 내용만 최종 문장에 반영되고, 앞 문장 유무에 따라 연결 표현이 달라집니다.</p>${rows.map((row,index) => `<article class="sample-guided-row"><h4><span>${String(index + 1)}</span>${escapeHTML(row.title)}</h4><ol class="sample-guided-examples">${row.examples.map((example,i) => `<li class="${example === row.chosen ? "chosen" : ""}"><b>${i + 1}</b>${escapeHTML(example)}</li>`).join("")}</ol><p class="sample-guided-sentence">${row.prefix ? `${escapeHTML(row.prefix)} ` : ""}<mark>${escapeHTML(row.chosen)}</mark>${escapeHTML(row.suffix)}</p></article>`).join("")}</div>`;
 }
 
 function renderSample() {
@@ -1915,7 +1963,7 @@ function renderSample() {
       <details class="sample-section" id="sample-self-new"><summary>5. 자기평가서 작성 예시</summary><div class="sample-body">
         <div class="sample-summary-preview"><header><span>REPORT SUMMARY</span><h3>탐구내용 요약정리</h3></header><div class="sample-summary-content"><div class="sample-summary-topic"><b>탐구 주제</b><p>두통이 있을 때 아세트아미노펜과 이부프로펜 중 어떤 성분을 선택해야 할까?</p><small>의약·보건계열 · 의약품 비교 탐구</small></div><div class="sample-summary-meta"><span><b>탐구 유형</b> 논문·자료 조사 및 비교 분석</span><span><b>핵심 질문</b> 두 성분의 선택 기준은 어떤 조건에서 달라지는가?</span></div><div class="sample-summary-vertical"><article><b>1. 탐구 동기 및 목적</b><p>두통약 포장지를 살펴보며 같은 용도의 제품도 아세트아미노펜과 이부프로펜처럼 유효성분과 주의사항이 다르다는 점에 관심을 가졌다. 제품명이나 막연한 인상이 아니라 작용 원리·두통 완화 효과·안전성에 관한 연구 근거를 비교하여, 개인의 상태에 따른 선택 기준을 알아보고자 하였다.</p></article><article><b>2. 탐구 방법</b><p>성인의 급성 긴장형 두통을 다룬 Cochrane 체계적 문헌고찰 2편과 두 성분을 직접 비교한 임상시험, FDA·NHS의 안전정보를 중심 자료로 선정하였다. 각 자료에서 연구 대상, 약물 용량과 제형, 효과 측정 시간, 통증 소실률, 부작용과 연구 한계를 추출하였다. 수집한 내용은 작용 원리·임상 효과·안전성·선택 기준으로 나누어 마인드맵과 비교표로 구조화하였다.</p></article><article><b>3. 주요 결과</b><p>아세트아미노펜 1,000mg과 이부프로펜 400mg은 모두 위약보다 긴장형 두통을 완화한 사람이 많았지만, 서로 다른 연구의 24%와 23%를 그대로 비교해 우열을 판단할 수는 없었다. 일부 직접 비교 연구에서는 특정 액상형 이부프로펜의 효과가 더 빨리 나타났으나 성인 154명과 특정 제형을 대상으로 했다는 제한이 있었다. 안전성에서는 아세트아미노펜의 과다·중복 복용에 따른 간 손상 위험과 이부프로펜의 위장·신장·심혈관계 위험을 각각 확인해야 했다.</p></article><article><b>4. 결론</b><p>두 성분 중 하나가 모든 두통과 모든 사람에게 항상 더 적합하다고 결론 내릴 수 없었다. 두통 유형과 반복 빈도, 연령, 간·위장·신장·심혈관 질환, 복용 중인 약과 동일 성분의 중복 여부를 함께 확인해야 한다. 따라서 효과 순위보다 개인에게 더 큰 위험이 무엇인지 먼저 판단하는 조건부 선택이 필요하다고 정리하였다.</p></article><article><b>5. 한계 및 배운 점</b><p>주요 근거가 성인을 대상으로 한 연구였기 때문에 결과를 청소년에게 그대로 적용하기 어렵고, 서로 다른 연구의 수치를 간접 비교했다는 한계가 있었다. 또한 효과가 나타나는 시간과 2시간 후 통증 소실률은 같은 지표가 아니므로 구분해서 해석해야 했다. 이번 탐구를 통해 연구 결과는 수치만 보는 것이 아니라 대상·용량·제형·측정 시간·적용 범위를 함께 확인해야 한다는 점을 배웠다.</p></article></div></div></div>
         ${sampleGuidedSelfHTML()}
-        <h3>2. 완성된 자기평가서</h3><blockquote>두통약 포장지를 살펴보다가 같은 두통약인데 아세트아미노펜과 이부프로펜으로 성분이 나뉘는 점에 관심이 생겨 두 성분의 선택 기준을 탐구하였다. 처음에는 소염 작용이 있는 이부프로펜이 항상 더 효과적일 것이라고 생각했지만, 자료를 찾으면서 효과만으로 약을 선택하기 어렵다는 점을 알게 되었다. 두 성분의 선택 기준을 알아보기 위해 관련 자료에서 핵심어를 뽑고, 작용 기전·임상 효과·안전성을 중심으로 마인드맵을 구성하였다. 마인드맵에서 근거가 더 필요했던 부분은 Cochrane·NICE·FDA 자료와 2023년 체계적 문헌고찰을 찾아 원자료와 다시 비교하였다. 자료를 비교할 때에는 연구 대상·약물 용량·평가 시간이 서로 다른 연구의 수치를 바로 비교하지 않도록 주의하였다. 가장 중요하게 확인한 결과는 효과 차이보다 개인의 위장관·신장·간 관련 위험 조건이 선택에 중요하다는 것이었다. 이를 바탕으로 한 성분이 항상 더 좋은 것이 아니라 두통 양상과 개인의 위험 조건에 따라 선택 기준이 달라진다고 결론을 내렸다.</blockquote>
+        <h3>2. 완성된 자기평가서</h3><blockquote>화학에서 배운 분자 구조와 물질의 성질을 배우며 교과 개념이 실제 약물의 특성과 연결될 수 있다는 점에 관심을 갖게 되었다. 그중 아세트아미노펜과 이부프로펜의 작용 차이에 관심이 생겨 관련 내용을 더 알아보고 싶었다. 이 과정에서 두 성분 중 어떤 상황에서 어떤 성분을 선택해야 하는지가 궁금해져 이를 탐구 질문으로 구체화하였다. 이를 확인하기 위해 작용 기전·임상 효과·안전성을 같은 기준으로 비교하는 방법을 활용해 자료를 찾고 핵심 내용을 정리하였다. 자료를 정리하는 과정에서 서로 다른 연구의 통증 소실률을 바로 비교해도 되는지가 명확하지 않아 추가 자료를 통해 확인하였다. 근거를 확인하기 위해 Cochrane·PubMed·공공기관 공식자료를 살펴보며 필요한 정보를 비교하고 근거를 확인하였다. 자료를 비교한 결과 한 성분이 모든 상황에서 항상 더 좋은 것은 아니라는 점을 알게 되었고, 처음의 궁금증을 구체적으로 설명할 수 있었다. 이 과정에서 서로 다른 연구를 같은 기준으로 비교하는 능력이 향상되었다. 또한 의약품과 생명·화학 분야와 교과 내용이 연결되는 지점을 확인하며 관심 분야에 대한 이해를 넓혔다. 이번 탐구는 의약품 선택 기준을 다른 성분에도 적용해 보고 싶어진 계기가 되었다.</blockquote>
       </div></details>
         </div>
       </div>
@@ -2066,7 +2114,7 @@ document.addEventListener("click", async (event) => {
     const input = document.querySelector(`[data-field="${CSS.escape(id)}"]`);
     const current = String(state.fields[id] ?? "").trim();
     let next = text;
-    if (current && current !== text) {
+    if (current && current !== text && !SELF_PART_FIELDS.has(id)) {
       const replace = window.confirm("이미 작성한 내용이 있습니다. 확인을 누르면 예시로 바꾸고, 취소하면 기존 내용 뒤에 예시를 추가합니다.");
       next = replace ? text : `${current}${input?.tagName === "INPUT" ? " / " : "\n\n"}${text}`;
     }
