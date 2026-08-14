@@ -324,6 +324,8 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .reference-grid { display: grid; gap: 12px; }
 .reference-card { padding: 18px; background: #fbf9f5; border: 1px solid #e2dbd0; border-radius: 14px; }
 .reference-card h4 { margin: 0 0 10px; }
+.reference-add-row { display: flex; justify-content: center; margin: 14px 0 24px; }
+.reference-add-row .secondary-button { min-width: 170px; border-style: dashed; }
 .reference-fields { display: grid; grid-template-columns: 1.4fr .9fr .45fr; gap: 9px; }
 .clip-help { margin: 5px 0 8px; color: var(--muted); font-size: 11px; line-height: 1.7; }
 .source-clip {
@@ -687,6 +689,7 @@ function defaultState() {
     majorId: firstCategory.majors[0].id,
     difficulty: "easy",
     topicId: null,
+    referenceCount: 3,
     fields: {},
     selfOutputCustomized: false,
     selfOutputNeedsSync: false,
@@ -1021,16 +1024,15 @@ function fieldBlock(number, id, title, guide, examples, options = {}) {
 
 function renderDraft() {
   const selected = activeTopic();
-  if (!selected) return emptyState("먼저 탐구주제를 선택하세요.", "주제를 선택하면 탐구 기획서 작성 항목과 주제별 예시가 나타납니다.");
-  const examples = draftExamples(selected.topic);
+  const examples = selected ? draftExamples(selected.topic) : {};
   return `
     <main class="page-shell">
       <section class="hero">
         <p class="eyebrow">2 · INQUIRY PLAN</p>
         <h1>탐구를 시작하기 위한 <span class="highlight">탐구 기획서</span>를 작성하세요.</h1>
-        <p>예시는 필요할 때만 펼쳐보고, 원하는 예시를 클릭해 입력한 뒤 자신의 말로 수정하세요. 결과와 결론은 자료 탐구 후 작성합니다.</p>
+        <p>${selected ? "예시는 필요할 때만 펼쳐보고, 원하는 예시를 클릭해 입력한 뒤 자신의 말로 수정하세요. 결과와 결론은 자료 탐구 후 작성합니다." : "이미 정한 탐구주제가 있다면 아래 빈칸에 자신의 내용으로 직접 기획서를 작성하세요."}</p>
       </section>
-      ${selectedBanner()}
+      ${selected ? selectedBanner() : ""}
       <div class="workspace-layout">
       ${sectionSidebar([
         ["draft-student", "학생 정보 입력"],
@@ -1080,8 +1082,43 @@ function sanitizeClipHTML(value) {
 
 function renderExplore() {
   const selected = activeTopic();
-  if (!selected) return emptyState("먼저 탐구주제를 선택하세요.", "주제에 맞는 검색어와 자료 선택 기준을 제공하려면 주제 선택이 필요합니다.");
-  const topic = selected.topic;
+
+  const customTopic = String(state.fields["draft-topic"] ?? "").trim();
+  const customQuestionRaw = String(state.fields["draft-question-hypothesis"] ?? "").trim();
+  const customQuestion = customQuestionRaw
+    .split(/\n+/)
+    .map((line) => line.replace(/^핵심\s*질문\s*[:：]\s*/i, "").trim())
+    .find(Boolean) ?? "";
+
+  const topicTitle = selected
+    ? cleanQuestion(selected.topic.question)
+    : (customTopic || customQuestion || "직접 작성한 탐구 주제");
+
+  const referenceCount = Math.max(3, Number(state.referenceCount) || 3);
+
+  const topic = selected ? selected.topic : {
+    keywords: [
+      topicTitle,
+      `${topicTitle} 논문`,
+      `${topicTitle} 연구 결과`,
+      `${topicTitle} 실험 자료`,
+      `${topicTitle} 통계 자료`,
+    ].filter((item, index, arr) => item && arr.indexOf(item) === index),
+    sourceHint: "RISS·ScienceON·Google Scholar 등의 학술자료와 공공기관 자료",
+    levelGuide: "자료의 연구 대상·조건·측정 기준·핵심 결과를 같은 기준으로 확인합니다.",
+    comparison: ["자료의 작성기관", "연구 대상과 조건", "측정·비교 기준", "핵심 결과", "자료의 한계"],
+  };
+
+  const banner = selected
+    ? selectedBanner()
+    : `<section class="selected-banner">
+        <div>
+          <small>직접 작성한 탐구 주제</small>
+          <strong>${escapeHTML(topicTitle)}</strong>
+        </div>
+        <button type="button" class="secondary-button" data-nav="draft">기획서에서 수정하기</button>
+      </section>`;
+
   return `
     <main class="page-shell">
       <section class="hero">
@@ -1089,7 +1126,7 @@ function renderExplore() {
         <h1>원자료를 찾고 <span class="highlight">근거와 한계</span>를 함께 기록하세요.</h1>
         <p>블로그나 생성형 AI 답변만을 근거로 사용하지 말고, 논문·공공기관·전문기관의 원문을 직접 확인하세요. 확인한 내용은 별도의 마인드맵 프로그램에서 구조화합니다.</p>
       </section>
-      ${selectedBanner()}
+      ${banner}
       <div class="workspace-layout">
       ${sectionSidebar([
         ["explore-keywords", "1. 추천 검색어"],
@@ -1102,7 +1139,8 @@ function renderExplore() {
       <div class="workspace-content">
 
       <section class="content-card section-anchor" id="explore-keywords">
-        <span class="form-card-number">1.</span><h3>추천 검색어</h3><p class="guide">검색어를 클릭하면 복사됩니다. 결과가 너무 많으면 대상·조건·연도·자료 유형을 추가하세요.</p>
+        <span class="form-card-number">1.</span><h3>추천 검색어</h3>
+        <p class="guide">${selected ? "검색어를 클릭하면 복사됩니다. 결과가 너무 많으면 대상·조건·연도·자료 유형을 추가하세요." : "기획서에 직접 작성한 탐구 주제를 바탕으로 만든 기본 검색어입니다. 검색 결과가 너무 많으면 대상·조건·연도·자료 유형을 덧붙여 구체화하세요."}</p>
         <div class="keyword-wrap">${topic.keywords.map((keyword) => `<button type="button" class="keyword-chip" data-copy-keyword="${escapeAttr(keyword)}">${escapeHTML(keyword)}</button>`).join("")}</div>
       </section>
 
@@ -1115,10 +1153,10 @@ function renderExplore() {
 
       <section class="content-card section-anchor" id="explore-comparison"><span class="form-card-number">3.</span><h3>자료를 읽으며 확인할 항목</h3><ul class="check-list">${topic.comparison.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul></section>
 
-      <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">최소 3개의 원자료를 기록하면 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
+      <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">기본 3개의 원자료를 기록하고, 더 필요한 경우 아래의 ‘자료 추가’ 버튼으로 입력칸을 늘릴 수 있습니다. 작성한 자료는 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
       <section class="reference-grid">
-        ${[1,2,3].map((index) => `
-          <article class="reference-card"><h4>자료 ${index}</h4>
+        ${Array.from({ length: referenceCount }, (_, index) => index + 1).map((index) => `
+          <article class="reference-card" id="reference-card-${index}"><h4>자료 ${index}</h4>
             <div class="reference-fields">
               <label><span class="field-label">자료 제목</span><input data-field="ref${index}-title" value="${escapeAttr(state.fields[`ref${index}-title`] ?? "")}" placeholder="논문·보고서·통계자료 제목"></label>
               <label><span class="field-label">저자·기관</span><input data-field="ref${index}-author" value="${escapeAttr(state.fields[`ref${index}-author`] ?? "")}" placeholder="저자 또는 기관"></label>
@@ -1131,8 +1169,14 @@ function renderExplore() {
             <label><span class="field-label">자료의 한계와 주의점</span><textarea data-field="ref${index}-limit" rows="2" placeholder="대상·조건·표본·적용 범위의 한계를 작성하세요.">${escapeHTML(state.fields[`ref${index}-limit`] ?? "")}</textarea></label>
           </article>`).join("")}
       </section>
-      <section class="content-card structure-guide section-anchor" id="explore-structuring"><span class="form-card-number">5.</span><h3>수집한 자료를 단계별로 정리해 구조 만들기</h3><p class="guide">수집한 자료에서 중요한 내용을 표시하고 핵심어를 찾은 뒤, 비슷한 내용을 묶고 서로의 관계를 정리합니다.</p><div class="reading-steps"><article><b>1. 중요한 내용 표시하기</b><p>탐구 질문과 관련된 개념, 수치, 조건, 주의사항에 표시합니다.</p></article><article><b>2. 핵심어 찾기</b><p>긴 문장에서 의미를 대표하는 핵심어를 2~4개 정도 뽑습니다.</p></article><article><b>3. 비슷한 내용 묶기</b><p>관련된 핵심어를 모아 ‘작용 원리’, ‘효과’, ‘안전성’처럼 같은 기준으로 묶습니다.</p></article><article><b>4. 관계 정리하기</b><p>공통점·차이점, 원인·결과, 주장·근거, 사실·한계가 어떻게 연결되는지 정리합니다.</p></article></div><ul class="check-list">${["핵심 개념","원인과 결과","자료별 공통점","자료별 차이점","가설을 지지하는 근거","가설과 다른 근거","자료의 한계","최종 결론 후보"].map((item) => `<li>${item}</li>`).join("")}</ul></section>
+      <div class="reference-add-row">
+        <button type="button" class="secondary-button" data-add-reference>＋ 자료 추가</button>
+      </div>
+
+      <section class="content-card structure-guide section-anchor" id="explore-structuring"><span class="form-card-number">5.</span><h3>수집한 자료를 단계별로 정리해 구조 만들기</h3><p class="guide">수집한 자료에서 중요한 내용을 표시하고 핵심어를 찾은 뒤, 비슷한 내용을 묶고 서로의 관계를 정리합니다.</p><div class="reading-steps"><article><b>1. 중요한 내용 표시하기</b><p>탐구 질문과 관련된 개념, 수치, 조건, 주의사항에 표시합니다.</p></article><article><b>2. 핵심어 찾기</b><p>긴 문장에서 의미를 대표하는 핵심어를 2~4개 정도 뽑습니다.</p></article><article><b>3. 비슷한 내용 묶기</b><p>관련된 핵심어를 모아 같은 성격의 내용끼리 묶습니다.</p></article><article><b>4. 관계 정리하기</b><p>공통점·차이점, 원인·결과, 주장·근거, 사실·한계가 어떻게 연결되는지 정리합니다.</p></article></div><ul class="check-list">${["핵심 개념","원인과 결과","자료별 공통점","자료별 차이점","가설을 지지하는 근거","가설과 다른 근거","자료의 한계","최종 결론 후보"].map((item) => `<li>${item}</li>`).join("")}</ul></section>
+
       <section class="mindmap-launch section-anchor" id="explore-mindmap"><div><span class="form-card-number">6.</span><h3>수집한 자료를 마인드맵으로 구조화하기</h3><p>중심 주제 → 대분류 → 중분류 → 세부 사실·수치·한계 순으로 가지를 만들고, 처음 질문과 관련 없는 내용은 덜어냅니다.</p></div><a class="launch-button" href="https://www.braintooler.com/" target="_blank" rel="noopener">BrainTooler에서 구조화하기 ↗</a></section>
+
       <div class="report-actions"><button type="button" class="secondary-button" data-nav="draft">기획서로 돌아가기</button><button type="button" class="primary-button" data-nav="report">자료 정리 후 보고서 완성하기</button></div>
       </div>
       </div>
@@ -1151,7 +1195,8 @@ function reportOutline(topic) {
 
 function referencesText() {
   const rows = [];
-  for (let index = 1; index <= 3; index += 1) {
+  const referenceCount = Math.max(3, Number(state.referenceCount) || 3);
+  for (let index = 1; index <= referenceCount; index += 1) {
     const title = String(state.fields[`ref${index}-title`] ?? "").trim();
     if (!title) continue;
     const author = String(state.fields[`ref${index}-author`] ?? "").trim();
@@ -2118,7 +2163,7 @@ document.addEventListener("click", async (event) => {
   if (!target) return;
   if (target.dataset.nav) {
     const next = target.dataset.nav;
-    if (!["topics","sample"].includes(next) && !activeTopic()) { state.view = "topics"; showToast("먼저 주제를 선택하세요."); render(); return; }
+    if (!["topics","sample","draft","explore"].includes(next) && !activeTopic()) { state.view = "topics"; showToast("먼저 주제를 선택하세요."); render(); return; }
     state.view = next; saveNow(true); render(); return;
   }
   if (target.dataset.category) {
@@ -2151,6 +2196,17 @@ document.addEventListener("click", async (event) => {
   if (target.dataset.copyKeyword) {
     try { await navigator.clipboard.writeText(target.dataset.copyKeyword); showToast("검색어를 복사했습니다."); }
     catch { showToast("검색어를 선택해 직접 복사하세요."); }
+    return;
+  }
+  if (target.hasAttribute("data-add-reference")) {
+    state.referenceCount = Math.max(3, Number(state.referenceCount) || 3) + 1;
+    saveNow(true);
+    const addedIndex = state.referenceCount;
+    render(`#reference-card-${addedIndex}`);
+    window.setTimeout(() => {
+      document.querySelector(`[data-field="ref${addedIndex}-title"]`)?.focus();
+    }, 450);
+    showToast(`자료 ${addedIndex} 입력칸을 추가했습니다.`);
     return;
   }
   if (target.hasAttribute("data-generate-self")) {
