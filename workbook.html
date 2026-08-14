@@ -418,7 +418,6 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .sample-guided-sentence { margin: 0; padding: 12px 14px; color: #38465c; background: #f4f7f8; border-left: 4px solid var(--teal); border-radius: 0 9px 9px 0; }
 .sample-guided-sentence mark { padding: 2px 4px; color: #6f3d2c; font-weight: 850; background: #fff0b8; border-radius: 4px; }
 
-.sample-hero { min-height: 390px; padding: 70px; }
 .form-card h3, .content-card h3, .source-card h3, .summary-card h3, .mindmap-launch h3,
 .sample-body h3, .sample-body h4, .sample-summary-topic p {
   word-break: keep-all;
@@ -471,7 +470,7 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .rebuild-map-board:focus-within { outline: 3px solid rgba(23,111,105,.15); outline-offset: 2px; }
 .rebuild-map-board svg { display: block; width: 100%; min-width: 900px; height: auto; }
 .mapr-root { fill: #fffdfa; stroke: #bfc8d2; stroke-width: 2; }
-.mapr-trunk { fill: none; stroke: #1fc2cf; stroke-width: 5; stroke-linecap: round; }
+.mapr-trunk { fill: none; stroke: #1fc2cf; stroke-width: 2; stroke-linecap: round; }
 .mapr-main-teal { fill: #21c3d3; stroke: #14aab8; stroke-width: 2; }
 .mapr-main-purple { fill: #8f78ee; stroke: #7a63df; stroke-width: 2; }
 .mapr-sub-teal { fill: #eafcff; stroke: #7ad7df; stroke-width: 1.8; }
@@ -519,7 +518,7 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .modal p { color: var(--muted); line-height: 1.75; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .topbar { align-items: flex-start; flex-wrap: wrap; gap: 7px; }
   .brand { min-height: 42px; }
   .step-nav { order: 3; flex-basis: 100%; justify-content: flex-start; }
@@ -1597,9 +1596,25 @@ function sampleMindmapHTML() {
     const rows = [];
     let current = "";
     text.split(/\s+/).forEach((word) => {
-      if (!current) current = word;
-      else if (`${current} ${word}`.length <= limit) current += ` ${word}`;
-      else { rows.push(current); current = word; }
+      if (!word) return;
+      if (current && `${current} ${word}`.length <= limit) {
+        current += ` ${word}`;
+        return;
+      }
+      if (current) {
+        rows.push(current);
+        current = "";
+      }
+      if (word.length <= limit) {
+        current = word;
+        return;
+      }
+      let rest = word;
+      while (rest.length > limit) {
+        rows.push(rest.slice(0, limit));
+        rest = rest.slice(limit);
+      }
+      current = rest;
     });
     if (current) rows.push(current);
     return rows.length ? rows : [text];
@@ -1613,14 +1628,14 @@ function sampleMindmapHTML() {
   const branchLayouts = branches.map((branch, branchIndex) => {
     const groupLayouts = branch.groups.map(([title, items]) => {
       const leafLayouts = items.map((item) => {
-        const rows = wrapMapLabel(item, 27);
+        const rows = wrapMapLabel(item, 24);
         const height = Math.max(26, rows.length * 14 + 12);
         const layout = { text: item, rows, top: cursorY, height, center: cursorY + height / 2 };
         cursorY += height + 8;
         return layout;
       });
       cursorY -= 8;
-      const rows = wrapMapLabel(title, 12);
+      const rows = wrapMapLabel(title, 9);
       const height = Math.max(34, rows.length * 14 + 12);
       const center = (leafLayouts[0].center + leafLayouts.at(-1).center) / 2;
       const layout = { title, rows, height, center, leaves: leafLayouts };
@@ -1628,7 +1643,7 @@ function sampleMindmapHTML() {
       return layout;
     });
     cursorY -= 28;
-    const titleRows = wrapMapLabel(branch.title, 20);
+    const titleRows = wrapMapLabel(branch.title, 11);
     const height = Math.max(50, titleRows.length * 16 + 18);
     const center = (groupLayouts[0].center + groupLayouts.at(-1).center) / 2;
     const layout = { ...branch, branchIndex, titleRows, height, center, groups: groupLayouts };
