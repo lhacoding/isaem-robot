@@ -365,6 +365,18 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .analysis-block textarea { margin-top: 9px; min-height: 145px; }
 .auto-label { display: inline-flex; margin-left: 6px; padding: 4px 7px; color: #27625c; font-size: 9px; font-weight: 900; background: #e8f7f4; border-radius: 999px; vertical-align: middle; }
 .report-actions { display: flex; justify-content: flex-end; gap: 9px; margin: 20px 0; }
+.back-to-top-wrap { display: flex; justify-content: center; margin: 34px 0 0; }
+.back-to-top-button {
+  padding: 10px 16px;
+  color: #596478;
+  font-size: 12px;
+  font-weight: 850;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 5px 14px rgba(25,34,56,.05);
+}
+.back-to-top-button:hover { color: var(--ink); border-color: #b9b2a7; transform: translateY(-1px); }
 .download-inline-note { margin: 24px 0 0; padding: 14px 16px; color: #76412f; font-size: 12px; line-height: 1.7; background: #fff4e8; border: 1px solid #efc8aa; border-left: 5px solid var(--orange); border-radius: 11px; }
 .download-inline-note b { display: inline-block; margin-right: 6px; color: #a1432e; }
 .final-download-card { margin: 30px 0 10px; padding: 30px; color: white; background: linear-gradient(135deg, var(--navy), #263b50); border: 1px solid #3b4b61; border-radius: 20px; box-shadow: var(--shadow); }
@@ -647,6 +659,7 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
   .sample-toc { grid-template-columns: 1fr 1fr; }
   .report-actions { flex-direction: column; }
   .report-actions button { width: 100%; }
+  .back-to-top-button { width: auto; min-width: 120px; }
   .mindmap-launch, .sync-panel { align-items: stretch; flex-direction: column; }
   .launch-button, .sync-panel button { justify-content: center; width: 100%; }
   .save-status { display: none; }
@@ -680,6 +693,7 @@ const app = document.querySelector("#app");
 let saveTimer = null;
 let toastTimer = null;
 let resumeVisible = false;
+let resumeTargetView = "topics";
 
 function defaultState() {
   const firstCategory = TOPIC_DATA[0];
@@ -689,6 +703,7 @@ function defaultState() {
     majorId: firstCategory.majors[0].id,
     difficulty: "easy",
     topicId: null,
+    customTopicMode: false,
     referenceCount: 3,
     fields: {},
     selfOutputCustomized: false,
@@ -738,6 +753,58 @@ function activeTopic() {
     }
   }
   return null;
+}
+
+function hasCustomTopicDraft() {
+  if (state.customTopicMode) return true;
+  return ["draft-topic","draft-motivation-purpose","draft-question-hypothesis","draft-method","draft-outline","draft-expectation"]
+    .some((id) => String(state.fields[id] ?? "").trim());
+}
+
+function workflowSelection() {
+  const selected = activeTopic();
+  if (selected) return selected;
+  if (!hasCustomTopicDraft()) return null;
+
+  const title = String(state.fields["draft-topic"] ?? "").trim() || "직접 작성한 탐구 주제";
+  const questionRaw = String(state.fields["draft-question-hypothesis"] ?? "").trim();
+  const question = questionRaw
+    .split(/\n+/)
+    .map((line) => line.replace(/^(핵심\s*질문|질문)\s*[:：]\s*/i, "").trim())
+    .find((line) => line.includes("?") || line.includes("？"))
+    || questionRaw.split(/\n+/).map((line) => line.trim()).find(Boolean)
+    || title;
+
+  const topic = {
+    id: "custom-topic",
+    question: title,
+    coreQuestion: question,
+    hypothesis: "",
+    course: "관련 교과 · 핵심 개념",
+    careers: "관심 분야",
+    sourceHint: "학술논문·공공기관 자료·전문기관 보고서",
+    levelGuide: "자료의 연구 대상·조건·측정 기준·핵심 결과를 같은 기준으로 확인합니다.",
+    concepts: ["핵심 개념","탐구 조건","자료 분석"],
+    keywords: [title, `${title} 논문`, `${title} 연구 결과`, `${title} 실험 자료`, `${title} 통계 자료`],
+    comparison: ["연구 대상과 조건","측정·비교 기준","핵심 결과","자료별 차이","자료의 한계"],
+    majorLabel: "직접 정한 주제",
+  };
+
+  return {
+    custom: true,
+    category: { id: "custom", label: "직접 입력" },
+    major: { id: "custom", label: "직접 정한 주제" },
+    topic,
+  };
+}
+
+function workflowBanner(selected) {
+  if (!selected?.custom) return selectedBanner();
+  const title = String(state.fields["draft-topic"] ?? "").trim() || "직접 작성한 탐구 주제";
+  return `<section class="selected-banner">
+    <div><small>직접 작성한 탐구 주제</small><strong>${escapeHTML(title)}</strong></div>
+    <button type="button" class="secondary-button" data-nav="draft">기획서에서 수정하기</button>
+  </section>`;
 }
 
 function hasMeaningfulDraft() {
@@ -871,6 +938,10 @@ function emptyState(title, text) {
     </main>`;
 }
 
+function backToTopHTML() {
+  return `<div class="back-to-top-wrap"><button type="button" class="back-to-top-button" data-scroll-top>↑ 맨 위로</button></div>`;
+}
+
 function selectedBanner() {
   const selected = activeTopic();
   if (!selected) return "";
@@ -936,10 +1007,12 @@ function renderTopics() {
           <small>샘플 대화에서는 질문하는 방법만 참고하고, 주제와 문장은 자신의 관심 분야에 맞게 바꾸세요.</small>
         </div>
         <div class="custom-topic-actions">
-          <a class="primary-button external-button" href="https://chatgpt.com/g/g-6a7eb5793b1c81919cfe68a030887dcb-gwamogbyeol-tamgujuje-gihoegseo-doumi" target="_blank" rel="noopener noreferrer">내 주제 직접 찾기 <span aria-hidden="true">↗</span></a>
+          <a class="secondary-button external-button" href="https://chatgpt.com/g/g-6a7eb5793b1c81919cfe68a030887dcb-gwamogbyeol-tamgujuje-gihoegseo-doumi" target="_blank" rel="noopener noreferrer">내 주제 직접 찾기 <span aria-hidden="true">↗</span></a>
+          <button type="button" class="primary-button" data-start-custom-topic>내가 찾은 주제로 탐구 시작하기</button>
           <a class="secondary-button external-button" href="https://chatgpt.com/share/6a7ec00b-c38c-83ee-8a91-cf8236d46326" target="_blank" rel="noopener noreferrer">주제 찾기 샘플 보기 <span aria-hidden="true">↗</span></a>
         </div>
       </section>
+    ${backToTopHTML()}
     </main>`;
 }
 
@@ -1059,6 +1132,7 @@ function renderDraft() {
       <div class="report-actions"><button type="button" class="primary-button" data-nav="explore">기획서 저장하고 탐구 활동으로</button></div>
       </div>
       </div>
+    ${backToTopHTML()}
     </main>`;
 }
 
@@ -1180,6 +1254,7 @@ function renderExplore() {
       <div class="report-actions"><button type="button" class="secondary-button" data-nav="draft">기획서로 돌아가기</button><button type="button" class="primary-button" data-nav="report">자료 정리 후 보고서 완성하기</button></div>
       </div>
       </div>
+    ${backToTopHTML()}
     </main>`;
 }
 
@@ -1230,7 +1305,7 @@ function syncReportFromPrevious(force = false) {
     state.fields.final08 = refs;
     state.fields["_imported-final08"] = refs;
   }
-  const selected = activeTopic();
+  const selected = workflowSelection();
   const outline = selected ? reportOutline(selected.topic) : parseOutline();
   outline.forEach((title, index) => {
     const target = `analysis-title-${index}`;
@@ -1288,15 +1363,15 @@ function analysisExamples(topic, title) {
 }
 
 function renderReport() {
-  const selected = activeTopic();
-  if (!selected) return emptyState("먼저 탐구주제를 선택하세요.", "탐구 기획서와 탐구 활동을 거친 뒤 완성 보고서를 작성할 수 있습니다.");
+  const selected = workflowSelection();
+  if (!selected) return emptyState("먼저 탐구주제를 작성하세요.", "기획서에서 탐구 주제를 작성한 뒤 탐구 활동과 보고서 작성을 이어갈 수 있습니다.");
   syncReportFromPrevious(false);
   const outline = reportOutline(selected.topic);
   const examples = finalExamples(selected.topic);
   return `
     <main class="page-shell">
       <section class="hero"><p class="eyebrow">4 · FINAL REPORT</p><h1>찾은 근거를 비교하고 <span class="highlight">자신의 해석</span>으로 보고서를 완성하세요.</h1><p>기획서에서 그대로 사용할 내용은 자동으로 들어와 있습니다. 이론적 배경·분석 결과·결론은 실제로 확인한 자료와 마인드맵을 바탕으로 작성하세요.</p></section>
-      ${selectedBanner()}
+      ${workflowBanner(selected)}
       <section class="sync-panel"><div><b>앞 단계 수정사항 반영</b><p>기획서와 참고자료의 변경 내용을 자동으로 확인합니다. 보고서에서 직접 고친 문장은 유지되며, 전체를 다시 가져오려면 버튼을 누르세요.</p></div><button type="button" class="secondary-button" data-sync-report>기획서·참고자료 다시 반영하기</button></section>
       <div class="workspace-layout">
       ${sectionSidebar([
@@ -1341,11 +1416,12 @@ function renderReport() {
       <div class="report-actions"><button type="button" class="secondary-button" data-nav="explore">탐구 활동으로 돌아가기</button><button type="button" class="download-button" data-download-word>완성 보고서 Word 다운로드</button><button type="button" class="primary-button" data-nav="self">자기평가서 작성하기</button></div>
       </div>
       </div>
+    ${backToTopHTML()}
     </main>`;
 }
 
 function analysisSummaryItems() {
-  const selected = activeTopic();
+  const selected = workflowSelection();
   const outline = selected ? reportOutline(selected.topic) : parseOutline();
   return outline.map((title,index) => {
     const actualTitle = String(state.fields[`analysis-title-${index}`] ?? title).trim();
@@ -1384,7 +1460,7 @@ function summaryCoreQuestion(topic) {
 }
 
 function summarySnapshot() {
-  const selected = activeTopic();
+  const selected = workflowSelection();
   if (!selected) return null;
   const topic = selected.topic;
   return {
@@ -1595,7 +1671,7 @@ function guidedSelfRow(number, id, title, examples, prefix, suffix) {
 }
 
 function composeSelfEvaluation() {
-  const selected = activeTopic();
+  const selected = workflowSelection();
   if (!selected) return "";
 
   const filled = selfEvaluationItems(selected)
@@ -1639,8 +1715,8 @@ function syncSelfOutputFromParts(force = false) {
 }
 
 function renderSelfEvaluation() {
-  const selected = activeTopic();
-  if (!selected) return emptyState("먼저 탐구주제를 선택하세요.", "완성한 보고서를 바탕으로 자기평가서를 작성합니다.");
+  const selected = workflowSelection();
+  if (!selected) return emptyState("먼저 탐구주제를 작성하세요.", "완성한 보고서를 바탕으로 자기평가서를 작성합니다.");
   if (!state.selfOutputCustomized) {
     state.fields["self-output"] = composeSelfEvaluation();
     state.selfOutputNeedsSync = false;
@@ -1674,6 +1750,7 @@ function renderSelfEvaluation() {
       </section>
       </div>
       </div>
+    ${backToTopHTML()}
     </main>`;
 }
 
@@ -2034,6 +2111,7 @@ function renderSample() {
       </div></details>
         </div>
       </div>
+    ${backToTopHTML()}
     </main>`;
 }
 
@@ -2043,6 +2121,7 @@ function startTopic(topicId) {
   state.fields = keep;
   state.selfOutputCustomized = false;
   state.selfOutputNeedsSync = false;
+  state.customTopicMode = false;
   state.topicId = topicId;
   const selected = activeTopic();
   if (!selected) return;
@@ -2050,6 +2129,20 @@ function startTopic(topicId) {
   state.view = "draft";
   saveNow(true);
   render();
+}
+
+function startCustomTopic() {
+  if (hasMeaningfulDraft() && !window.confirm("현재 작성 중인 내용은 초기화됩니다. 내가 찾은 주제로 새 기획서를 시작할까요?")) return;
+  const keep = Object.fromEntries(Object.entries(state.fields).filter(([key]) => key.startsWith("student-")));
+  state.fields = keep;
+  state.topicId = null;
+  state.customTopicMode = true;
+  state.referenceCount = 3;
+  state.selfOutputCustomized = false;
+  state.selfOutputNeedsSync = false;
+  state.view = "draft";
+  saveNow(true);
+  render("#draft-topic-section");
 }
 
 function safeFileName(value) {
@@ -2094,8 +2187,8 @@ function wordDocument(title, body) {
 }
 
 function downloadReportWord() {
-  const selected = activeTopic();
-  if (!selected) { showToast("먼저 탐구주제를 선택하세요."); return; }
+  const selected = workflowSelection();
+  if (!selected) { showToast("먼저 탐구주제를 작성하세요."); return; }
   syncReportFromPrevious(false);
   const outline = reportOutline(selected.topic);
   const analysis = outline.map((title,index) => `<div class="report-subheading">${wordText(state.fields[`analysis-title-${index}`] ?? title)}</div><div class="section-body">${wordParagraphs(stripAnalysisNumber(state.fields[`analysis-content-${index}`]))}</div>`).join("");
@@ -2108,8 +2201,8 @@ function downloadReportWord() {
 }
 
 function downloadSelfWord() {
-  const selected = activeTopic();
-  if (!selected) { showToast("먼저 탐구주제를 선택하세요."); return; }
+  const selected = workflowSelection();
+  if (!selected) { showToast("먼저 탐구주제를 작성하세요."); return; }
   const output = String(state.fields["self-output"] ?? "").trim() || composeSelfEvaluation();
   const summary = summarySnapshot();
   if (!summary) { showToast("요약할 탐구 내용이 없습니다."); return; }
@@ -2161,10 +2254,16 @@ function compressedImageData(file) {
 document.addEventListener("click", async (event) => {
   const target = event.target.closest("button, a");
   if (!target) return;
+  if (target.hasAttribute("data-scroll-top")) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
   if (target.dataset.nav) {
     const next = target.dataset.nav;
-    if (!["topics","sample","draft","explore"].includes(next) && !activeTopic()) { state.view = "topics"; showToast("먼저 주제를 선택하세요."); render(); return; }
-    state.view = next; saveNow(true); render(); return;
+    state.view = next;
+    saveNow(true);
+    render();
+    return;
   }
   if (target.dataset.category) {
     state.categoryId = target.dataset.category;
@@ -2175,6 +2274,7 @@ document.addEventListener("click", async (event) => {
   if (target.dataset.major) { state.majorId = target.dataset.major; state.difficulty = "easy"; render("#difficulty-section"); return; }
   if (target.dataset.difficulty) { state.difficulty = target.dataset.difficulty; render("#topic-section"); return; }
   if (target.dataset.startTopic) { startTopic(target.dataset.startTopic); return; }
+  if (target.hasAttribute("data-start-custom-topic")) { startCustomTopic(); return; }
   if (target.dataset.exampleTarget) {
     const id = target.dataset.exampleTarget;
     const text = decodeURIComponent(target.dataset.example);
@@ -2220,12 +2320,17 @@ document.addEventListener("click", async (event) => {
   if (target.hasAttribute("data-save-now")) { saveNow(false); return; }
   if (target.hasAttribute("data-reset")) {
     if (!window.confirm("이 브라우저에 저장된 작성 내용을 모두 지우고 새로 시작할까요?")) return;
-    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeVisible = false; render(); showToast("새 보고서를 시작합니다."); return;
+    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeTargetView = "topics"; resumeVisible = false; render(); showToast("새 보고서를 시작합니다."); return;
   }
-  if (target.hasAttribute("data-resume-continue")) { resumeVisible = false; render(); return; }
+  if (target.hasAttribute("data-resume-continue")) {
+    resumeVisible = false;
+    state.view = resumeTargetView;
+    render();
+    return;
+  }
   if (target.hasAttribute("data-resume-new")) {
     if (!window.confirm("저장된 작성 내용을 지우고 새로 시작할까요?")) return;
-    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeVisible = false; render(); return;
+    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeTargetView = "topics"; resumeVisible = false; render(); return;
   }
 });
 
@@ -2268,6 +2373,9 @@ document.addEventListener("input", (event) => {
   const element = event.target.closest("[data-field]");
   if (!element) return;
   state.fields[element.dataset.field] = element.value;
+  if (!state.topicId && element.dataset.field.startsWith("draft-")) {
+    state.customTopicMode = true;
+  }
   if (SELF_PART_FIELDS.has(element.dataset.field)) {
     updateGuidedJosa(element.dataset.field, element.value);
     syncSelfOutputFromParts(false);
@@ -2298,6 +2406,8 @@ try {
       if (typeof saved.selfOutputCustomized !== "boolean" && String(state.fields["self-output"] ?? "").trim()) {
         state.selfOutputCustomized = true;
       }
+      resumeTargetView = ["draft","explore","report","self"].includes(saved.view) ? saved.view : "draft";
+      state.view = "topics";
       resumeVisible = hasMeaningfulDraft();
     }
   }
