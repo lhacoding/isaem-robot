@@ -56,6 +56,9 @@ a { color: inherit; }
   box-shadow: 0 10px 28px rgba(14,20,35,.18);
 }
 .brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.brand-home { padding: 0; color: inherit; text-align: left; background: transparent; border: 0; cursor: pointer; }
+.brand-home:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.brand-home:focus-visible { border-radius: 8px; }
 .brand-badge {
   padding: 7px 10px;
   color: var(--gold);
@@ -744,7 +747,7 @@ function saveNow(silent = true) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     const label = document.querySelector("#save-status");
     if (label) label.textContent = `이 브라우저에 임시 저장됨 · ${formatTime(state.savedAt)}`;
-    if (!silent) showToast("이 노트북의 브라우저에 작성 내용을 저장했습니다.");
+    if (!silent) showToast("현재 기기의 브라우저에 작성 내용을 저장했습니다.");
   } catch {
     if (!silent) showToast("브라우저 저장공간을 사용할 수 없습니다.");
   }
@@ -796,10 +799,10 @@ const steps = [
 function headerHTML() {
   return `
     <header class="topbar">
-      <div class="brand">
+      <button type="button" class="brand brand-home" data-nav="topics" aria-label="첫 페이지로 이동" title="첫 페이지로 이동">
         <span class="brand-badge">LAB NOTE</span>
         <strong>탐구보고서 작성 워크북</strong>
-      </div>
+      </button>
       <nav class="step-nav" aria-label="보고서 작성 단계">
         ${steps.map(([id, label]) => `
           <button type="button" class="step-button${state.view === id ? " active" : ""}${id === "sample" ? " sample" : ""}" data-nav="${id}">${label}</button>
@@ -845,7 +848,7 @@ function resumeModal() {
         <h2 id="resume-title">작성 중인 탐구보고서가 있습니다.</h2>
         <p><b>마지막 저장:</b> ${escapeHTML(formatDateTime(state.savedAt))}</p>
         ${selected ? `<p><b>선택 주제:</b> ${escapeHTML(cleanQuestion(selected.topic.question))}</p>` : ""}
-        <p>같은 노트북과 브라우저에 저장된 최근 내용을 불러올 수 있습니다.</p>
+        <p>같은 기기의 이 브라우저에 저장된 최근 내용을 불러올 수 있습니다.</p>
         <div class="modal-actions">
           <button type="button" class="secondary-button" data-resume-new>새 보고서 시작하기</button>
           <button type="button" class="primary-button" data-resume-continue>이어서 작성하기</button>
@@ -1040,7 +1043,7 @@ function renderDraft() {
       ], "탐구 기획서 항목")}
       <div class="workspace-content">
       <section class="form-card section-anchor" id="draft-student">
-        <span class="form-card-number">학생</span><h3>정보 입력</h3><p class="guide">이 정보는 이 노트북에만 저장되고 Word 파일의 표지에 사용됩니다.</p>
+        <span class="form-card-number">학생</span><h3>정보 입력</h3><p class="guide">이 정보는 현재 기기의 브라우저에 임시 저장되며 Word 파일의 표지에 사용됩니다.</p>
         <div class="field-grid">
           ${[["student-grade","학년"],["student-class","반"],["student-number","번호"],["student-name","이름"]].map(([id,label]) => `<label><span class="field-label">${label}</span><input data-field="${id}" value="${escapeAttr(state.fields[id] ?? "")}" placeholder="${label}"></label>`).join("")}
         </div>
@@ -1289,7 +1292,7 @@ function renderReport() {
       ${fieldBlock(6,"final06","결론 및 한계","핵심 질문에 답하고, 예상·가설과의 관계, 결론을 뒷받침하는 근거와 일반화할 수 없는 한계를 작성하세요.",examples.final06,{anchorId:"report-conclusion"})}
       ${fieldBlock(7,"final07","후속 탐구 계획","탐구 중 새롭게 생긴 질문과 자료·방법을 보완할 후속 탐구를 작성하세요.",examples.final07,{anchorId:"report-followup"})}
       ${fieldBlock(8,"final08","참고자료 및 출처","탐구 활동에서 기록한 자료를 가져옵니다. 저자·기관, 제목, 연도, 원문 주소를 확인하고 추적 문구가 없는 깨끗한 주소를 사용하세요.",[],{auto:true,rows:8,anchorId:"report-references"})}
-      <p class="download-inline-note"><b>수업 종료 전 확인</b> 자동 저장 내용은 현재 노트북과 브라우저에만 남습니다. 완성 보고서를 Word 파일로 내려받은 뒤 자기평가서를 작성하세요.</p>
+      <p class="download-inline-note"><b>수업 종료 전 확인</b> 자동 저장 내용은 현재 기기의 이 브라우저에만 남습니다. 완성 보고서를 Word 파일로 내려받은 뒤 자기평가서를 작성하세요.</p>
       <div class="report-actions"><button type="button" class="secondary-button" data-nav="explore">탐구 활동으로 돌아가기</button><button type="button" class="download-button" data-download-word>완성 보고서 Word 다운로드</button><button type="button" class="primary-button" data-nav="self">자기평가서 작성하기</button></div>
       </div>
       </div>
@@ -1596,7 +1599,7 @@ function renderSelfEvaluation() {
       <section class="final-download-card section-anchor" id="self-download" aria-labelledby="final-download-title">
         <p class="download-required-label">수업 종료 전 필수</p>
         <h2 id="final-download-title">작성한 자료를 Word 파일로 꼭 내려받으세요.</h2>
-        <p>자동 저장 내용은 현재 노트북과 브라우저에만 남으며 다른 기기에서는 불러올 수 없습니다. 브라우저 기록이 지워지면 복구하기 어려우므로 아래의 두 파일을 모두 저장하세요.</p>
+        <p>자동 저장 내용은 현재 기기의 이 브라우저에만 남으며 다른 기기에서는 불러올 수 없습니다. 브라우저 기록이 지워지면 복구하기 어려우므로 아래의 두 파일을 모두 저장하세요.</p>
         <div class="download-file-list">
           <div><b>1. 완성 보고서</b><span>탐구 동기부터 참고자료까지 작성한 제출용 보고서</span></div>
           <div><b>2. 탐구내용 요약·자기평가서</b><span>한 페이지 요약정리와 최종 자기평가서</span></div>
