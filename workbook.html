@@ -531,7 +531,13 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .raw-source-copy p { position: relative; break-inside: avoid; margin: 0 0 18px; padding: 0 0 15px 34px; color: #455064; font-size: 13px; line-height: 1.8; border-bottom: 1px solid #e6e0d6; }
 .raw-source-copy p b { position: absolute; left: 0; top: 2px; color: var(--orange); font-size: 9px; letter-spacing: .08em; }
 .structure-table-wrap { overflow-x: auto; }
-.structure-table-wrap table { min-width: 940px; }
+.structure-table-wrap table { min-width: 940px; table-layout: fixed; }
+.structure-table-wrap th { white-space: nowrap; }
+.structure-table-wrap th:nth-child(1), .structure-table-wrap td:nth-child(1) { width: 26%; }
+.structure-table-wrap th:nth-child(2), .structure-table-wrap td:nth-child(2) { width: 18%; }
+.structure-table-wrap th:nth-child(3), .structure-table-wrap td:nth-child(3) { width: 15%; }
+.structure-table-wrap th:nth-child(4), .structure-table-wrap td:nth-child(4) { width: 19%; }
+.structure-table-wrap th:nth-child(5), .structure-table-wrap td:nth-child(5) { width: 22%; }
 .mindmap-example { background: #f4f9f9; border-color: #cbdcdd; }
 .rebuild-map-wrap { padding: 14px; background: #fff; border-top: 1px solid #dce5e7; box-shadow: 0 26px 70px rgba(18,35,62,.08); }
 .rebuild-map-board { padding: 12px; overflow: auto; background: #fbfcfd; border: 1px solid #e4ecee; border-radius: 12px; scrollbar-color: var(--teal) #e9eff0; scrollbar-width: thin; }
