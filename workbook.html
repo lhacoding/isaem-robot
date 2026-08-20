@@ -373,7 +373,21 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .outline-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 16px; }
 .outline-chips span { padding: 7px 9px; color: #605a4e; font-size: 11px; background: #f2eee5; border-radius: 8px; }
 .analysis-block { margin-top: 14px; padding: 18px; background: #fbfaf7; border: 1px solid #e3ddd1; border-left: 4px solid var(--orange); border-radius: 12px; }
+.analysis-block-head { display: flex; align-items: flex-end; gap: 12px; }
+.analysis-block-head label { flex: 1 1 auto; min-width: 0; }
 .analysis-block .analysis-title { font-weight: 900; }
+.analysis-delete-button {
+  flex: 0 0 auto;
+  margin-bottom: 1px;
+  padding: 8px 11px;
+  color: #9a4632;
+  font-size: 11px;
+  font-weight: 900;
+  background: #fff7f3;
+  border: 1px solid #e7b9aa;
+  border-radius: 8px;
+}
+.analysis-delete-button:hover { color: white; background: var(--orange); border-color: var(--orange); }
 .analysis-block textarea { margin-top: 9px; min-height: 145px; }
 .analysis-add-row { display: flex; justify-content: center; margin: 16px 0 2px; }
 .analysis-add-row .secondary-button { min-width: 170px; border-style: dashed; }
@@ -690,6 +704,8 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
   .report-actions button { width: 100%; }
   .back-to-top-button { width: auto; min-width: 120px; }
   .analysis-add-row .secondary-button { width: auto; min-width: 150px; }
+  .analysis-block-head { align-items: stretch; flex-direction: column; gap: 6px; }
+  .analysis-delete-button { align-self: flex-end; margin-bottom: 0; }
   .mindmap-launch, .sync-panel { align-items: stretch; flex-direction: column; }
   .launch-button, .sync-panel button { justify-content: center; width: 100%; }
   .save-status { display: none; }
@@ -841,6 +857,7 @@ function defaultState() {
     customTopicMode: true,
     referenceCount: 3,
     analysisExtraCount: 0,
+    analysisManualOutline: null,
     fields: {},
     selfOutputCustomized: false,
     selfOutputNeedsSync: false,
@@ -1404,6 +1421,13 @@ function parseOutline() {
 }
 
 function reportOutline(topic) {
+  if (Array.isArray(state.analysisManualOutline) && state.analysisManualOutline.length) {
+    return state.analysisManualOutline
+      .map((item) => String(item ?? "").trim())
+      .filter(Boolean)
+      .slice(0, 12);
+  }
+
   const written = parseOutline();
   let outline;
 
@@ -1422,6 +1446,18 @@ function reportOutline(topic) {
   return outline;
 }
 
+function renumberAnalysisTitle(title, index) {
+  const value = String(title ?? "").trim();
+  if (!value) return `5-${index + 1}. 분석 내용 ${index + 1}`;
+
+  // 기존에 5-1., 5-2.처럼 번호가 붙어 있던 제목만 새 순서에 맞게 번호를 다시 매깁니다.
+  if (/^\s*5\s*[-–—.]\s*\d+/i.test(value)) {
+    const clean = stripAnalysisNumber(value).trim();
+    return `5-${index + 1}. ${clean || `분석 내용 ${index + 1}`}`;
+  }
+  return value;
+}
+
 function referencesText() {
   const rows = [];
   const referenceCount = Math.max(1, Number(state.referenceCount) || 3);
@@ -1437,6 +1473,11 @@ function referencesText() {
 }
 
 function syncReportFromPrevious(force = false) {
+  if (force) {
+    state.analysisManualOutline = null;
+    state.analysisExtraCount = 0;
+  }
+
   const pairs = [
     ["final01", "draft-motivation-purpose"],
     ["final02", "draft-question-hypothesis"],
@@ -1582,7 +1623,7 @@ function renderReport() {
 
       <section class="form-card section-anchor" id="report-analysis">
         <span class="form-card-number">5.</span><h3>분석 결과 및 해석</h3>
-        <p class="guide">${isCustom ? "보고서에서 분석할 내용을 소제목으로 나누어 작성하세요. 기본 소제목을 수정하거나 필요한 만큼 새 소제목을 추가할 수 있습니다." : "기획서에서 정한 예상 목차가 소제목으로 연결됩니다. 보고서를 작성하면서 필요한 소제목은 여기에서 추가하거나 수정할 수 있습니다."}</p>
+        <p class="guide">${isCustom ? "보고서에서 분석할 내용을 소제목으로 나누어 작성하세요. 소제목을 수정·추가·삭제할 수 있으며 최소 1개는 유지됩니다." : "기획서에서 정한 예상 목차가 소제목으로 연결됩니다. 보고서를 작성하면서 필요한 소제목은 추가·수정·삭제할 수 있으며 최소 1개는 유지됩니다."}</p>
         <p class="input-note">각 칸은 ‘자료에서 확인한 사실 → 자료 간 비교 → 차이의 이유 → 나의 해석 → 한계’ 순서로 작성하세요.</p>
         <div class="outline-chips">${outline.map((item,index) => `<span>${escapeHTML(state.fields[`analysis-title-${index}`] ?? item)}</span>`).join("")}</div>
         ${outline.map((title,index) => {
@@ -1593,7 +1634,10 @@ function renderReport() {
           const currentContent = stripAnalysisNumber(storedContent);
           if (storedContent !== currentContent) state.fields[contentId] = currentContent;
           return `<div class="analysis-block" id="analysis-block-${index}">
-            <label><span class="field-label">소제목 ${index + 1}</span><input class="analysis-title" data-field="${titleId}" value="${escapeAttr(currentTitle)}"></label>
+            <div class="analysis-block-head">
+              <label><span class="field-label">소제목 ${index + 1}</span><input class="analysis-title" data-field="${titleId}" value="${escapeAttr(currentTitle)}"></label>
+              ${outline.length > 1 ? `<button type="button" class="analysis-delete-button" data-delete-analysis-subheading="${index}" aria-label="소제목 ${index + 1} 삭제">삭제</button>` : ""}
+            </div>
             ${isCustom ? "" : `<details class="examples"><summary>예시</summary><div class="example-list">${analysisExamples(selected.topic,currentTitle).map((text,i) => `<button type="button" class="example-card" data-example-target="${contentId}" data-example="${escapeAttr(encodeURIComponent(text))}"><b>예시 ${i+1}</b>${escapeHTML(text)}</button>`).join("")}</div></details>`}
             <textarea data-field="${contentId}" rows="7" placeholder="원자료에서 확인한 수치·사례·공통점·차이점과 자신의 해석을 작성하세요.">${escapeHTML(currentContent)}</textarea>
           </div>`;
@@ -1837,9 +1881,9 @@ function reportSummaryHTML() {
   const summary = summarySnapshot();
   if (!summary) return "";
   return `<div class="report-summary">
-    <section class="summary-topic-block"><span>탐구 주제</span><h4>${escapeHTML(summary.topic)}</h4><p>${escapeHTML(summary.subtitle)}</p></section>
-    <div class="summary-meta-row"><div><b>탐구 유형</b><span>${escapeHTML(summary.type)}</span></div><div><b>핵심 질문</b><span>${escapeHTML(summary.question)}</span></div></div>
-    <div class="summary-section-list">${summary.sections.map(([title,text]) => `<article class="summary-item"><b>${escapeHTML(title)}</b>${Array.isArray(text) ? `<div class="summary-result-list">${text.length ? text.map((line) => `<p class="summary-result-line">${escapeHTML(line)}</p>`).join("") : '<p class="summary-result-line">아직 작성되지 않았습니다.</p>'}</div>` : `<p>${escapeHTML(text)}</p>`}</article>`).join("")}</div>
+    <section class="summary-topic-block"><span>탐구 주제</span><h4>${escapeHTML(normalizeReportMath(summary.topic))}</h4></section>
+    <div class="summary-meta-row"><div><b>탐구 유형</b><span>${escapeHTML(summary.type)}</span></div><div><b>핵심 질문</b><span>${escapeHTML(normalizeReportMath(summary.question))}</span></div></div>
+    <div class="summary-section-list">${summary.sections.map(([title,text]) => `<article class="summary-item"><b>${escapeHTML(title)}</b>${Array.isArray(text) ? `<div class="summary-result-list">${text.length ? text.map((line) => `<p class="summary-result-line">${escapeHTML(normalizeReportMath(line))}</p>`).join("") : '<p class="summary-result-line">아직 작성되지 않았습니다.</p>'}</div>` : `<p>${escapeHTML(normalizeReportMath(text))}</p>`}</article>`).join("")}</div>
   </div>`;
 }
 
@@ -2476,6 +2520,8 @@ function startTopic(topicId) {
   state.fields = keep;
   state.selfOutputCustomized = false;
   state.selfOutputNeedsSync = false;
+  state.analysisExtraCount = 0;
+  state.analysisManualOutline = null;
   state.customTopicMode = false;
   state.topicId = topicId;
   const selected = activeTopic();
@@ -2493,6 +2539,8 @@ function startCustomTopic() {
   state.topicId = null;
   state.customTopicMode = true;
   state.referenceCount = 3;
+  state.analysisExtraCount = 0;
+  state.analysisManualOutline = null;
   state.selfOutputCustomized = false;
   state.selfOutputNeedsSync = false;
   state.view = "draft";
@@ -2527,13 +2575,66 @@ function docxXmlText(value) {
     .replace(/'/g, "&apos;");
 }
 
+function normalizeReportMath(value) {
+  let text = String(value ?? "");
+
+  // 자주 사용되는 LaTeX 명령을 일반 문서에서 읽을 수 있는 기호로 변환한다.
+  const symbols = {
+    "\\rho": "ρ", "\\theta": "θ", "\\alpha": "α", "\\beta": "β",
+    "\\gamma": "γ", "\\delta": "δ", "\\Delta": "Δ", "\\lambda": "λ",
+    "\\mu": "μ", "\\pi": "π", "\\sigma": "σ", "\\omega": "ω",
+    "\\Omega": "Ω", "\\times": "×", "\\cdot": "·", "\\pm": "±",
+    "\\leq": "≤", "\\le": "≤", "\\geq": "≥", "\\ge": "≥",
+    "\\neq": "≠", "\\approx": "≈", "\\rightarrow": "→", "\\to": "→",
+    "\\infty": "∞"
+  };
+  Object.entries(symbols).forEach(([from, to]) => { text = text.split(from).join(to); });
+
+  // \text{drop} -> drop
+  text = text.replace(/\\text\s*\{([^{}]*)\}/g, "$1");
+
+  // 단순 분수는 L/A와 같이 읽기 쉬운 꼴로 바꾼다.
+  // 중첩되지 않은 \frac{...}{...}를 여러 번 처리한다.
+  for (let i = 0; i < 4; i += 1) {
+    const next = text.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, "$1/$2");
+    if (next === text) break;
+    text = next;
+  }
+
+  // 아래첨자/위첨자 중 숫자는 유니코드로 바꾸고, 문자 첨자는 붙여서 표시한다.
+  const subMap = { "0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉","+":"₊","-":"₋" };
+  const supMap = { "0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","+":"⁺","-":"⁻" };
+  text = text.replace(/_\{([0-9+\-]+)\}/g, (_, s) => [...s].map((ch) => subMap[ch] || ch).join(""));
+  text = text.replace(/_([0-9])/g, (_, s) => subMap[s] || s);
+  text = text.replace(/\^\{([0-9+\-]+)\}/g, (_, s) => [...s].map((ch) => supMap[ch] || ch).join(""));
+  text = text.replace(/\^([0-9])/g, (_, s) => supMap[s] || s);
+  text = text.replace(/_\{([^{}]+)\}/g, "$1");
+  text = text.replace(/_([A-Za-z가-힣]+)/g, "$1");
+
+  // 수식 구분 기호와 남은 불필요한 LaTeX 기호를 정리한다.
+  text = text
+    .replace(/\\left|\\right/g, "")
+    .replace(/\\\[|\\\]|\$\$/g, "")
+    .replace(/\$/g, "")
+    .replace(/\\,/g, " ")
+    .replace(/\\;/g, " ")
+    .replace(/\\!/g, "")
+    .replace(/\s*=\s*/g, " = ")
+    .replace(/\s*([≤≥≈≠×±])\s*/g, " $1 ")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
+  return text;
+}
+
 function docxRun(text, options = {}) {
   const props = [];
   props.push('<w:rFonts w:ascii="Malgun Gothic" w:hAnsi="Malgun Gothic" w:eastAsia="맑은 고딕"/>');
   if (options.bold) props.push('<w:b/>');
   if (options.color) props.push(`<w:color w:val="${options.color}"/>`);
   if (options.size) props.push(`<w:sz w:val="${options.size}"/><w:szCs w:val="${options.size}"/>`);
-  const value = docxXmlText(text || " ");
+  const sourceText = options.normalizeMath ? normalizeReportMath(text) : String(text ?? "");
+  const value = docxXmlText(sourceText || " ");
   return `<w:r><w:rPr>${props.join("")}</w:rPr><w:t xml:space="preserve">${value}</w:t></w:r>`;
 }
 
@@ -2545,6 +2646,9 @@ function docxParagraph(text, options = {}) {
   if (options.spacingBefore || options.spacingAfter || options.line) {
     pPr.push(`<w:spacing w:before="${options.spacingBefore || 0}" w:after="${options.spacingAfter || 0}" w:line="${options.line || 360}" w:lineRule="auto"/>`);
   }
+  if (options.leftIndent || options.hanging) {
+    pPr.push(`<w:ind w:left="${options.leftIndent || options.hanging || 0}"${options.hanging ? ` w:hanging="${options.hanging}"` : ""}/>`);
+  }
   if (options.borderBottom) {
     pPr.push(`<w:pBdr><w:bottom w:val="single" w:sz="${options.borderSize || 10}" w:space="5" w:color="${options.borderColor || "192238"}"/></w:pBdr>`);
   }
@@ -2553,8 +2657,9 @@ function docxParagraph(text, options = {}) {
 
 function docxBodyParagraphs(value, options = {}) {
   const lines = String(value ?? "").replace(/\r\n/g, "\n").split("\n");
-  if (!lines.some((line) => line.trim())) return docxParagraph(" ", { spacingAfter: 100, line: 350, ...options });
-  return lines.map((line) => docxParagraph(line.trim() || " ", { spacingAfter: 100, line: 350, ...options })).join("");
+  const paragraphOptions = { normalizeMath: options.normalizeMath !== false, ...options };
+  if (!lines.some((line) => line.trim())) return docxParagraph(" ", { spacingAfter: 100, line: 350, ...paragraphOptions });
+  return lines.map((line) => docxParagraph(line.trim() || " ", { spacingAfter: 100, line: 350, ...paragraphOptions })).join("");
 }
 
 function docxSummaryCell(text, options = {}) {
@@ -2567,7 +2672,8 @@ function docxSummaryCell(text, options = {}) {
     color: options.color || "4E596D",
     size: options.size || 18,
     spacingAfter: 0,
-    line: options.line || 290
+    line: options.line || 290,
+    normalizeMath: true
   });
   return `<w:tc>${tcPr}${paragraph}</w:tc>`;
 }
@@ -2589,7 +2695,7 @@ function docxSummaryInfoTable(summary) {
   const grid = `<w:tblGrid><w:gridCol w:w="1450"/><w:gridCol w:w="3460"/><w:gridCol w:w="1450"/><w:gridCol w:w="3460"/></w:tblGrid>`;
   const label = (value) => docxSummaryCell(value, { width: 1450, bold: true, color: "1F5962", size: 18, shade: "F3F6F7" });
   const row1 = `<w:tr>${label("탐구 주제")}${docxSummaryCell(summary.topic, { width: 8370, span: 3, bold: true, color: "192238", size: 20, line: 310 })}</w:tr>`;
-  const row2 = `<w:tr>${label("탐구 분야")}${docxSummaryCell(summary.subtitle, { width: 3460 })}${label("탐구 유형")}${docxSummaryCell(summary.type, { width: 3460 })}</w:tr>`;
+  const row2 = `<w:tr>${label("탐구 유형")}${docxSummaryCell(summary.type, { width: 8370, span: 3 })}</w:tr>`;
   const row3 = `<w:tr>${label("핵심 질문")}${docxSummaryCell(summary.question, { width: 8370, span: 3, color: "38465C", size: 18, line: 300 })}</w:tr>`;
   return `<w:tbl>${tablePr}${grid}${row1}${row2}${row3}</w:tbl>${docxParagraph(" ", { spacingAfter: 40, line: 100 })}`;
 }
@@ -2600,18 +2706,200 @@ function docxPageBreak() {
 
 function docxHeading(text, level = 1) {
   if (level === 2) {
-    return docxParagraph(text, { bold: true, color: "B95139", size: 23, spacingBefore: 260, spacingAfter: 100, line: 300, keepNext: true });
+    return docxParagraph(text, { bold: true, color: "1F5962", size: 23, spacingBefore: 260, spacingAfter: 100, line: 300, keepNext: true, normalizeMath: true });
   }
   return docxParagraph(text, { bold: true, color: "192238", size: 30, spacingBefore: 400, spacingAfter: 160, line: 320, keepNext: true, borderBottom: true, borderSize: 12 });
 }
 
-function docxCover(topic, student, major) {
+function docxCoverCell(text, options = {}) {
+  const width = options.width || 1600;
+  const span = options.span ? `<w:gridSpan w:val="${options.span}"/>` : "";
+  const shade = options.shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${options.shade}"/>` : "";
+  const tcPr = `<w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${span}${shade}<w:vAlign w:val="center"/></w:tcPr>`;
+  const paragraph = docxParagraph(text, {
+    align: options.align || "center",
+    bold: options.bold,
+    color: options.color || "263550",
+    size: options.size || 20,
+    spacingAfter: 0,
+    line: options.line || 300,
+    normalizeMath: options.normalizeMath !== false
+  });
+  return `<w:tc>${tcPr}${paragraph}</w:tc>`;
+}
+
+function docxCoverResearchTable(topic, selected) {
+  const type = "논문·자료 조사 및 비교 분석";
+  const question = summaryCoreQuestion(selected?.topic ?? { coreQuestion: topic });
+
+  const borders = `<w:tblBorders>
+    <w:top w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:left w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:bottom w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:right w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:insideH w:val="single" w:sz="5" w:space="0" w:color="D6DCE4"/>
+    <w:insideV w:val="single" w:sz="5" w:space="0" w:color="D6DCE4"/>
+  </w:tblBorders>`;
+
+  const cellMargins = `<w:tblCellMar>
+    <w:top w:w="220" w:type="dxa"/><w:left w:w="180" w:type="dxa"/>
+    <w:bottom w:w="220" w:type="dxa"/><w:right w:w="180" w:type="dxa"/>
+  </w:tblCellMar>`;
+
+  const tablePr = `<w:tblPr>
+    <w:tblW w:w="8800" w:type="dxa"/>
+    <w:jc w:val="center"/>
+    <w:tblLayout w:type="fixed"/>
+    ${borders}${cellMargins}
+  </w:tblPr>`;
+
+  const grid = `<w:tblGrid>
+    <w:gridCol w:w="1450"/>
+    <w:gridCol w:w="7350"/>
+  </w:tblGrid>`;
+
+  const label = (value) => docxCoverCell(value, {
+    width: 1450,
+    bold: true,
+    color: "1F5962",
+    size: 19,
+    shade: "F1F4F6"
+  });
+
+  const value = (textValue, options = {}) => docxCoverCell(textValue, {
+    width: 7350,
+    align: "left",
+    bold: options.bold,
+    color: options.color || "263550",
+    size: options.size || 20,
+    line: options.line || 320,
+    normalizeMath: true
+  });
+
+  const topicRow = `<w:tr>
+    ${label("탐구 주제")}
+    ${value(topic, { bold: true, color: "192238", size: 22, line: 340 })}
+  </w:tr>`;
+
+  const typeRow = `<w:tr>
+    ${label("탐구 유형")}
+    ${value(type)}
+  </w:tr>`;
+
+  const questionRow = `<w:tr>
+    ${label("핵심 질문")}
+    ${value(question, { line: 330 })}
+  </w:tr>`;
+
+  return `<w:tbl>${tablePr}${grid}${topicRow}${typeRow}${questionRow}</w:tbl>`;
+}
+
+function docxCoverStudentTable() {
+  const grade = String(state.fields["student-grade"] ?? "").trim();
+  const classNo = String(state.fields["student-class"] ?? "").trim();
+  const number = String(state.fields["student-number"] ?? "").trim();
+  const name = String(state.fields["student-name"] ?? "").trim();
+
+  const borders = `<w:tblBorders>
+    <w:top w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:left w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:bottom w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:right w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
+    <w:insideH w:val="single" w:sz="5" w:space="0" w:color="D6DCE4"/>
+    <w:insideV w:val="single" w:sz="5" w:space="0" w:color="D6DCE4"/>
+  </w:tblBorders>`;
+
+  const cellMargins = `<w:tblCellMar>
+    <w:top w:w="175" w:type="dxa"/><w:left w:w="130" w:type="dxa"/>
+    <w:bottom w:w="175" w:type="dxa"/><w:right w:w="130" w:type="dxa"/>
+  </w:tblCellMar>`;
+
+  const tablePr = `<w:tblPr>
+    <w:tblW w:w="8800" w:type="dxa"/>
+    <w:jc w:val="center"/>
+    <w:tblLayout w:type="fixed"/>
+    ${borders}${cellMargins}
+  </w:tblPr>`;
+
+  const grid = `<w:tblGrid>
+    <w:gridCol w:w="1100"/>
+    <w:gridCol w:w="1833"/>
+    <w:gridCol w:w="900"/>
+    <w:gridCol w:w="1833"/>
+    <w:gridCol w:w="1000"/>
+    <w:gridCol w:w="2134"/>
+  </w:tblGrid>`;
+
+  const label = (value, width) => docxCoverCell(value, {
+    width,
+    bold: true,
+    color: "263550",
+    size: 18,
+    shade: "F4F5F7"
+  });
+
+  const valueCell = (textValue, width, options = {}) => docxCoverCell(textValue, {
+    width,
+    bold: options.bold || false,
+    color: "192238",
+    size: options.size || 19,
+    align: options.align || "center"
+  });
+
+  return `<w:tbl>${tablePr}${grid}
+    <w:tr>
+      ${label("학년", 1100)}
+      ${valueCell(grade ? `${grade}학년` : "", 1833)}
+      ${label("반", 900)}
+      ${valueCell(classNo ? `${classNo}반` : "", 1833)}
+      ${label("번호", 1000)}
+      ${valueCell(number ? `${number}번` : "", 2134)}
+    </w:tr>
+    <w:tr>
+      ${label("이름", 1100)}
+      ${docxCoverCell(name, {
+        width: 7700,
+        span: 5,
+        align: "center",
+        bold: true,
+        color: "192238",
+        size: 20
+      })}
+    </w:tr>
+  </w:tbl>`;
+}
+
+function docxCover(topic, student, major, selected = null) {
   return [
-    docxParagraph("INQUIRY REPORT", { align: "center", bold: true, color: "B95139", size: 18, spacingBefore: 1500, spacingAfter: 260, line: 280 }),
-    docxParagraph("탐구보고서", { align: "center", bold: true, color: "192238", size: 56, spacingAfter: 420, line: 360 }),
-    docxParagraph(topic, { align: "center", color: "263550", size: 34, spacingAfter: 680, line: 420 }),
-    docxParagraph(student, { align: "center", color: "4B5568", size: 21, spacingAfter: 220, line: 320, borderBottom: true, borderColor: "C9C2B7", borderSize: 6 }),
-    docxParagraph(major, { align: "center", color: "6B7280", size: 20, spacingAfter: 400, line: 300 }),
+    // 상단 제목
+    docxParagraph("탐구보고서", {
+      align: "center",
+      bold: true,
+      color: "192238",
+      size: 52,
+      spacingBefore: 1350,
+      spacingAfter: 1450,
+      line: 350
+    }),
+
+    // 페이지 중앙 부근: 탐구 정보
+    docxCoverResearchTable(topic, selected),
+
+    // 인적사항은 아래쪽으로 충분히 떨어뜨립니다.
+    docxParagraph(" ", {
+      spacingAfter: 2050,
+      line: 120
+    }),
+
+    // 하단 영역: 인적사항
+    docxCoverStudentTable(),
+
+    // 하단 여백
+    docxParagraph(" ", {
+      spacingAfter: 350,
+      line: 120
+    }),
+
     docxPageBreak(),
   ].join("");
 }
@@ -2632,14 +2920,36 @@ function docxSettingsXml() {
 <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/></w:settings>`;
 }
 
-function docxDocumentXml(bodyXml) {
+function docxFooterXml() {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>${bodyXml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="960" w:right="1040" w:bottom="960" w:left="1040" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body>
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:p>
+    <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:fldSimple w:instr="PAGE">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Malgun Gothic" w:hAnsi="Malgun Gothic" w:eastAsia="맑은 고딕"/>
+          <w:color w:val="7A8393"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+    </w:fldSimple>
+  </w:p>
+</w:ftr>`;
+}
+
+function docxDocumentXml(bodyXml, options = {}) {
+  const footer = options.pageNumbers ? '<w:footerReference w:type="default" r:id="rId3"/>' : "";
+  const titlePage = options.pageNumbers && options.hideFirstPageNumber ? "<w:titlePg/>" : "";
+  const pageNumberStart = options.pageNumbers ? `<w:pgNumType w:start="${Number.isFinite(options.pageNumberStart) ? options.pageNumberStart : 1}"/>` : "";
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>${bodyXml}<w:sectPr>${footer}${titlePage}${pageNumberStart}<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1200" w:right="1040" w:bottom="900" w:left="1040" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body>
 </w:document>`;
 }
 
-function docxPackageFiles(title, bodyXml) {
+function docxPackageFiles(title, bodyXml, options = {}) {
   const now = new Date().toISOString();
   return {
     "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -2649,6 +2959,7 @@ function docxPackageFiles(title, bodyXml) {
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
   <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
   <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>
+  ${options.pageNumbers ? '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' : ""}
   <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
   <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
 </Types>`,
@@ -2658,14 +2969,16 @@ function docxPackageFiles(title, bodyXml) {
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
   <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
 </Relationships>`,
-    "word/document.xml": docxDocumentXml(bodyXml),
+    "word/document.xml": docxDocumentXml(bodyXml, options),
     "word/styles.xml": docxStylesXml(),
     "word/settings.xml": docxSettingsXml(),
     "word/_rels/document.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+  ${options.pageNumbers ? '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' : ""}
 </Relationships>`,
+    ...(options.pageNumbers ? { "word/footer1.xml": docxFooterXml() } : {}),
     "docProps/core.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${docxXmlText(title)}</dc:title><dc:creator>탐구보고서 작성 워크북</dc:creator><cp:lastModifiedBy>탐구보고서 작성 워크북</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`,
     "docProps/app.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -2741,8 +3054,8 @@ function docxZipBlob(files) {
   return new Blob([local, central, end], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
 }
 
-function downloadDocx(title, bodyXml, fileName, message) {
-  const blob = docxZipBlob(docxPackageFiles(title, bodyXml));
+function downloadDocx(title, bodyXml, fileName, message, options = {}) {
+  const blob = docxZipBlob(docxPackageFiles(title, bodyXml, options));
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -2760,8 +3073,70 @@ function studentFilePrefix() {
   return parts.length ? `${parts.join("_")}_` : "";
 }
 
+function docxReferenceParagraphs() {
+  const currentRefs = String(state.fields.final08 ?? "").trim();
+  const importedRefs = String(state.fields["_imported-final08"] ?? "").trim();
+
+  // 보고서 완성 단계에서 참고자료를 직접 수정했다면 그 수정 내용을 우선한다.
+  if (currentRefs && currentRefs !== importedRefs) {
+    return docxBodyParagraphs(currentRefs, {
+      size: 19,
+      color: "333333",
+      line: 320,
+      spacingAfter: 110,
+      leftIndent: 360,
+      hanging: 360,
+      normalizeMath: false
+    });
+  }
+
+  const items = [];
+  const referenceCount = Math.max(1, Number(state.referenceCount) || 3);
+
+  for (let index = 1; index <= referenceCount; index += 1) {
+    const title = String(state.fields[`ref${index}-title`] ?? "").trim();
+    if (!title) continue;
+
+    const author = String(state.fields[`ref${index}-author`] ?? "").trim().replace(/[.。]\s*$/g, "");
+    const year = String(state.fields[`ref${index}-year`] ?? "").trim();
+    const cleanTitle = title.replace(/[.。]\s*$/g, "");
+    const url = String(state.fields[`ref${index}-url`] ?? "").trim().replace(/[?&]utm_source=[^&\s]+/g, "");
+
+    const parts = [];
+    if (author) parts.push(`${author}.`);
+    if (year) parts.push(`(${year}).`);
+    parts.push(`${cleanTitle}.`);
+    if (url) parts.push(url);
+
+    items.push(`${items.length + 1}. ${parts.join(" ")}`);
+  }
+
+  if (items.length) {
+    return items.map((item) => docxParagraph(item, {
+      size: 19,
+      color: "333333",
+      line: 320,
+      spacingAfter: 110,
+      leftIndent: 360,
+      hanging: 360,
+      normalizeMath: false
+    })).join("");
+  }
+
+  // 직접 입력한 주제 등 구조화된 참고자료가 없으면 기존 입력 내용을 그대로 사용한다.
+  return docxBodyParagraphs(state.fields.final08, {
+    size: 19,
+    color: "333333",
+    line: 320,
+    spacingAfter: 110,
+    leftIndent: 360,
+    hanging: 360,
+    normalizeMath: false
+  });
+}
+
 function wordDocument(title, body) {
-  return `<!doctype html><html lang="ko" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${escapeHTML(title)}</title><style>@page{size:A4;margin:48pt 52pt}body{font-family:"맑은 고딕",sans-serif;font-size:10.5pt;line-height:1.75;color:#172039;word-break:keep-all}.cover{text-align:center;padding:95pt 12pt 70pt;page-break-after:always}.kicker{color:#b95139;font-size:9pt;font-weight:bold;letter-spacing:2pt}.cover h1{margin:22pt 0 26pt;font-size:28pt;color:#192238}.topic{font-size:17pt;line-height:1.55;color:#263550;margin:0 auto 42pt;max-width:430pt}.student{border-top:1pt solid #c9c2b7;border-bottom:1pt solid #c9c2b7;padding:9pt 0;color:#4b5568}.major{margin-top:16pt;color:#6b7280}.report-heading{margin:27pt 0 11pt;padding:0 0 6pt;border-bottom:1.5pt solid #192238;color:#192238;font-size:15pt;font-weight:bold;page-break-after:avoid;mso-list:none}.report-subheading{margin:17pt 0 6pt;color:#b95139;font-size:11.5pt;font-weight:bold;page-break-after:avoid;mso-list:none}.section-body{margin:0 0 15pt;min-height:26pt;text-align:left}.section-body p{margin:0 0 5pt;text-align:left;line-height:1.75}.section-body .blank-line{margin:0;height:5pt;line-height:5pt}.references{font-size:9.5pt;line-height:1.65;word-break:break-all}.assessment{font-size:11pt;line-height:1.9;text-align:left}.assessment p{margin:0 0 7pt;text-align:left}.summary-sheet{page-break-after:always;border:.75pt solid #d4d9e2}.summary-head{padding:18pt 20pt;background:#192238;color:#fff}.summary-head .kicker{color:#e8c84e}.summary-head h1{margin:7pt 0 0;color:#fff;font-size:20pt}.summary-word-body{padding:18pt 20pt 14pt;font-size:9.2pt;line-height:1.55}.summary-topic{text-align:center;padding:0 8pt 14pt;border-bottom:1.5pt solid #192238}.summary-topic b{display:block;color:#697184;font-size:8pt}.summary-topic h2{margin:7pt 0 3pt;padding:0;border:0;font-size:14pt;line-height:1.45}.summary-topic p{margin:0;color:#697184}.summary-meta{width:100%;border-collapse:collapse;border-bottom:.5pt solid #d7dce4}.summary-meta td{padding:8pt 7pt;font-size:8.5pt}.summary-meta td+td{border-left:.5pt solid #d7dce4}.summary-meta b{margin-right:7pt;color:#1f5962}.summary-row{padding:8pt 2pt;border-bottom:.5pt solid #d7dce4}.summary-row h3{margin:0 0 3pt;color:#1f5962;font-size:9.2pt}.summary-row p{margin:0;text-align:left}.self-page h1{margin:9pt 0 8pt;color:#192238;font-size:22pt}.self-page .student{margin-bottom:22pt}.self-page h2{margin-top:20pt}</style></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="ko" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${escapeHTML(title)}</title><style>@page{size:A4;margin:48pt 52pt}body{font-family:"맑은 고딕",sans-serif;font-size:10.5pt;line-height:1.75;color:#172039;word-break:keep-all}.cover{text-align:center;padding:88pt 12pt 64pt;page-break-after:always}.kicker{color:#b95139;font-size:9pt;font-weight:bold;letter-spacing:2pt}.cover h1{margin:22pt 0 26pt;font-size:28pt;color:#192238}.topic{font-size:17pt;line-height:1.55;color:#263550;margin:0 auto 42pt;max-width:430pt}.student{border-top:1pt solid #c9c2b7;border-bottom:1pt solid #c9c2b7;padding:9pt 0;color:#4b5568}.major{margin-top:16pt;color:#6b7280}.report-heading{margin:27pt 0 11pt;padding:0 0 6pt;border-bottom:1.5pt solid #192238;color:#192238;font-size:15pt;font-weight:bold;page-break-after:avoid;mso-list:none}.report-subheading{margin:17pt 0 6pt;color:#b95139;font-size:11.5pt;font-weight:bold;page-break-after:avoid;mso-list:none}.section-body{margin:0 0 15pt;min-height:26pt;text-align:left}.section-body p{margin:0 0 5pt;text-align:left;line-height:1.75}.section-body .blank-line{margin:0;height:5pt;line-height:5pt}.references{font-size:9.5pt;line-height:1.65;word-break:break-all}.assessment{font-size:11pt;line-height:1.9;text-align:left}.assessment p{margin:0 0 7pt;text-align:left}.summary-sheet{page-break-after:always;border:.75pt solid #d4d9e2}.summary-head{padding:18pt 20pt;background:#192238;color:#fff}.summary-head .kicker{color:#e8c84e}.summary-head h1{margin:7pt 0 0;color:#fff;font-size:20pt}.summary-word-body{padding:18pt 20pt 14pt;font-size:9.2pt;line-height:1.55}.summary-topic{text-align:center;padding:0 8pt 14pt;border-bottom:1.5pt solid #192238}.summary-topic b{display:block;color:#697184;font-size:8pt}.summary-topic h2{margin:7pt 0 3pt;padding:0;border:0;font-size:14pt;line-height:1.45}.summary-topic p{margin:0;color:#697184}.summary-meta{width:100%;border-collapse:collapse;border-bottom:.5pt solid #d7dce4}.summary-meta td{padding:8pt 7pt;font-size:8.5pt}.summary-meta td+td{border-left:.5pt solid #d7dce4}.summary-meta b{margin-right:7pt;color:#1f5962}.summary-row{padding:8pt 2pt;border-bottom:.5pt solid #d7dce4}.summary-row h3{margin:0 0 3pt;color:#1f5962;font-size:9.2pt}.summary-row p{margin:0;text-align:left}.self-page h1{margin:9pt 0 8pt;color:#192238;font-size:22pt}.self-page .student{margin-bottom:22pt}.self-page h2{margin-top:20pt}</style></head><body>${body}</body></html>`;
 }
 
 function downloadReportWord() {
@@ -2790,18 +3165,24 @@ function downloadReportWord() {
   const topic = String(state.fields["draft-topic"] || cleanQuestion(selected.topic.question));
   const student = `${String(state.fields["student-grade"] ?? "")}학년　${String(state.fields["student-class"] ?? "")}반　${String(state.fields["student-number"] ?? "")}번　${String(state.fields["student-name"] ?? "")}`;
   const body = [
-    docxCover(topic, student, `${selected.category.label} · ${selected.major.label}`),
-    docxHeading("1. 탐구 동기 및 배경"), docxBodyParagraphs(state.fields.final01),
+    docxCover(topic, student, "", selected),
+    docxHeading("1. 탐구 동기 및 목적"), docxBodyParagraphs(state.fields.final01),
     docxHeading("2. 연구문제와 가설"), docxBodyParagraphs(state.fields.final02),
     docxHeading("3. 이론적 배경"), docxBodyParagraphs(state.fields.final03),
     docxHeading("4. 자료 수집 기준 및 탐구 방법"), docxBodyParagraphs(state.fields.final04),
     docxHeading("5. 분석 결과 및 해석"), analysis,
     docxHeading("6. 결론 및 한계"), docxBodyParagraphs(state.fields.final06),
     docxHeading("7. 후속 탐구 계획"), docxBodyParagraphs(state.fields.final07),
-    docxHeading("8. 참고자료 및 출처"), docxBodyParagraphs(state.fields.final08, { size: 19 }),
+    docxHeading("8. 참고자료 및 출처"), docxReferenceParagraphs(),
   ].join("");
   const date = new Date().toISOString().slice(0,10).replaceAll("-","");
-  downloadDocx("탐구보고서", body, `${studentFilePrefix()}진로탐구보고서_${date}.docx`, "완성 보고서를 DOCX 파일로 내려받았습니다.");
+  downloadDocx(
+    "탐구보고서",
+    body,
+    `${studentFilePrefix()}탐구보고서_${date}.docx`,
+    "완성 보고서를 DOCX 파일로 내려받았습니다.",
+    { pageNumbers: true, hideFirstPageNumber: true, pageNumberStart: 0 }
+  );
 }
 
 function downloadSelfWord() {
@@ -2813,7 +3194,7 @@ function downloadSelfWord() {
   const student = `${String(state.fields["student-grade"] ?? "")}학년　${String(state.fields["student-class"] ?? "")}반　${String(state.fields["student-number"] ?? "")}번　${String(state.fields["student-name"] ?? "")}`;
   const summarySections = summary.sections.map(([label, value]) => {
     const sectionBody = Array.isArray(value)
-      ? (value.length ? value.map((line) => docxParagraph(line, { spacingAfter: 70, line: 320, size: 19 })).join("") : docxParagraph("아직 작성되지 않았습니다."))
+      ? (value.length ? value.map((line) => docxParagraph(line, { spacingAfter: 70, line: 320, size: 19, normalizeMath: true })).join("") : docxParagraph("아직 작성되지 않았습니다."))
       : docxBodyParagraphs(value, { spacingAfter: 70, line: 320, size: 19 });
     return docxParagraph(label, { bold: true, color: "1F5962", size: 20, spacingBefore: 145, spacingAfter: 55, line: 290, keepNext: true }) + sectionBody;
   }).join("");
@@ -2959,10 +3340,89 @@ document.addEventListener("click", async (event) => {
     showToast(`자료 ${addedIndex} 입력칸을 추가했습니다.`);
     return;
   }
-  if (target.hasAttribute("data-add-analysis-subheading")) {
-    state.analysisExtraCount = Math.max(0, Number(state.analysisExtraCount) || 0) + 1;
+  if (target.hasAttribute("data-delete-analysis-subheading")) {
+    const deleteIndex = Number(target.dataset.deleteAnalysisSubheading);
     const selected = workflowSelection();
     const topic = selected?.topic ?? { id: "custom-topic" };
+    const outline = reportOutline(topic);
+    const count = outline.length;
+
+    if (!Number.isInteger(deleteIndex) || deleteIndex < 0 || deleteIndex >= count) return;
+    if (count <= 1) {
+      showToast("분석 결과 소제목은 최소 1개가 필요합니다.");
+      return;
+    }
+
+    if (!window.confirm(`소제목 ${deleteIndex + 1}을 삭제하시겠습니까? 작성한 제목과 내용도 함께 삭제되며 복구할 수 없습니다.`)) return;
+
+    // 화면에 보이는 현재 제목을 기준으로 삭제 후 목록을 만들고 번호를 다시 정리합니다.
+    const visibleTitles = outline.map((title, index) =>
+      String(state.fields[`analysis-title-${index}`] ?? title).trim() || title
+    );
+    const remainingTitles = visibleTitles
+      .filter((_, index) => index !== deleteIndex)
+      .map((title, index) => renumberAnalysisTitle(title, index));
+
+    // 중간 항목을 삭제하면 뒤의 제목·본문을 한 칸씩 앞으로 당깁니다.
+    for (let index = deleteIndex; index < count - 1; index += 1) {
+      const nextTitleKey = `analysis-title-${index + 1}`;
+      const nextContentKey = `analysis-content-${index + 1}`;
+      const currentTitleKey = `analysis-title-${index}`;
+      const currentContentKey = `analysis-content-${index}`;
+
+      if (Object.prototype.hasOwnProperty.call(state.fields, nextTitleKey)) {
+        state.fields[currentTitleKey] = state.fields[nextTitleKey];
+      } else {
+        delete state.fields[currentTitleKey];
+      }
+
+      if (Object.prototype.hasOwnProperty.call(state.fields, nextContentKey)) {
+        state.fields[currentContentKey] = state.fields[nextContentKey];
+      } else {
+        delete state.fields[currentContentKey];
+      }
+    }
+
+    // 마지막에 남은 이전 값과 자동 연동 표식을 제거합니다.
+    delete state.fields[`analysis-title-${count - 1}`];
+    delete state.fields[`analysis-content-${count - 1}`];
+    for (let index = 0; index < count; index += 1) {
+      delete state.fields[`_imported-analysis-title-${index}`];
+    }
+
+    // 삭제 후 제목을 새 순서대로 저장합니다.
+    remainingTitles.forEach((title, index) => {
+      state.fields[`analysis-title-${index}`] = title;
+      state.fields[`_imported-analysis-title-${index}`] = title;
+    });
+
+    state.analysisManualOutline = remainingTitles;
+    state.analysisExtraCount = 0;
+
+    saveNow(true);
+    const focusIndex = Math.min(deleteIndex, remainingTitles.length - 1);
+    render(`#analysis-block-${focusIndex}`);
+    window.setTimeout(() => {
+      document.querySelector(`[data-field="analysis-title-${focusIndex}"]`)?.focus();
+    }, 450);
+    showToast(`소제목 ${deleteIndex + 1}을 삭제했습니다.`);
+    return;
+  }
+
+  if (target.hasAttribute("data-add-analysis-subheading")) {
+    const selected = workflowSelection();
+    const topic = selected?.topic ?? { id: "custom-topic" };
+    const currentOutline = reportOutline(topic);
+
+    if (Array.isArray(state.analysisManualOutline) && state.analysisManualOutline.length) {
+      state.analysisManualOutline = [
+        ...currentOutline,
+        `5-${currentOutline.length + 1}. 새 소제목`
+      ];
+    } else {
+      state.analysisExtraCount = Math.max(0, Number(state.analysisExtraCount) || 0) + 1;
+    }
+
     const newOutline = reportOutline(topic);
     const addedIndex = newOutline.length - 1;
     saveNow(true);
