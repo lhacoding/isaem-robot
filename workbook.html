@@ -440,6 +440,21 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .summary-item p { margin: 0; color: #455166; font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
 .summary-result-list { display: grid; gap: 6px; }
 .summary-item .summary-result-line { display: block; padding-left: 0; white-space: normal; }
+.summary-edit-item { padding: 14px 4px; border-bottom: 1px solid #dfe3e9; }
+.summary-edit-item b { display: block; margin-bottom: 7px; color: #265d67; font-size: 12px; }
+.summary-edit-item textarea {
+  min-height: 96px;
+  padding: 12px 13px;
+  color: #455166;
+  font-size: 13px;
+  line-height: 1.7;
+  background: #fff;
+  border: 1px solid #cfd6df;
+  border-radius: 9px;
+  resize: vertical;
+}
+.summary-edit-item textarea:focus { border-color: #7ba8a2; outline: 2px solid rgba(23,124,114,.12); }
+.summary-edit-item.results textarea { min-height: 150px; }
 .summary-guide { margin: 14px 0 0; color: #7a8393; font-size: 11px; line-height: 1.6; }
 .generated-box { min-height: 180px; background: #f5fbfa; border-color: #bcded9; }
 .character-count { color: var(--muted); font-size: 11px; }
@@ -858,6 +873,7 @@ function defaultState() {
     referenceCount: 3,
     analysisExtraCount: 0,
     analysisManualOutline: null,
+    summaryDraftInitialized: false,
     fields: {},
     selfOutputCustomized: false,
     selfOutputNeedsSync: false,
@@ -1837,7 +1853,7 @@ function summaryLimitText() {
   });
 }
 
-function summarySnapshot() {
+function buildAutoSummarySnapshot() {
   const selected = workflowSelection();
   if (!selected) return null;
   const topic = selected.topic;
@@ -1877,13 +1893,79 @@ function summarySnapshot() {
   };
 }
 
+const SUMMARY_DRAFT_FIELDS = [
+  "summary-draft-motivation",
+  "summary-draft-method",
+  "summary-draft-results",
+  "summary-draft-conclusion",
+  "summary-draft-limits",
+];
+
+function summaryValueToText(value) {
+  if (Array.isArray(value)) return value.join("\n");
+  return String(value ?? "");
+}
+
+function initializeSummaryDraft(force = false) {
+  const auto = buildAutoSummarySnapshot();
+  if (!auto) return null;
+
+  const hasExistingDraft = SUMMARY_DRAFT_FIELDS.some((key) =>
+    Object.prototype.hasOwnProperty.call(state.fields, key)
+  );
+
+  if (!force && (state.summaryDraftInitialized || hasExistingDraft)) {
+    state.summaryDraftInitialized = true;
+    return auto;
+  }
+
+  auto.sections.forEach(([, value], index) => {
+    state.fields[SUMMARY_DRAFT_FIELDS[index]] = summaryValueToText(value);
+  });
+  state.summaryDraftInitialized = true;
+  scheduleSave();
+  return auto;
+}
+
+function summarySnapshot() {
+  const auto = buildAutoSummarySnapshot();
+  if (!auto) return null;
+
+  initializeSummaryDraft(false);
+
+  const titles = auto.sections.map(([title]) => title);
+  return {
+    ...auto,
+    sections: titles.map((title, index) => [
+      title,
+      String(state.fields[SUMMARY_DRAFT_FIELDS[index]] ?? "").trim() || "아직 작성되지 않았습니다.",
+    ]),
+  };
+}
+
 function reportSummaryHTML() {
   const summary = summarySnapshot();
   if (!summary) return "";
+
+  const rows = [4, 5, 7, 4, 4];
+
   return `<div class="report-summary">
     <section class="summary-topic-block"><span>탐구 주제</span><h4>${escapeHTML(normalizeReportMath(summary.topic))}</h4></section>
     <div class="summary-meta-row"><div><b>탐구 유형</b><span>${escapeHTML(summary.type)}</span></div><div><b>핵심 질문</b><span>${escapeHTML(normalizeReportMath(summary.question))}</span></div></div>
-    <div class="summary-section-list">${summary.sections.map(([title,text]) => `<article class="summary-item"><b>${escapeHTML(title)}</b>${Array.isArray(text) ? `<div class="summary-result-list">${text.length ? text.map((line) => `<p class="summary-result-line">${escapeHTML(normalizeReportMath(line))}</p>`).join("") : '<p class="summary-result-line">아직 작성되지 않았습니다.</p>'}</div>` : `<p>${escapeHTML(normalizeReportMath(text))}</p>`}</article>`).join("")}</div>
+    <div class="summary-section-list">
+      ${summary.sections.map(([title, text], index) => `
+        <article class="summary-edit-item${index === 2 ? " results" : ""}">
+          <label>
+            <b>${escapeHTML(title)}</b>
+            <textarea
+              data-field="${SUMMARY_DRAFT_FIELDS[index]}"
+              rows="${rows[index]}"
+              aria-label="${escapeAttr(`${title} 요약 내용`)}"
+            >${escapeHTML(normalizeReportMath(text))}</textarea>
+          </label>
+        </article>
+      `).join("")}
+    </div>
   </div>`;
 }
 
@@ -2116,6 +2198,9 @@ function syncSelfOutputFromParts(force = false) {
 function renderSelfEvaluation() {
   const selected = workflowSelection();
   if (!selected) return emptyState("먼저 탐구주제를 작성하세요.", "완성한 보고서를 바탕으로 자기평가서를 작성합니다.");
+
+  initializeSummaryDraft(false);
+
   if (!state.selfOutputCustomized) {
     state.fields["self-output"] = composeSelfEvaluation();
     state.selfOutputNeedsSync = false;
@@ -2132,7 +2217,7 @@ function renderSelfEvaluation() {
         ["self-download", "4. 다운받기"],
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
-      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}<p class="summary-guide">앞에서 작성한 보고서의 핵심문장을 골라 A4 한 페이지 정도의 분량으로 자동 요약합니다. 원문 전체를 그대로 반복하지 않습니다.</p><div class="report-actions"><button type="button" class="secondary-button" data-nav="report">보고서 완성에서 수정하기</button></div></div></section>
+      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}</div></section>
       <section class="form-card guided-self-builder section-anchor" id="self-builder"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><p class="guide">8개 항목마다 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 선택한 뒤 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 이어집니다.</p><div class="guided-self-list">
         ${items.map((item,index) => guidedSelfRow(index + 1,item.id,item.title,item.examples,item.prefix,item.suffix)).join("")}
       </div></section>
@@ -2522,6 +2607,7 @@ function startTopic(topicId) {
   state.selfOutputNeedsSync = false;
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
+  state.summaryDraftInitialized = false;
   state.customTopicMode = false;
   state.topicId = topicId;
   const selected = activeTopic();
@@ -2541,6 +2627,7 @@ function startCustomTopic() {
   state.referenceCount = 3;
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
+  state.summaryDraftInitialized = false;
   state.selfOutputCustomized = false;
   state.selfOutputNeedsSync = false;
   state.view = "draft";
@@ -2661,6 +2748,7 @@ function docxBodyParagraphs(value, options = {}) {
     size: 21,
     line: 340,
     spacingAfter: 90,
+    align: "both",
     normalizeMath: options.normalizeMath !== false,
     ...options
   };
@@ -2837,7 +2925,7 @@ function docxCoverStudentTable() {
     <w:left w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
     <w:bottom w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
     <w:right w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
-    <w:insideH w:val="single" w:sz="9" w:space="0" w:color="6F7785"/>
+    <w:insideH w:val="single" w:sz="6" w:space="0" w:color="B7C0CC"/>
     <w:insideV w:val="single" w:sz="5" w:space="0" w:color="D6DCE4"/>
   </w:tblBorders>`;
 
@@ -3118,6 +3206,7 @@ function docxReferenceParagraphs() {
       spacingAfter: 90,
       leftIndent: 360,
       hanging: 360,
+      align: "both",
       normalizeMath: false
     });
   }
@@ -3151,6 +3240,7 @@ function docxReferenceParagraphs() {
       spacingAfter: 90,
       leftIndent: 360,
       hanging: 360,
+      align: "both",
       normalizeMath: false
     })).join("");
   }
@@ -3168,7 +3258,7 @@ function docxReferenceParagraphs() {
 }
 
 function wordDocument(title, body) {
-  return `<!doctype html><html lang="ko" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${escapeHTML(title)}</title><style>@page{size:A4;margin:48pt 52pt}body{font-family:"맑은 고딕",sans-serif;font-size:10.5pt;line-height:1.75;color:#172039;word-break:keep-all}.cover{text-align:center;padding:88pt 12pt 64pt;page-break-after:always}.kicker{color:#b95139;font-size:9pt;font-weight:bold;letter-spacing:2pt}.cover h1{margin:22pt 0 26pt;font-size:28pt;color:#192238}.topic{font-size:17pt;line-height:1.55;color:#263550;margin:0 auto 42pt;max-width:430pt}.student{border-top:1pt solid #c9c2b7;border-bottom:1pt solid #c9c2b7;padding:9pt 0;color:#4b5568}.major{margin-top:16pt;color:#6b7280}.report-heading{margin:22pt 0 9pt;padding:0 0 5pt;border-bottom:1pt solid #192238;color:#192238;font-size:13pt;font-weight:bold;page-break-after:avoid;mso-list:none}.report-subheading{margin:14pt 0 5pt;color:#1f5962;font-size:10.5pt;font-weight:bold;page-break-after:avoid;mso-list:none}.section-body{margin:0 0 15pt;min-height:26pt;text-align:left}.section-body p{margin:0 0 5pt;text-align:left;line-height:1.75}.section-body .blank-line{margin:0;height:5pt;line-height:5pt}.references{font-size:10.5pt;line-height:1.7;word-break:break-all}.assessment{font-size:10.5pt;line-height:1.7;text-align:left}.assessment p{margin:0 0 7pt;text-align:left}.summary-sheet{page-break-after:always;border:.75pt solid #d4d9e2}.summary-head{padding:18pt 20pt;background:#192238;color:#fff}.summary-head .kicker{color:#e8c84e}.summary-head h1{margin:7pt 0 0;color:#fff;font-size:20pt}.summary-word-body{padding:18pt 20pt 14pt;font-size:9.2pt;line-height:1.55}.summary-topic{text-align:center;padding:0 8pt 14pt;border-bottom:1.5pt solid #192238}.summary-topic b{display:block;color:#697184;font-size:8pt}.summary-topic h2{margin:7pt 0 3pt;padding:0;border:0;font-size:14pt;line-height:1.45}.summary-topic p{margin:0;color:#697184}.summary-meta{width:100%;border-collapse:collapse;border-bottom:.5pt solid #d7dce4}.summary-meta td{padding:8pt 7pt;font-size:8.5pt}.summary-meta td+td{border-left:.5pt solid #d7dce4}.summary-meta b{margin-right:7pt;color:#1f5962}.summary-row{padding:8pt 2pt;border-bottom:.5pt solid #d7dce4}.summary-row h3{margin:0 0 3pt;color:#1f5962;font-size:9.2pt}.summary-row p{margin:0;text-align:left}.self-page h1{margin:9pt 0 8pt;color:#192238;font-size:22pt}.self-page .student{margin-bottom:22pt}.self-page h2{margin-top:20pt}</style></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="ko" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${escapeHTML(title)}</title><style>@page{size:A4;margin:48pt 52pt}body{font-family:"맑은 고딕",sans-serif;font-size:10.5pt;line-height:1.75;color:#172039;word-break:keep-all}.cover{text-align:center;padding:88pt 12pt 64pt;page-break-after:always}.kicker{color:#b95139;font-size:9pt;font-weight:bold;letter-spacing:2pt}.cover h1{margin:22pt 0 26pt;font-size:28pt;color:#192238}.topic{font-size:17pt;line-height:1.55;color:#263550;margin:0 auto 42pt;max-width:430pt}.student{border-top:1pt solid #c9c2b7;border-bottom:1pt solid #c9c2b7;padding:9pt 0;color:#4b5568}.major{margin-top:16pt;color:#6b7280}.report-heading{margin:22pt 0 9pt;padding:0 0 5pt;border-bottom:1pt solid #192238;color:#192238;font-size:13pt;font-weight:bold;page-break-after:avoid;mso-list:none}.report-subheading{margin:14pt 0 5pt;color:#1f5962;font-size:10.5pt;font-weight:bold;page-break-after:avoid;mso-list:none}.section-body{margin:0 0 15pt;min-height:26pt;text-align:justify}.section-body p{margin:0 0 5pt;text-align:justify;line-height:1.75}.section-body .blank-line{margin:0;height:5pt;line-height:5pt}.references{font-size:10.5pt;line-height:1.7;word-break:break-all}.assessment{font-size:10.5pt;line-height:1.7;text-align:justify}.assessment p{margin:0 0 7pt;text-align:justify}.summary-sheet{page-break-after:always;border:.75pt solid #d4d9e2}.summary-head{padding:18pt 20pt;background:#192238;color:#fff}.summary-head .kicker{color:#e8c84e}.summary-head h1{margin:7pt 0 0;color:#fff;font-size:20pt}.summary-word-body{padding:18pt 20pt 14pt;font-size:9.2pt;line-height:1.55}.summary-topic{text-align:center;padding:0 8pt 14pt;border-bottom:1.5pt solid #192238}.summary-topic b{display:block;color:#697184;font-size:8pt}.summary-topic h2{margin:7pt 0 3pt;padding:0;border:0;font-size:14pt;line-height:1.45}.summary-topic p{margin:0;color:#697184}.summary-meta{width:100%;border-collapse:collapse;border-bottom:.5pt solid #d7dce4}.summary-meta td{padding:8pt 7pt;font-size:8.5pt}.summary-meta td+td{border-left:.5pt solid #d7dce4}.summary-meta b{margin-right:7pt;color:#1f5962}.summary-row{padding:8pt 2pt;border-bottom:.5pt solid #d7dce4}.summary-row h3{margin:0 0 3pt;color:#1f5962;font-size:9.2pt}.summary-row p{margin:0;text-align:justify}.self-page h1{margin:9pt 0 8pt;color:#192238;font-size:22pt}.self-page .student{margin-bottom:22pt}.self-page h2{margin-top:20pt}</style></head><body>${body}</body></html>`;
 }
 
 function downloadReportWord() {
@@ -3221,6 +3311,7 @@ function downloadSelfWord() {
   const selected = workflowSelection();
   if (!selected) { showToast("먼저 탐구주제를 작성하세요."); return; }
   const output = String(state.fields["self-output"] ?? "").trim() || composeSelfEvaluation();
+  initializeSummaryDraft(false);
   const summary = summarySnapshot();
   if (!summary) { showToast("요약할 탐구 내용이 없습니다."); return; }
   const student = `${String(state.fields["student-grade"] ?? "")}학년　${String(state.fields["student-class"] ?? "")}반　${String(state.fields["student-number"] ?? "")}번　${String(state.fields["student-name"] ?? "")}`;
@@ -3230,11 +3321,13 @@ function downloadSelfWord() {
           spacingAfter: 90,
           line: 340,
           size: 21,
+          align: "both",
           normalizeMath: true
         })).join("") : docxParagraph("아직 작성되지 않았습니다.", {
           spacingAfter: 90,
           line: 340,
-          size: 21
+          size: 21,
+          align: "both"
         }))
       : docxBodyParagraphs(value, {
           spacingAfter: 90,
