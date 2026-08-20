@@ -323,7 +323,19 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .check-list li::before { margin-right: 6px; color: var(--teal); content: "✓"; font-weight: 950; }
 .reference-grid { display: grid; gap: 12px; }
 .reference-card { padding: 18px; background: #fbf9f5; border: 1px solid #e2dbd0; border-radius: 14px; }
-.reference-card h4 { margin: 0 0 10px; }
+.reference-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+.reference-card h4 { margin: 0; }
+.reference-delete-button {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  color: #9a4632;
+  font-size: 11px;
+  font-weight: 900;
+  background: #fff7f3;
+  border: 1px solid #e7b9aa;
+  border-radius: 8px;
+}
+.reference-delete-button:hover { color: white; background: var(--orange); border-color: var(--orange); }
 .reference-add-row { display: flex; justify-content: center; margin: 14px 0 24px; }
 .reference-add-row .secondary-button { min-width: 170px; border-style: dashed; }
 .reference-fields { display: grid; grid-template-columns: 1.4fr .9fr .45fr; gap: 9px; }
@@ -399,12 +411,12 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .summary-sheet-heading h3 { margin: 0; color: white; font-size: 28px; }
 .summary-sheet-body { padding: 28px 30px 22px; }
 .report-summary { width: 100%; }
-.summary-topic-block { padding: 0 18px 20px; text-align: center; border-bottom: 2px solid var(--navy); }
-.summary-topic-block span { color: #7c8495; font-size: 10px; font-weight: 900; }
-.summary-topic-block h4 { max-width: none; margin: 9px auto 6px; font-size: 20px; line-height: 1.55; letter-spacing: -.025em; word-break: keep-all; text-wrap: pretty; }
-.summary-topic-block p { margin: 0; color: var(--muted); font-size: 12px; }
-.summary-meta-row { display: grid; grid-template-columns: .8fr 1.5fr; border-bottom: 1px solid #d8dde5; }
-.summary-meta-row > div { display: flex; gap: 12px; align-items: flex-start; padding: 12px 13px; }
+.summary-topic-block { padding: 16px 18px; text-align: left; background: #fbfcfd; border: 1px solid #d8dde5; border-bottom: 0; border-radius: 12px 12px 0 0; }
+.summary-topic-block span { display: block; margin-bottom: 6px; color: #265d67; font-size: 10px; font-weight: 900; }
+.summary-topic-block h4 { max-width: none; margin: 0 0 7px; font-size: 18px; line-height: 1.5; letter-spacing: -.02em; word-break: keep-all; text-wrap: pretty; }
+.summary-topic-block p { margin: 0; color: var(--muted); font-size: 11px; }
+.summary-meta-row { display: grid; grid-template-columns: .8fr 1.5fr; border: 1px solid #d8dde5; border-radius: 0 0 12px 12px; overflow: hidden; }
+.summary-meta-row > div { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; }
 .summary-meta-row > div + div { border-left: 1px solid #d8dde5; }
 .summary-meta-row b { flex: 0 0 auto; color: #265d67; font-size: 11px; }
 .summary-meta-row span { color: #4e596d; font-size: 12px; line-height: 1.55; }
@@ -1292,7 +1304,7 @@ function renderExplore() {
     ? cleanQuestion(selected.topic.question)
     : (customTopic || customQuestion || "직접 작성한 탐구 주제");
 
-  const referenceCount = Math.max(3, Number(state.referenceCount) || 3);
+  const referenceCount = Math.max(1, Number(state.referenceCount) || 3);
 
   const topic = selected ? selected.topic : {
     keywords: [
@@ -1351,10 +1363,14 @@ function renderExplore() {
 
       <section class="content-card section-anchor" id="explore-comparison"><span class="form-card-number">3.</span><h3>자료를 읽으며 확인할 항목</h3><ul class="check-list">${topic.comparison.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul></section>
 
-      <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">기본 3개의 원자료를 기록하고, 더 필요한 경우 아래의 ‘자료 추가’ 버튼으로 입력칸을 늘릴 수 있습니다. 작성한 자료는 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
+      <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">기본 3개의 원자료 입력칸이 제공됩니다. 필요하면 ‘자료 추가’로 늘리거나 각 자료의 ‘삭제’ 버튼으로 줄일 수 있습니다. 최소 1개의 자료 입력칸은 유지되며, 작성한 자료는 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
       <section class="reference-grid">
         ${Array.from({ length: referenceCount }, (_, index) => index + 1).map((index) => `
-          <article class="reference-card" id="reference-card-${index}"><h4>자료 ${index}</h4>
+          <article class="reference-card" id="reference-card-${index}">
+            <div class="reference-card-head">
+              <h4>자료 ${index}</h4>
+              ${referenceCount > 1 ? `<button type="button" class="reference-delete-button" data-delete-reference="${index}" aria-label="자료 ${index} 삭제">삭제</button>` : ""}
+            </div>
             <div class="reference-fields">
               <label><span class="field-label">자료 제목</span><input data-field="ref${index}-title" value="${escapeAttr(state.fields[`ref${index}-title`] ?? "")}" placeholder="논문·보고서·통계자료 제목"></label>
               <label><span class="field-label">저자·기관</span><input data-field="ref${index}-author" value="${escapeAttr(state.fields[`ref${index}-author`] ?? "")}" placeholder="저자 또는 기관"></label>
@@ -1408,7 +1424,7 @@ function reportOutline(topic) {
 
 function referencesText() {
   const rows = [];
-  const referenceCount = Math.max(3, Number(state.referenceCount) || 3);
+  const referenceCount = Math.max(1, Number(state.referenceCount) || 3);
   for (let index = 1; index <= referenceCount; index += 1) {
     const title = String(state.fields[`ref${index}-title`] ?? "").trim();
     if (!title) continue;
@@ -1597,21 +1613,143 @@ function renderReport() {
     </main>`;
 }
 
-function analysisSummaryItems() {
+function summarySentenceList(value) {
+  const text = String(value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+  if (!text) return [];
+
+  // 학생이 작성한 문장을 그대로 활용하기 위해 문장 경계만 나눈다.
+  // 마침표·물음표·느낌표 뒤 또는 줄바꿈을 문장 경계로 본다.
+  const protectedText = text
+    .replace(/(\d)\.(\d)/g, "$1__DECIMAL__$2")
+    .replace(/([A-Za-z])\.([A-Za-z])/g, "$1__DOT__$2");
+  return protectedText
+    .split(/(?<=[.!?。！？])\s+|\n+/)
+    .map((sentence) => sentence
+      .replace(/__DECIMAL__/g, ".")
+      .replace(/__DOT__/g, ".")
+      .replace(/\s+/g, " ")
+      .trim())
+    .filter((sentence) => sentence.length >= 12);
+}
+
+function summarySentenceScore(sentence, index, total, keywords = []) {
+  const s = String(sentence ?? "");
+  let score = 0;
+  if (index === 0) score += 2.4;
+  if (index === total - 1) score += 1.0;
+  if (/\d|%|배|증가|감소|높|낮|차이|비교|비례|반비례|관계|경향|결과|확인|나타|영향|원인|때문|따라/.test(s)) score += 2.2;
+  if (/따라서|종합|결론|판단|가설|예상|의미|해석|시사|알 수|확인할 수/.test(s)) score += 2.6;
+  if (/한계|제한|어렵|부족|주의|추가|보완|후속/.test(s)) score += 1.8;
+  keywords.forEach((keyword) => {
+    if (keyword && s.includes(keyword)) score += 1.3;
+  });
+  // 지나치게 짧은 문장이나 매우 긴 문장은 핵심문장 후보에서 약간 낮춘다.
+  if (s.length < 28) score -= 1.0;
+  if (s.length > 220) score -= 0.8;
+  return score;
+}
+
+function selectCoreSentences(value, options = {}) {
+  const {
+    maxChars = 220,
+    maxSentences = 2,
+    keywords = [],
+    preferFirst = true,
+    filter = null,
+  } = options;
+  let sentences = summarySentenceList(value);
+  if (typeof filter === "function") {
+    const filtered = sentences.filter(filter);
+    if (filtered.length) sentences = filtered;
+  }
+  if (!sentences.length) return "아직 작성되지 않았습니다.";
+
+  const ranked = sentences.map((sentence, index) => ({
+    sentence,
+    index,
+    score: summarySentenceScore(sentence, index, sentences.length, keywords),
+  }));
+  if (preferFirst && ranked.length) ranked[0].score += 1.2;
+  ranked.sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const selected = [];
+  let used = 0;
+  for (const item of ranked) {
+    if (selected.length >= maxSentences) break;
+    const add = item.sentence.length + (selected.length ? 1 : 0);
+    if (selected.length && used + add > maxChars) continue;
+    // 첫 핵심문장이 예산보다 조금 길더라도 문장 중간을 자르지 않고 그대로 둔다.
+    if (!selected.length && item.sentence.length > maxChars * 1.35 && ranked.length > 1) continue;
+    selected.push(item);
+    used += add;
+  }
+  if (!selected.length) selected.push(ranked[0]);
+  selected.sort((a, b) => a.index - b.index);
+  return selected.map((item) => item.sentence).join(" ");
+}
+
+function analysisSummaryItems(maxChars = 520) {
   const selected = workflowSelection();
   const outline = selected ? reportOutline(selected.topic) : parseOutline();
-  return outline.map((title,index) => {
+  const candidates = [];
+
+  outline.forEach((title, index) => {
     const actualTitle = String(state.fields[`analysis-title-${index}`] ?? title).trim();
     const content = stripAnalysisNumber(state.fields[`analysis-content-${index}`]).trim();
-    if (!content) return "";
-    const escapedTitle = actualTitle.replace(/[.*+?^${}()|[\]\\]/g, "\\__WORKBOOK_RUNTIME__");
-    const withoutRepeatedTitle = content
-      .replace(new RegExp(`^${escapedTitle}\\s*`), "")
-      .replace(/^에\s*관한\s*/, "")
-      .trim();
-    const summaryContent = compactSummaryText(withoutRepeatedTitle || content, 110);
-    return summaryContent ? `${actualTitle} — ${summaryContent}` : actualTitle;
-  }).filter(Boolean);
+    if (!content) return;
+    const sentences = summarySentenceList(content);
+    if (!sentences.length) return;
+
+    const titleBoost = /종합|해석|결론|가설|예상|판단|핵심 결과|결과 비교|공통점|차이점|원인/.test(actualTitle) ? 2.3
+      : /적용|의미/.test(actualTitle) ? 0.8
+      : /특징|자료/.test(actualTitle) ? 0.2 : 1.0;
+    sentences.forEach((sentence, sentenceIndex) => {
+      candidates.push({
+        title: actualTitle,
+        sentence,
+        blockIndex: index,
+        sentenceIndex,
+        score: summarySentenceScore(sentence, sentenceIndex, sentences.length, ["결과", "비교", "영향", "관계", "가설", "종합"]) + titleBoost,
+      });
+    });
+  });
+
+  if (!candidates.length) return [];
+  candidates.sort((a, b) => b.score - a.score || a.blockIndex - b.blockIndex || a.sentenceIndex - b.sentenceIndex);
+
+  const picked = [];
+  const usedBlocks = new Set();
+  let usedChars = 0;
+
+  // 먼저 서로 다른 소제목에서 핵심문장을 골라 결과 전체가 한쪽에 치우치지 않게 한다.
+  for (const item of candidates) {
+    if (picked.length >= 5) break;
+    if (usedBlocks.has(item.blockIndex)) continue;
+    const line = `${item.title} — ${item.sentence}`;
+    if (picked.length && usedChars + line.length > maxChars) continue;
+    picked.push(item);
+    usedBlocks.add(item.blockIndex);
+    usedChars += line.length;
+  }
+
+  // 분량이 남으면 가장 중요한 문장을 한두 개 보충한다.
+  for (const item of candidates) {
+    if (picked.length >= 6) break;
+    if (picked.includes(item)) continue;
+    const line = `${item.title} — ${item.sentence}`;
+    if (usedChars + line.length > maxChars) continue;
+    picked.push(item);
+    usedChars += line.length;
+  }
+
+  picked.sort((a, b) => a.blockIndex - b.blockIndex || a.sentenceIndex - b.sentenceIndex);
+  return picked.map((item) => `${item.title} — ${item.sentence}`);
 }
 
 function compactSummaryText(value, maxLength, preserveLines = false) {
@@ -1619,13 +1757,7 @@ function compactSummaryText(value, maxLength, preserveLines = false) {
   const text = preserveLines
     ? source.split(/\r?\n/).map((line) => line.replace(/\s+/g, " ").trim()).filter(Boolean).join("\n")
     : source.replace(/\s+/g, " ").trim();
-  if (!text) return "아직 작성되지 않았습니다.";
-  if (text.length <= maxLength) return text;
-  const candidate = text.slice(0, maxLength + 1);
-  const punctuation = Math.max(candidate.lastIndexOf("."), candidate.lastIndexOf("다."), candidate.lastIndexOf("?"), candidate.lastIndexOf("!"));
-  if (punctuation >= Math.floor(maxLength * 0.58)) return candidate.slice(0, punctuation + 1);
-  const space = candidate.lastIndexOf(" ");
-  return `${candidate.slice(0, space > maxLength * 0.65 ? space : maxLength).trim()}…`;
+  return text || "아직 작성되지 않았습니다.";
 }
 
 function summaryCoreQuestion(topic) {
@@ -1636,21 +1768,67 @@ function summaryCoreQuestion(topic) {
   return question || cleanQuestion(topic.coreQuestion);
 }
 
+function summaryLimitText() {
+  const growth = String(state.fields["self-growth"] ?? "").trim();
+  if (growth) {
+    return selectCoreSentences(growth, {
+      maxChars: 230,
+      maxSentences: 2,
+      keywords: ["한계", "배운", "알게", "보완", "추가"],
+    });
+  }
+
+  // 자기평가서의 '배운 점'을 아직 쓰지 않았다면 보고서의 결론·한계에서
+  // 실제 한계에 해당하는 문장만 골라 사용한다. 한계 문장이 없으면 억지로
+  // 결론 문장을 반복하지 않는다.
+  const conclusionSentences = summarySentenceList(state.fields.final06);
+  const limitSentences = conclusionSentences.filter((sentence) =>
+    /한계|제한|어렵|부족|일반화|추가|보완|주의|적어|적었|한정|범위|대상|오차|자료 수/.test(sentence)
+  );
+  if (!limitSentences.length) return "아직 작성되지 않았습니다.";
+  return selectCoreSentences(limitSentences.join("\n"), {
+    maxChars: 220,
+    maxSentences: 2,
+    keywords: ["한계", "제한", "어렵", "부족", "일반화", "추가", "보완", "오차"],
+  });
+}
+
 function summarySnapshot() {
   const selected = workflowSelection();
   if (!selected) return null;
   const topic = selected.topic;
+
+  // 요약 본문은 약 1,300~1,500자 안팎을 목표로 한다.
+  // 글자 수를 기계적으로 자르지 않고 각 영역에서 완전한 핵심문장을 선택한다.
+  const motivation = selectCoreSentences(state.fields.final01 || state.fields["draft-motivation-purpose"], {
+    maxChars: 230,
+    maxSentences: 2,
+    keywords: ["궁금", "목적", "알아보", "비교", "확인"],
+  });
+  const method = selectCoreSentences(state.fields.final04 || state.fields["draft-method"], {
+    maxChars: 290,
+    maxSentences: 3,
+    keywords: ["자료", "비교", "분석", "기준", "방법", "측정", "실험"],
+  });
+  const results = analysisSummaryItems(520);
+  const conclusion = selectCoreSentences(state.fields.final06, {
+    maxChars: 260,
+    maxSentences: 2,
+    keywords: ["결론", "따라서", "종합", "가설", "예상", "판단", "확인"],
+  });
+  const limits = summaryLimitText();
+
   return {
     topic: compactSummaryText(state.fields["draft-topic"] || cleanQuestion(topic.question), 110),
     subtitle: `${selected.category.label} · ${selected.major.label}`,
     type: "논문·자료 조사 및 비교 분석",
     question: compactSummaryText(summaryCoreQuestion(topic), 145),
     sections: [
-      ["1 · 탐구 동기 및 목적", compactSummaryText(state.fields.final01 || state.fields["draft-motivation-purpose"], 180)],
-      ["2 · 탐구 방법", compactSummaryText(state.fields.final04 || state.fields["draft-method"], 220)],
-      ["3 · 주요 결과", analysisSummaryItems()],
-      ["4 · 결론", compactSummaryText(state.fields.final06, 180)],
-      ["5 · 한계 및 배운 점", compactSummaryText(state.fields["self-growth"] || state.fields.final06, 170)],
+      ["1 · 탐구 동기 및 목적", motivation],
+      ["2 · 탐구 방법", method],
+      ["3 · 주요 결과", results],
+      ["4 · 결론", conclusion],
+      ["5 · 한계 및 배운 점", limits],
     ],
   };
 }
@@ -1910,7 +2088,7 @@ function renderSelfEvaluation() {
         ["self-download", "4. 다운받기"],
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
-      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><p class="eyebrow">REPORT SUMMARY</p><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}<p class="summary-guide">핵심 질문·탐구 방법·주요 결과·결론을 한 페이지 분량으로 간결하게 정리합니다.</p><div class="report-actions"><button type="button" class="secondary-button" data-nav="report">보고서 완성에서 수정하기</button></div></div></section>
+      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><p class="eyebrow">REPORT SUMMARY</p><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}<p class="summary-guide">앞에서 작성한 보고서의 핵심문장을 골라 A4 한 페이지 정도의 분량으로 자동 요약합니다. 원문 전체를 그대로 반복하지 않습니다.</p><div class="report-actions"><button type="button" class="secondary-button" data-nav="report">보고서 완성에서 수정하기</button></div></div></section>
       <section class="form-card guided-self-builder section-anchor" id="self-builder"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><p class="guide">8개 항목마다 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 선택한 뒤 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 이어집니다.</p><div class="guided-self-list">
         ${items.map((item,index) => guidedSelfRow(index + 1,item.id,item.title,item.examples,item.prefix,item.suffix)).join("")}
       </div></section>
@@ -2340,8 +2518,231 @@ function wordParagraphs(value) {
     .join("");
 }
 
-function downloadDoc(html, fileName, message) {
-  const blob = new Blob(["\ufeff", html], { type: "application/msword;charset=utf-8" });
+function docxXmlText(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function docxRun(text, options = {}) {
+  const props = [];
+  props.push('<w:rFonts w:ascii="Malgun Gothic" w:hAnsi="Malgun Gothic" w:eastAsia="맑은 고딕"/>');
+  if (options.bold) props.push('<w:b/>');
+  if (options.color) props.push(`<w:color w:val="${options.color}"/>`);
+  if (options.size) props.push(`<w:sz w:val="${options.size}"/><w:szCs w:val="${options.size}"/>`);
+  const value = docxXmlText(text || " ");
+  return `<w:r><w:rPr>${props.join("")}</w:rPr><w:t xml:space="preserve">${value}</w:t></w:r>`;
+}
+
+function docxParagraph(text, options = {}) {
+  const pPr = [];
+  if (options.align) pPr.push(`<w:jc w:val="${options.align}"/>`);
+  if (options.keepNext) pPr.push('<w:keepNext/>');
+  if (options.pageBreakBefore) pPr.push('<w:pageBreakBefore/>');
+  if (options.spacingBefore || options.spacingAfter || options.line) {
+    pPr.push(`<w:spacing w:before="${options.spacingBefore || 0}" w:after="${options.spacingAfter || 0}" w:line="${options.line || 360}" w:lineRule="auto"/>`);
+  }
+  if (options.borderBottom) {
+    pPr.push(`<w:pBdr><w:bottom w:val="single" w:sz="${options.borderSize || 10}" w:space="5" w:color="${options.borderColor || "192238"}"/></w:pBdr>`);
+  }
+  return `<w:p><w:pPr>${pPr.join("")}</w:pPr>${docxRun(text, options)}</w:p>`;
+}
+
+function docxBodyParagraphs(value, options = {}) {
+  const lines = String(value ?? "").replace(/\r\n/g, "\n").split("\n");
+  if (!lines.some((line) => line.trim())) return docxParagraph(" ", { spacingAfter: 100, line: 350, ...options });
+  return lines.map((line) => docxParagraph(line.trim() || " ", { spacingAfter: 100, line: 350, ...options })).join("");
+}
+
+function docxSummaryCell(text, options = {}) {
+  const width = options.width || 1500;
+  const span = options.span ? `<w:gridSpan w:val="${options.span}"/>` : "";
+  const shade = options.shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${options.shade}"/>` : "";
+  const tcPr = `<w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${span}${shade}<w:vAlign w:val="center"/></w:tcPr>`;
+  const paragraph = docxParagraph(text, {
+    bold: options.bold,
+    color: options.color || "4E596D",
+    size: options.size || 18,
+    spacingAfter: 0,
+    line: options.line || 290
+  });
+  return `<w:tc>${tcPr}${paragraph}</w:tc>`;
+}
+
+function docxSummaryInfoTable(summary) {
+  const borders = `<w:tblBorders>
+    <w:top w:val="single" w:sz="5" w:space="0" w:color="D8DDE5"/>
+    <w:left w:val="single" w:sz="5" w:space="0" w:color="D8DDE5"/>
+    <w:bottom w:val="single" w:sz="5" w:space="0" w:color="D8DDE5"/>
+    <w:right w:val="single" w:sz="5" w:space="0" w:color="D8DDE5"/>
+    <w:insideH w:val="single" w:sz="4" w:space="0" w:color="E3E7ED"/>
+    <w:insideV w:val="single" w:sz="4" w:space="0" w:color="E3E7ED"/>
+  </w:tblBorders>`;
+  const cellMargins = `<w:tblCellMar>
+    <w:top w:w="110" w:type="dxa"/><w:left w:w="120" w:type="dxa"/>
+    <w:bottom w:w="110" w:type="dxa"/><w:right w:w="120" w:type="dxa"/>
+  </w:tblCellMar>`;
+  const tablePr = `<w:tblPr><w:tblW w:w="9820" w:type="dxa"/><w:tblLayout w:type="fixed"/>${borders}${cellMargins}</w:tblPr>`;
+  const grid = `<w:tblGrid><w:gridCol w:w="1450"/><w:gridCol w:w="3460"/><w:gridCol w:w="1450"/><w:gridCol w:w="3460"/></w:tblGrid>`;
+  const label = (value) => docxSummaryCell(value, { width: 1450, bold: true, color: "1F5962", size: 18, shade: "F3F6F7" });
+  const row1 = `<w:tr>${label("탐구 주제")}${docxSummaryCell(summary.topic, { width: 8370, span: 3, bold: true, color: "192238", size: 20, line: 310 })}</w:tr>`;
+  const row2 = `<w:tr>${label("탐구 분야")}${docxSummaryCell(summary.subtitle, { width: 3460 })}${label("탐구 유형")}${docxSummaryCell(summary.type, { width: 3460 })}</w:tr>`;
+  const row3 = `<w:tr>${label("핵심 질문")}${docxSummaryCell(summary.question, { width: 8370, span: 3, color: "38465C", size: 18, line: 300 })}</w:tr>`;
+  return `<w:tbl>${tablePr}${grid}${row1}${row2}${row3}</w:tbl>${docxParagraph(" ", { spacingAfter: 40, line: 100 })}`;
+}
+
+function docxPageBreak() {
+  return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+}
+
+function docxHeading(text, level = 1) {
+  if (level === 2) {
+    return docxParagraph(text, { bold: true, color: "B95139", size: 23, spacingBefore: 260, spacingAfter: 100, line: 300, keepNext: true });
+  }
+  return docxParagraph(text, { bold: true, color: "192238", size: 30, spacingBefore: 400, spacingAfter: 160, line: 320, keepNext: true, borderBottom: true, borderSize: 12 });
+}
+
+function docxCover(topic, student, major) {
+  return [
+    docxParagraph("INQUIRY REPORT", { align: "center", bold: true, color: "B95139", size: 18, spacingBefore: 1500, spacingAfter: 260, line: 280 }),
+    docxParagraph("탐구보고서", { align: "center", bold: true, color: "192238", size: 56, spacingAfter: 420, line: 360 }),
+    docxParagraph(topic, { align: "center", color: "263550", size: 34, spacingAfter: 680, line: 420 }),
+    docxParagraph(student, { align: "center", color: "4B5568", size: 21, spacingAfter: 220, line: 320, borderBottom: true, borderColor: "C9C2B7", borderSize: 6 }),
+    docxParagraph(major, { align: "center", color: "6B7280", size: 20, spacingAfter: 400, line: 300 }),
+    docxPageBreak(),
+  ].join("");
+}
+
+function docxStylesXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr><w:rFonts w:ascii="Malgun Gothic" w:hAnsi="Malgun Gothic" w:eastAsia="맑은 고딕"/><w:sz w:val="21"/><w:szCs w:val="21"/><w:lang w:val="ko-KR" w:eastAsia="ko-KR"/></w:rPr></w:rPrDefault>
+    <w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="350" w:lineRule="auto"/></w:pPr></w:pPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+</w:styles>`;
+}
+
+function docxSettingsXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/></w:settings>`;
+}
+
+function docxDocumentXml(bodyXml) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>${bodyXml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="960" w:right="1040" w:bottom="960" w:left="1040" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body>
+</w:document>`;
+}
+
+function docxPackageFiles(title, bodyXml) {
+  const now = new Date().toISOString();
+  return {
+    "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+  <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+</Types>`,
+    "_rels/.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>`,
+    "word/document.xml": docxDocumentXml(bodyXml),
+    "word/styles.xml": docxStylesXml(),
+    "word/settings.xml": docxSettingsXml(),
+    "word/_rels/document.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+</Relationships>`,
+    "docProps/core.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${docxXmlText(title)}</dc:title><dc:creator>탐구보고서 작성 워크북</dc:creator><cp:lastModifiedBy>탐구보고서 작성 워크북</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`,
+    "docProps/app.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Office Word</Application><AppVersion>16.0000</AppVersion></Properties>`,
+  };
+}
+
+function docxCrc32(bytes) {
+  if (!docxCrc32.table) {
+    docxCrc32.table = Array.from({ length: 256 }, (_, n) => {
+      let c = n;
+      for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      return c >>> 0;
+    });
+  }
+  let crc = 0xFFFFFFFF;
+  for (const byte of bytes) crc = docxCrc32.table[(crc ^ byte) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function docxLe16(value) {
+  return Uint8Array.of(value & 0xFF, (value >>> 8) & 0xFF);
+}
+
+function docxLe32(value) {
+  return Uint8Array.of(value & 0xFF, (value >>> 8) & 0xFF, (value >>> 16) & 0xFF, (value >>> 24) & 0xFF);
+}
+
+function docxConcat(parts) {
+  const total = parts.reduce((sum, part) => sum + part.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const part of parts) { out.set(part, offset); offset += part.length; }
+  return out;
+}
+
+function docxZipBlob(files) {
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let localOffset = 0;
+  const now = new Date();
+  const year = Math.max(1980, now.getFullYear());
+  const dosTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((Math.floor(now.getSeconds() / 2)) & 31);
+  const dosDate = (((year - 1980) & 127) << 9) | (((now.getMonth() + 1) & 15) << 5) | (now.getDate() & 31);
+
+  for (const [name, content] of Object.entries(files)) {
+    const nameBytes = encoder.encode(name);
+    const data = encoder.encode(content);
+    const crc = docxCrc32(data);
+    const localHeader = docxConcat([
+      docxLe32(0x04034B50), docxLe16(20), docxLe16(0x0800), docxLe16(0), docxLe16(dosTime), docxLe16(dosDate),
+      docxLe32(crc), docxLe32(data.length), docxLe32(data.length), docxLe16(nameBytes.length), docxLe16(0), nameBytes,
+    ]);
+    localParts.push(localHeader, data);
+
+    const centralHeader = docxConcat([
+      docxLe32(0x02014B50), docxLe16(20), docxLe16(20), docxLe16(0x0800), docxLe16(0), docxLe16(dosTime), docxLe16(dosDate),
+      docxLe32(crc), docxLe32(data.length), docxLe32(data.length), docxLe16(nameBytes.length), docxLe16(0), docxLe16(0),
+      docxLe16(0), docxLe16(0), docxLe32(0), docxLe32(localOffset), nameBytes,
+    ]);
+    centralParts.push(centralHeader);
+    localOffset += localHeader.length + data.length;
+  }
+
+  const central = docxConcat(centralParts);
+  const local = docxConcat(localParts);
+  const count = Object.keys(files).length;
+  const end = docxConcat([
+    docxLe32(0x06054B50), docxLe16(0), docxLe16(0), docxLe16(count), docxLe16(count),
+    docxLe32(central.length), docxLe32(local.length), docxLe16(0),
+  ]);
+  return new Blob([local, central, end], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+}
+
+function downloadDocx(title, bodyXml, fileName, message) {
+  const blob = docxZipBlob(docxPackageFiles(title, bodyXml));
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -2382,13 +2783,25 @@ function downloadReportWord() {
   };
   syncReportFromPrevious(false);
   const outline = reportOutline(selected.topic);
-  const analysis = outline.map((title,index) => `<div class="report-subheading">${wordText(state.fields[`analysis-title-${index}`] ?? title)}</div><div class="section-body">${wordParagraphs(stripAnalysisNumber(state.fields[`analysis-content-${index}`]))}</div>`).join("");
-  const topic = state.fields["draft-topic"] || cleanQuestion(selected.topic.question);
-  const student = `${wordText(state.fields["student-grade"])}학년　${wordText(state.fields["student-class"])}반　${wordText(state.fields["student-number"])}번　${wordText(state.fields["student-name"])}`;
-  const cover = `<section class="cover"><div class="kicker">INQUIRY REPORT</div><h1>진로 연계 탐구보고서</h1><div class="topic">${wordText(topic)}</div><div class="student">${student}</div><div class="major">${escapeHTML(selected.category.label)} · ${escapeHTML(selected.major.label)}</div></section>`;
-  const body = `${cover}<div class="report-heading">1. 탐구 동기 및 배경</div><div class="section-body">${wordParagraphs(state.fields.final01)}</div><div class="report-heading">2. 연구문제와 가설</div><div class="section-body">${wordParagraphs(state.fields.final02)}</div><div class="report-heading">3. 이론적 배경</div><div class="section-body">${wordParagraphs(state.fields.final03)}</div><div class="report-heading">4. 자료 수집 기준 및 탐구 방법</div><div class="section-body">${wordParagraphs(state.fields.final04)}</div><div class="report-heading">5. 분석 결과 및 해석</div>${analysis}<div class="report-heading">6. 결론 및 한계</div><div class="section-body">${wordParagraphs(state.fields.final06)}</div><div class="report-heading">7. 후속 탐구 계획</div><div class="section-body">${wordParagraphs(state.fields.final07)}</div><div class="report-heading">8. 참고자료 및 출처</div><div class="section-body references">${wordParagraphs(state.fields.final08)}</div>`;
+  const analysis = outline.map((title,index) =>
+    docxHeading(String(state.fields[`analysis-title-${index}`] ?? title), 2) +
+    docxBodyParagraphs(stripAnalysisNumber(state.fields[`analysis-content-${index}`]))
+  ).join("");
+  const topic = String(state.fields["draft-topic"] || cleanQuestion(selected.topic.question));
+  const student = `${String(state.fields["student-grade"] ?? "")}학년　${String(state.fields["student-class"] ?? "")}반　${String(state.fields["student-number"] ?? "")}번　${String(state.fields["student-name"] ?? "")}`;
+  const body = [
+    docxCover(topic, student, `${selected.category.label} · ${selected.major.label}`),
+    docxHeading("1. 탐구 동기 및 배경"), docxBodyParagraphs(state.fields.final01),
+    docxHeading("2. 연구문제와 가설"), docxBodyParagraphs(state.fields.final02),
+    docxHeading("3. 이론적 배경"), docxBodyParagraphs(state.fields.final03),
+    docxHeading("4. 자료 수집 기준 및 탐구 방법"), docxBodyParagraphs(state.fields.final04),
+    docxHeading("5. 분석 결과 및 해석"), analysis,
+    docxHeading("6. 결론 및 한계"), docxBodyParagraphs(state.fields.final06),
+    docxHeading("7. 후속 탐구 계획"), docxBodyParagraphs(state.fields.final07),
+    docxHeading("8. 참고자료 및 출처"), docxBodyParagraphs(state.fields.final08, { size: 19 }),
+  ].join("");
   const date = new Date().toISOString().slice(0,10).replaceAll("-","");
-  downloadDoc(wordDocument("진로 연계 탐구보고서", body), `${studentFilePrefix()}진로탐구보고서_${date}.doc`, "완성 보고서만 Word 파일로 내려받았습니다.");
+  downloadDocx("탐구보고서", body, `${studentFilePrefix()}진로탐구보고서_${date}.docx`, "완성 보고서를 DOCX 파일로 내려받았습니다.");
 }
 
 function downloadSelfWord() {
@@ -2397,12 +2810,27 @@ function downloadSelfWord() {
   const output = String(state.fields["self-output"] ?? "").trim() || composeSelfEvaluation();
   const summary = summarySnapshot();
   if (!summary) { showToast("요약할 탐구 내용이 없습니다."); return; }
-  const info = `<p class="student">${wordText(state.fields["student-grade"])}학년　${wordText(state.fields["student-class"])}반　${wordText(state.fields["student-number"])}번　${wordText(state.fields["student-name"])}</p>`;
-  const summaryPage = `<section class="summary-sheet"><header class="summary-head"><div class="kicker">REPORT SUMMARY</div><h1>탐구내용 요약정리</h1></header><div class="summary-word-body"><div class="summary-topic"><b>탐구 주제</b><h2>${wordText(summary.topic)}</h2><p>${wordText(summary.subtitle)}</p></div><table class="summary-meta"><tr><td><b>탐구 유형</b>${wordText(summary.type)}</td><td><b>핵심 질문</b>${wordText(summary.question)}</td></tr></table>${summary.sections.map(([label,value]) => `<section class="summary-row"><h3>${wordText(label)}</h3><div class="summary-row-text">${Array.isArray(value) ? (value.length ? value.map((line) => `<p>${wordText(line)}</p>`).join("") : "<p>아직 작성되지 않았습니다.</p>") : wordParagraphs(value)}</div></section>`).join("")}</div></section>`;
-  const selfPage = `<section class="self-page"><div class="kicker">SELF EVALUATION</div><h1>탐구활동 자기평가서</h1>${info}<h2>자기평가서</h2><div class="assessment">${wordParagraphs(output)}</div></section>`;
-  const body = `${summaryPage}${selfPage}`;
+  const student = `${String(state.fields["student-grade"] ?? "")}학년　${String(state.fields["student-class"] ?? "")}반　${String(state.fields["student-number"] ?? "")}번　${String(state.fields["student-name"] ?? "")}`;
+  const summarySections = summary.sections.map(([label, value]) => {
+    const sectionBody = Array.isArray(value)
+      ? (value.length ? value.map((line) => docxParagraph(line, { spacingAfter: 70, line: 320, size: 19 })).join("") : docxParagraph("아직 작성되지 않았습니다."))
+      : docxBodyParagraphs(value, { spacingAfter: 70, line: 320, size: 19 });
+    return docxParagraph(label, { bold: true, color: "1F5962", size: 20, spacingBefore: 145, spacingAfter: 55, line: 290, keepNext: true }) + sectionBody;
+  }).join("");
+  const body = [
+    docxParagraph("REPORT SUMMARY", { bold: true, color: "B95139", size: 16, spacingAfter: 55, line: 250 }),
+    docxParagraph("탐구내용 요약정리", { bold: true, color: "192238", size: 34, spacingAfter: 130, line: 310, borderBottom: true, borderColor: "192238", borderSize: 8 }),
+    docxSummaryInfoTable(summary),
+    summarySections,
+    docxPageBreak(),
+    docxParagraph("SELF EVALUATION", { bold: true, color: "B95139", size: 18, spacingAfter: 100 }),
+    docxParagraph("탐구활동 자기평가서", { bold: true, color: "192238", size: 44, spacingAfter: 180 }),
+    docxParagraph(student, { color: "4B5568", size: 21, spacingAfter: 260, borderBottom: true, borderColor: "C9C2B7", borderSize: 6 }),
+    docxHeading("자기평가서"),
+    docxBodyParagraphs(output, { size: 22, line: 380, spacingAfter: 120 }),
+  ].join("");
   const date = new Date().toISOString().slice(0,10).replaceAll("-","");
-  downloadDoc(wordDocument("탐구활동 자기평가서", body), `${studentFilePrefix()}탐구활동_자기평가서_${date}.doc`, "요약정리와 자기평가서만 Word 파일로 내려받았습니다.");
+  downloadDocx("탐구활동 자기평가서", body, `${studentFilePrefix()}탐구활동_자기평가서_${date}.docx`, "요약정리와 자기평가서를 DOCX 파일로 내려받았습니다.");
 }
 
 function insertPlainTextAtCursor(textValue) {
@@ -2489,8 +2917,39 @@ document.addEventListener("click", async (event) => {
     catch { showToast("검색어를 선택해 직접 복사하세요."); }
     return;
   }
+  if (target.hasAttribute("data-delete-reference")) {
+    const deleteIndex = Number(target.dataset.deleteReference);
+    const referenceCount = Math.max(1, Number(state.referenceCount) || 3);
+    if (!Number.isInteger(deleteIndex) || deleteIndex < 1 || deleteIndex > referenceCount) return;
+    if (referenceCount <= 1) {
+      showToast("자료 입력칸은 최소 1개가 필요합니다.");
+      return;
+    }
+
+    const suffixes = ["title", "author", "year", "url", "clipping", "limit"];
+    if (!window.confirm(`자료 ${deleteIndex}를 삭제하시겠습니까? 삭제한 자료는 복구할 수 없습니다.`)) return;
+
+    // 중간 자료를 삭제하면 뒤 자료를 한 칸씩 당겨 번호가 연속되도록 유지합니다.
+    for (let index = deleteIndex; index < referenceCount; index += 1) {
+      suffixes.forEach((suffix) => {
+        const nextKey = `ref${index + 1}-${suffix}`;
+        const currentKey = `ref${index}-${suffix}`;
+        if (Object.prototype.hasOwnProperty.call(state.fields, nextKey)) state.fields[currentKey] = state.fields[nextKey];
+        else delete state.fields[currentKey];
+      });
+    }
+    suffixes.forEach((suffix) => delete state.fields[`ref${referenceCount}-${suffix}`]);
+    state.referenceCount = referenceCount - 1;
+
+    // 보고서의 참고자료가 자동 연동 상태라면 삭제 결과도 즉시 반영합니다.
+    syncReportFromPrevious(false);
+    saveNow(true);
+    render("#explore-references");
+    showToast(`자료 ${deleteIndex}를 삭제했습니다.`);
+    return;
+  }
   if (target.hasAttribute("data-add-reference")) {
-    state.referenceCount = Math.max(3, Number(state.referenceCount) || 3) + 1;
+    state.referenceCount = Math.max(1, Number(state.referenceCount) || 3) + 1;
     saveNow(true);
     const addedIndex = state.referenceCount;
     render(`#reference-card-${addedIndex}`);
