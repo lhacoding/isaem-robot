@@ -393,6 +393,81 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .analysis-add-row .secondary-button { min-width: 170px; border-style: dashed; }
 .auto-label { display: inline-flex; margin-left: 6px; padding: 4px 7px; color: #27625c; font-size: 9px; font-weight: 900; background: #e8f7f4; border-radius: 999px; vertical-align: middle; }
 .report-actions { display: flex; justify-content: flex-end; gap: 9px; margin: 20px 0; }
+
+.download-choice-block {
+  margin: 22px 0 12px;
+  padding: 18px 20px;
+  background: #f8fafb;
+  border: 1px solid #d8dde5;
+  border-radius: 14px;
+}
+.report-download-compact {
+  width: fit-content;
+  min-width: 330px;
+  max-width: 100%;
+  margin-left: auto;
+  padding: 14px 16px;
+}
+.report-download-compact h4 {
+  margin-bottom: 9px;
+  font-size: 12px;
+}
+.report-download-compact .download-choice-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.report-download-compact .download-button {
+  width: auto;
+  min-width: 128px;
+  min-height: 40px;
+  padding: 10px 15px;
+}
+.download-choice-block h4 {
+  margin: 0 0 12px;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 950;
+}
+.download-choice-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.download-choice-buttons .download-button {
+  width: 100%;
+  min-height: 42px;
+  box-shadow: none;
+}
+.download-choice-buttons .hwpx-download-button {
+  background: var(--teal);
+}
+.download-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.report-final-download .download-choice-grid {
+  grid-template-columns: minmax(280px, 0.48fr);
+  justify-content: end;
+}
+.download-choice-grid .download-choice-block {
+  margin: 0;
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.16);
+}
+.download-choice-grid .download-choice-block h4 {
+  color: white;
+}
+.download-choice-grid .download-button {
+  color: var(--navy);
+  background: var(--gold);
+}
+.download-choice-grid .hwpx-download-button {
+  color: white;
+  background: var(--teal);
+}
 .back-to-top-wrap { display: flex; justify-content: center; margin: 34px 0 0; }
 .back-to-top-button {
   padding: 10px 16px;
@@ -409,6 +484,31 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .download-inline-note b { display: inline-block; margin-right: 6px; color: #a1432e; }
 .final-download-card { margin: 30px 0 10px; padding: 30px; color: white; background: linear-gradient(135deg, var(--navy), #263b50); border: 1px solid #3b4b61; border-radius: 20px; box-shadow: var(--shadow); }
 .download-required-label { display: inline-flex; margin: 0 0 12px; padding: 6px 10px; color: var(--navy); font-size: 10px; font-weight: 900; letter-spacing: .08em; background: var(--gold); border-radius: 999px; }
+.download-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.download-section-heading .download-section-number,
+.download-section-heading h3 {
+  margin: 0;
+  color: white;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.3;
+}
+.download-section-heading .download-section-number {
+  color: var(--gold);
+}
+.download-section-heading-large {
+  margin-bottom: 12px;
+}
+.download-section-heading-large .download-section-number,
+.download-section-heading-large h3 {
+  font-size: 25px;
+  line-height: 1.4;
+}
 .final-download-card h2 { margin: 0 0 10px; color: white; font-size: 25px; line-height: 1.4; }
 .final-download-card > p:not(.download-required-label) { margin: 0; color: #d4dbe5; font-size: 12px; line-height: 1.75; }
 .download-file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0 6px; }
@@ -417,7 +517,46 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .download-file-list b { margin-bottom: 5px; color: white; font-size: 12px; }
 .download-file-list span { color: #cbd4df; font-size: 10px; line-height: 1.55; }
 .final-download-actions { margin: 18px 0 0; }
-.final-download-actions .download-button { color: var(--navy); background: var(--gold); box-shadow: none; }
+
+.self-download-panel {
+  margin: 26px 0 10px;
+}
+.self-download-panel .download-inline-note {
+  margin-top: 12px;
+}
+.self-download-compact-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.self-download-compact-row .report-download-compact {
+  margin: 0;
+  min-width: 300px;
+}
+.self-download-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 4px;
+}
+.self-download-title .form-card-number {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  margin: 0;
+}
+.self-download-title h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 20px;
+}
 
 .summary-sheet-card { padding: 0; overflow: hidden; }
 .summary-sheet-heading { padding: 28px 30px 24px; color: white; background: var(--navy); }
@@ -717,6 +856,13 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
   .sample-toc { grid-template-columns: 1fr 1fr; }
   .report-actions { flex-direction: column; }
   .report-actions button { width: 100%; }
+  .download-choice-buttons, .download-choice-grid { grid-template-columns: 1fr; }
+  .download-choice-block { padding: 16px; }
+  .report-download-compact { width: 100%; min-width: 0; margin-left: 0; }
+  .report-download-compact .download-choice-buttons { display: grid; grid-template-columns: 1fr 1fr; }
+  .report-download-compact .download-button { width: 100%; min-width: 0; }
+  .self-download-compact-row { display: grid; grid-template-columns: 1fr; }
+  .self-download-compact-row .report-download-compact { width: 100%; min-width: 0; }
   .back-to-top-button { width: auto; min-width: 120px; }
   .analysis-add-row .secondary-button { width: auto; min-width: 150px; }
   .analysis-block-head { align-items: stretch; flex-direction: column; gap: 6px; }
@@ -840,12 +986,272 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
   }
 }
 
+
+/* 첫 진입 활용 가이드 */
+.guide-topbar {
+  justify-content: space-between;
+}
+.guide-school-label {
+  color: #cbd3e0;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.guide-page {
+  width: min(1180px, calc(100% - 30px));
+  margin: 0 auto;
+  padding: 30px 0 42px;
+}
+.guide-panel {
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+.guide-intro {
+  padding: 34px 42px 28px;
+  color: white;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(232,200,78,.20), transparent 28%),
+    radial-gradient(circle at 4% 120%, rgba(23,124,114,.26), transparent 34%),
+    var(--navy);
+}
+.guide-intro .eyebrow {
+  margin-bottom: 11px;
+}
+.guide-intro h1 {
+  margin: 0;
+  font-family: Georgia, "Noto Serif KR", serif;
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -.045em;
+}
+.guide-intro > p:not(.eyebrow) {
+  margin: 12px 0 0;
+  color: #d4dcea;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.guide-body {
+  padding: 26px 34px 30px;
+}
+.guide-section-title {
+  margin: 0 0 13px;
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+.guide-flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+}
+.guide-step {
+  position: relative;
+  min-height: 116px;
+  padding: 16px 15px 14px;
+  background: #faf8f3;
+  border: 1px solid #e2dbcf;
+  border-radius: 15px;
+}
+.guide-step:not(:last-child)::after {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: -19px;
+  transform: translateY(-50%);
+  width: 14px;
+  text-align: center;
+  content: "→";
+  color: var(--orange);
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1;
+  pointer-events: none;
+}
+.guide-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  margin-bottom: 8px;
+  color: white;
+  font-size: 11px;
+  font-weight: 950;
+  background: var(--orange);
+  border-radius: 50%;
+}
+.guide-step h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: -.015em;
+}
+.guide-step p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.guide-lower-grid {
+  display: grid;
+  grid-template-columns: .82fr 1.18fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+.guide-tips,
+.guide-license {
+  padding: 18px 20px;
+  border-radius: 16px;
+}
+.guide-tips {
+  background: #f4f7f7;
+  border: 1px solid #d7e5e2;
+}
+.guide-license {
+  background: #fff8e8;
+  border: 1px solid #ead9a8;
+}
+.guide-tips h3,
+.guide-license h3 {
+  margin: 0 0 9px;
+  font-size: 14px;
+}
+.guide-tips ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-tips li {
+  position: relative;
+  padding-left: 18px;
+  color: #4e596b;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.guide-tips li::before {
+  position: absolute;
+  left: 0;
+  top: .02em;
+  content: "✓";
+  color: var(--teal);
+  font-weight: 950;
+}
+.guide-license p {
+  margin: 5px 0 0;
+  color: #5d5548;
+  font-size: 11.5px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.guide-license .copyright {
+  margin-top: 10px;
+  color: #9aa1aa;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: .55;
+}
+.guide-license .copyright-email {
+  margin-left: 2px;
+  font-size: 8.5px;
+  font-weight: 500;
+}
+.guide-start-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+.guide-start-button {
+  min-width: 250px;
+  padding: 14px 24px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .guide-flow {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .guide-step {
+    min-height: 0;
+  }
+  .guide-step:not(:last-child)::after {
+    top: auto;
+    right: 50%;
+    bottom: -18px;
+    width: 18px;
+    transform: translate(50%, 50%) rotate(90deg);
+    font-size: 15px;
+    line-height: 1;
+  }
+  .guide-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .guide-school-label { display: none; }
+  .guide-page {
+    width: min(100% - 16px, 1180px);
+    padding: 18px 0 30px;
+  }
+  .guide-intro {
+    padding: 25px 19px 22px;
+  }
+  .guide-intro h1 {
+    font-size: 29px;
+  }
+  .guide-body {
+    padding: 19px 15px 22px;
+  }
+  .guide-start-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 @media print {
-  .topbar, .sample-toc, .section-sidebar, .examples, .report-actions, .plain-action, .primary-button, .secondary-button, .toast, .download-inline-note, .final-download-card { display: none !important; }
+  .topbar, .sample-toc, .section-sidebar, .examples, .report-actions, .download-choice-block, .download-choice-grid, .plain-action, .primary-button, .secondary-button, .toast, .download-inline-note, .final-download-card, .self-download-panel { display: none !important; }
   body { background: white; }
   .page-shell { width: 100%; padding: 0; }
   .form-card, .content-card, .summary-card { box-shadow: none; break-inside: avoid; }
 }
+
+.download-file-list.single-file-info { grid-template-columns: 1fr; }
+
+.topic-ai-notice-box {
+  margin: 22px 0 8px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid #e4d6c8;
+  background: #fffaf4;
+  box-shadow: 0 6px 18px rgba(31, 39, 64, 0.05);
+}
+.topic-ai-notice-title {
+  margin-bottom: 7px;
+  color: #a85d3e;
+  font-size: 13px;
+  font-weight: 900;
+}
+.topic-ai-notice-box p {
+  margin: 0;
+  color: #5e6470;
+  font-size: 13px;
+  line-height: 1.75;
+}
+@media (max-width: 900px) {
+  .topic-ai-notice-box {
+    margin-top: 16px;
+    padding: 15px 16px;
+  }
+  .topic-ai-notice-box p {
+    font-size: 12.5px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -864,7 +1270,7 @@ let resumeTargetView = "topics";
 function defaultState() {
   const firstCategory = TOPIC_DATA[0];
   return {
-    view: "topics",
+    view: "guide",
     categoryId: firstCategory.id,
     majorId: firstCategory.majors[0].id,
     difficulty: "easy",
@@ -1036,9 +1442,20 @@ const steps = [
 ];
 
 function headerHTML() {
+  if (state.view === "guide") {
+    return `
+      <header class="topbar guide-topbar">
+        <div class="brand">
+          <span class="brand-badge">LAB NOTE</span>
+          <strong>탐구보고서 작성 워크북</strong>
+        </div>
+        <span class="guide-school-label">인천부광고등학교 수업용</span>
+      </header>`;
+  }
+
   return `
     <header class="topbar">
-      <button type="button" class="brand brand-home" data-nav="topics" aria-label="첫 페이지로 이동" title="첫 페이지로 이동">
+      <button type="button" class="brand brand-home" data-nav="guide" aria-label="활용 가이드로 이동" title="활용 가이드로 이동">
         <span class="brand-badge">LAB NOTE</span>
         <strong>탐구보고서 작성 워크북</strong>
       </button>
@@ -1057,13 +1474,14 @@ function headerHTML() {
 
 function render(scrollTarget = null) {
   let content = "";
+  if (state.view === "guide") content = renderGuide();
   if (state.view === "topics") content = renderTopics();
   if (state.view === "draft") content = renderDraft();
   if (state.view === "explore") content = renderExplore();
   if (state.view === "report") content = renderReport();
   if (state.view === "self") content = renderSelfEvaluation();
   if (state.view === "sample") content = renderSample();
-  app.innerHTML = `${headerHTML()}${content}${resumeVisible ? resumeModal() : ""}`;
+  app.innerHTML = `${headerHTML()}${content}${resumeVisible && state.view !== "guide" ? resumeModal() : ""}`;
   app.querySelectorAll(".sample-summary-vertical article > b").forEach((node) => {
     node.textContent = String(node.textContent ?? "").replace(/^0(?=\d)/, "");
   });
@@ -1128,6 +1546,65 @@ function sectionSidebar(items, label) {
   return `<nav class="section-sidebar" aria-label="${escapeAttr(label)}">${items.map(([id, title]) => `<a href="#${escapeAttr(id)}">${escapeHTML(title)}</a>`).join("")}</nav>`;
 }
 
+
+function renderGuide() {
+  const guideSteps = [
+    ["1", "주제 찾기", "관심 분야에서 탐구할 주제를 선택하거나 직접 정합니다."],
+    ["2", "기획서 작성", "질문·가설·자료 조사 계획과 예상 목차를 정리합니다."],
+    ["3", "탐구 활동", "자료를 찾고 핵심 내용을 비교·분석하여 구조화합니다."],
+    ["4", "보고서 완성", "앞에서 작성한 내용을 연결하여 탐구보고서를 완성합니다."],
+    ["5", "자기평가서 작성", "탐구 내용을 요약하고 자신의 활동과 성장을 돌아봅니다."],
+  ];
+
+  return `
+    <main class="guide-page">
+      <section class="guide-panel">
+        <header class="guide-intro">
+          <p class="eyebrow">BUKWANG HIGH SCHOOL · INQUIRY WORKBOOK</p>
+          <h1>탐구보고서 작성 워크북 <span class="highlight">활용 가이드</span></h1>
+          <p>주제 찾기부터 보고서와 자기평가서 완성까지 아래 순서대로 따라가세요.</p>
+        </header>
+
+        <div class="guide-body">
+          <h2 class="guide-section-title">이 자료는 이렇게 활용하세요</h2>
+          <div class="guide-flow">
+            ${guideSteps.map(([num, title, description]) => `
+              <article class="guide-step">
+                <span class="guide-step-num">${num}</span>
+                <h3>${title}</h3>
+                <p>${description}</p>
+              </article>
+            `).join("")}
+          </div>
+
+          <div class="guide-lower-grid">
+            <section class="guide-tips">
+              <h3>사용할 때 기억하세요</h3>
+              <ul>
+                <li>1단계부터 순서대로 작성하면 앞에서 입력한 내용이 다음 단계에 연결됩니다.</li>
+                <li>각 단계가 어렵다면 ‘샘플 예제’에서 어떤 내용을 작성하는지 먼저 확인하세요.</li>
+                <li>작성 내용은 현재 기기의 브라우저에 임시 저장되며, 마지막에는 Word 또는 한글 파일로 다운로드해 보완한 뒤 제출하세요.</li>
+              </ul>
+            </section>
+
+            <section class="guide-license">
+              <h3>자료 이용 안내</h3>
+              <p>본 자료는 인천부광고등학교 학생의 수업 및 학습 활동을 위해 제작된 교육용 자료입니다.</p>
+              <p>사용 기간은 2026년 12월 31일까지입니다.</p>
+              <p>외부 공유·무단 복제·재배포·재판매 및 상업적 이용을 금지합니다.</p>
+              <p>자료의 일부 또는 전체를 다른 수업, 강의, 출판물, 온라인 콘텐츠 등에 활용하려면 제작자의 사전 허가가 필요합니다.</p>
+              <p class="copyright">© 2026 송도이샘로봇<span class="copyright-email">(lha110@naver.com)</span>. All rights reserved.</p>
+            </section>
+          </div>
+
+          <div class="guide-start-wrap">
+            <button type="button" class="primary-button guide-start-button" data-guide-start>확인하고 시작하기 →</button>
+          </div>
+        </div>
+      </section>
+    </main>`;
+}
+
 function renderTopics() {
   const category = activeCategory();
   const major = activeMajor();
@@ -1140,6 +1617,11 @@ function renderTopics() {
         <p>모든 주제는 논문·공공기관 자료·전문 사례를 찾아 비교할 수 있도록 구성했습니다. 관심 계열과 전공을 고른 뒤 자신에게 맞는 난이도를 선택하세요.</p>
       </section>
 
+      <section class="topic-ai-notice-box" aria-label="AI 활용 주제 안내">
+        <div class="topic-ai-notice-title">안내</div>
+        <p>예시로 제시된 주제는 AI를 활용해 구성한 참고 자료이므로 일부 표현이나 내용에 오류가 있을 수 있습니다. 주제를 선택한 뒤에는 핵심 질문과 용어를 다시 확인하고, 자료 조사 과정에서 필요하면 수정하여 사용하세요.</p>
+      </section>
+
       <div class="section-head"><div><h2>계열 선택</h2><p>관심 있는 진로 계열을 먼저 선택하세요.</p></div></div>
       <div class="choice-grid">
         ${TOPIC_DATA.map((item) => `<button type="button" class="choice-button${item.id === category.id ? " active" : ""}" data-category="${escapeAttr(item.id)}">${escapeHTML(item.label)}</button>`).join("")}
@@ -1150,12 +1632,12 @@ function renderTopics() {
         ${category.majors.map((item) => `<button type="button" class="major-button${item.id === major.id ? " active" : ""}" data-major="${escapeAttr(item.id)}">${escapeHTML(item.label)}</button>`).join("")}
       </div>
 
-      <div class="section-head scroll-anchor" id="difficulty-section"><div><h2>난이도별 주제 보기</h2><p>자료의 수와 비교·해석의 깊이를 기준으로 나누었습니다.</p></div></div>
+      <div class="section-head scroll-anchor" id="difficulty-section"><div><h2>난이도별 주제 보기</h2></div></div>
       <div class="difficulty-row">
         ${[["easy","쉬움"],["normal","보통"],["challenge","도전"]].map(([id,label]) => `<button type="button" class="difficulty-button ${id}${state.difficulty === id ? " active" : ""}" data-difficulty="${id}">${label}</button>`).join("")}
       </div>
 
-      <div class="section-head scroll-anchor" id="topic-section"><div><h2>${escapeHTML(major.label)} 주제</h2><p>주제를 선택하면 관련 예시가 제공됩니다. 기획서 입력칸은 학생이 직접 작성하도록 비어 있습니다.</p></div></div>
+      <div class="section-head scroll-anchor" id="topic-section"><div><h2>${escapeHTML(major.label)} 주제</h2></div></div>
       <section class="topic-list">
         ${topics.map((topic) => `
           <article class="topic-card">
@@ -1178,7 +1660,7 @@ function renderTopics() {
         <div class="custom-topic-actions">
           <a class="secondary-button external-button" href="https://chatgpt.com/g/g-6a7eb5793b1c81919cfe68a030887dcb-gwamogbyeol-tamgujuje-gihoegseo-doumi" target="_blank" rel="noopener noreferrer">내 주제 직접 찾기 <span aria-hidden="true">↗</span></a>
           <button type="button" class="primary-button" data-start-custom-topic>내가 찾은 주제로 탐구 시작하기</button>
-          <a class="secondary-button external-button" href="https://chatgpt.com/share/6a7ec00b-c38c-83ee-8a91-cf8236d46326" target="_blank" rel="noopener noreferrer">주제 찾기 샘플 보기 <span aria-hidden="true">↗</span></a>
+          <a class="secondary-button external-button" href="https://chatgpt.com/share/6a893263-168c-83e8-8102-6ad0c1f21944" target="_blank" rel="noopener noreferrer">주제 찾기 샘플 보기 <span aria-hidden="true">↗</span></a>
         </div>
       </section>
     ${backToTopHTML()}
@@ -1630,6 +2112,7 @@ function renderReport() {
         ["report-conclusion", "6. 결론 및 한계"],
         ["report-followup", "7. 후속 탐구 계획"],
         ["report-references", "8. 참고자료 및 출처"],
+        ["report-download", "9. 다운로드"],
       ], "완성 보고서 항목")}
       <div class="workspace-content">
       ${fieldBlock(1,"final01","탐구 동기 및 배경",isCustom ? "탐구를 시작하게 된 계기와 이 보고서에서 알아보려는 내용을 직접 작성하세요." : "기획서의 탐구 동기와 목적을 가져왔습니다. 보고서 문장으로 다듬어 수정할 수 있습니다.",planExamples["draft-motivation-purpose"] ?? [],{auto:!isCustom,anchorId:"report-motivation"})}
@@ -1665,8 +2148,26 @@ function renderReport() {
       ${fieldBlock(6,"final06","결론 및 한계","핵심 질문에 답하고, 예상·가설과의 관계, 결론을 뒷받침하는 근거와 일반화할 수 없는 한계를 작성하세요.",examples.final06,{anchorId:"report-conclusion"})}
       ${fieldBlock(7,"final07","후속 탐구 계획","탐구 중 새롭게 생긴 질문과 자료·방법을 보완할 후속 탐구를 작성하세요.",examples.final07,{anchorId:"report-followup"})}
       ${fieldBlock(8,"final08","참고자료 및 출처",isCustom ? "보고서 작성에 실제로 사용한 자료의 저자·기관, 제목, 연도, 원문 주소를 직접 기록하세요." : "탐구 활동에서 기록한 자료를 가져옵니다. 저자·기관, 제목, 연도, 원문 주소를 확인하고 추적 문구가 없는 깨끗한 주소를 사용하세요.",[],{auto:!isCustom,rows:8,anchorId:"report-references"})}
-      <p class="download-inline-note"><b>수업 종료 전 확인</b> 자동 저장 내용은 현재 기기의 이 브라우저에만 남습니다. 완성 보고서를 Word 파일로 내려받은 뒤 자기평가서를 작성하세요.</p>
-      <div class="report-actions"><button type="button" class="secondary-button" data-nav="explore">탐구 활동으로 돌아가기</button><button type="button" class="download-button" data-download-word>완성 보고서 Word 다운로드</button><button type="button" class="primary-button" data-nav="self">자기평가서 작성하기</button></div>
+      <section class="final-download-card report-final-download section-anchor" id="report-download" aria-labelledby="report-download-title">
+        <div class="download-section-heading download-section-heading-large">
+          <span class="download-section-number">9.</span>
+          <h3 id="report-download-title">다운로드</h3>
+        </div>
+        <p>Word와 한글 중 필요한 형식을 선택하여 다운로드하세요.<br>다운로드한 파일을 확인하고 필요한 내용을 보완하여 최종 완성한 뒤 제출하세요.</p>
+        <div class="download-choice-grid">
+          <div class="download-choice-block">
+            <h4>보고서 다운로드</h4>
+            <div class="download-choice-buttons">
+              <button type="button" class="download-button" data-download-word>Word (.docx)</button>
+              <button type="button" class="download-button hwpx-download-button" data-download-hwpx>한글 (.hwpx)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="report-actions">
+        <button type="button" class="secondary-button" data-nav="explore">탐구 활동으로 돌아가기</button>
+        <button type="button" class="primary-button" data-nav="self">자기평가서 작성하기</button>
+      </div>
       </div>
       </div>
     ${backToTopHTML()}
@@ -2208,13 +2709,13 @@ function renderSelfEvaluation() {
   const items = selfEvaluationItems(selected);
   return `
     <main class="page-shell">
-      <section class="hero"><h1>완성한 보고서를 보며 <span class="highlight">탐구 과정과 성장</span>을 돌아보세요.</h1><p>앞에서 작성한 보고서의 핵심 내용이 아래에 자동 정리됩니다. 이를 참고하여 자신의 실제 활동을 중심으로 자기평가서를 작성하세요.</p></section>
+      <section class="hero"><p class="eyebrow">5 · SELF EVALUATION</p><h1>완성한 보고서를 보며 <span class="highlight">탐구 과정과 성장</span>을 돌아보세요.</h1><p>앞에서 작성한 보고서의 핵심 내용이 아래에 자동 정리됩니다. 이를 참고하여 자신의 실제 활동을 중심으로 자기평가서를 작성하세요.</p></section>
       <div class="workspace-layout">
       ${sectionSidebar([
         ["self-summary", "1. 탐구내용 요약정리"],
         ["self-builder", "2. 자기평가서 내용 채우기"],
         ["self-output", "3. 자기평가서 완성하기"],
-        ["self-download", "4. 다운받기"],
+        ["self-download", "4. 다운로드"],
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
       <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body">${reportSummaryHTML()}</div></section>
@@ -2223,14 +2724,37 @@ function renderSelfEvaluation() {
       </div></section>
       <section class="form-card section-anchor" id="self-output"><span class="form-card-number">3.</span><h3>자기평가서 완성하기</h3><p class="guide">입력한 항목을 바탕으로 문장을 연결합니다. 첫 문장에는 불필요한 연결어를 붙이지 않고, 앞뒤 내용에 따라 연결 표현을 조정합니다. 완성된 문장은 자신의 실제 활동과 표현에 맞게 다시 다듬어 주세요.</p><div class="report-actions"><button type="button" class="generate-button" data-generate-self>위 항목으로 문장 다시 만들기</button><span class="character-count" id="self-count">0자</span></div><p class="self-sync-note" id="self-sync-note"></p><textarea class="generated-box" data-field="self-output" rows="11" placeholder="위의 빈칸을 채우면 자기평가서가 자동으로 만들어집니다.">${escapeHTML(state.fields["self-output"] ?? "")}</textarea></section>
       <section class="final-download-card section-anchor" id="self-download" aria-labelledby="final-download-title">
-        <p class="download-required-label">4. 다운받기</p>
-        <h2 id="final-download-title">작성한 자료를 Word 파일로 내려받기</h2>
-        <p>자동 저장 내용은 현재 기기의 이 브라우저에만 남으며 다른 기기에서는 불러올 수 없습니다. 브라우저 기록이 지워지면 복구하기 어려우므로 아래의 두 파일을 모두 저장하세요.</p>
-        <div class="download-file-list">
-          <div><b>1. 완성 보고서</b><span>탐구 동기부터 참고자료까지 작성한 제출용 보고서</span></div>
-          <div><b>2. 탐구내용 요약·자기평가서</b><span>한 페이지 요약정리와 최종 자기평가서</span></div>
+        <div class="download-section-heading download-section-heading-large">
+          <span class="download-section-number">4.</span>
+          <h3 id="final-download-title">다운로드</h3>
         </div>
-        <div class="report-actions final-download-actions"><button type="button" class="download-button" data-download-word>완성 보고서 Word 다운로드</button><button type="button" class="download-button" data-download-self-word>요약정리·자기평가서 Word 다운로드</button></div>
+        <p>Word와 한글 중 필요한 형식을 선택하여 다운로드하세요. 완성 보고서와 요약정리·자기평가서는 각각 별도 파일로 저장할 수 있습니다.<br>다운로드한 파일을 확인하고 필요한 내용을 보완하여 최종 완성한 뒤 제출하세요.</p>
+        <div class="download-file-list">
+          <div>
+            <b>1. 완성 보고서</b>
+            <span>탐구 동기부터 참고자료까지 작성한 제출용 보고서</span>
+          </div>
+          <div>
+            <b>2. 탐구내용 요약·자기평가서</b>
+            <span>한 페이지 분량의 요약정리와 최종 자기평가서</span>
+          </div>
+        </div>
+        <div class="download-choice-grid">
+          <div class="download-choice-block">
+            <h4>보고서 다운로드</h4>
+            <div class="download-choice-buttons">
+              <button type="button" class="download-button" data-download-word>Word (.docx)</button>
+              <button type="button" class="download-button hwpx-download-button" data-download-hwpx>한글 (.hwpx)</button>
+            </div>
+          </div>
+          <div class="download-choice-block">
+            <h4>요약정리·자기평가서 다운로드</h4>
+            <div class="download-choice-buttons">
+              <button type="button" class="download-button" data-download-self-word>Word (.docx)</button>
+              <button type="button" class="download-button hwpx-download-button" data-download-self-hwpx>한글 (.hwpx)</button>
+            </div>
+          </div>
+        </div>
       </section>
       </div>
       </div>
@@ -2242,7 +2766,7 @@ function renderSampleLegacy() {
   return `
     <main class="page-shell">
       <section class="hero sample-hero"><p class="eyebrow">MODEL REPORT · SAMPLE</p><h1>두통이 있을 때 아세트아미노펜과 이부프로펜 중 <span class="highlight">어떤 성분을 선택해야 할까?</span></h1><p>작용·효과·안전성에 따른 선택 기준 탐구</p></section>
-      <div class="medical-note">이 페이지는 탐구보고서 작성 방법을 보여주는 교육용 예시이며 개인의 약 복용을 결정하는 의료 안내가 아닙니다. 실제 복용은 제품 설명서를 확인하고 보호자·약사·의료전문가와 상의해야 합니다.</div>
+      
       <nav class="sample-toc" aria-label="샘플 예제 목차"><a href="#sample-plan">1. 탐구 기획서</a><a href="#sample-search">2. 자료 검색</a><a href="#sample-analysis">3. 자료 비교</a><a href="#sample-report">4. 완성 보고서</a><a href="#sample-self">5. 자기평가서</a></nav>
 
       <details class="sample-section" id="sample-plan"><summary>01. 탐구 기획서 예시</summary><div class="sample-body">
@@ -2540,8 +3064,7 @@ function renderSample() {
   ];
   return `
     <main class="page-shell">
-      <section class="hero sample-hero"><p class="eyebrow">MODEL REPORT · SAMPLE</p><h1>두통이 있을 때 아세트아미노펜과 이부프로펜 중 <span class="highlight">어떤 성분을 선택해야 할까?</span></h1><p>주제 찾기부터 자기평가서 작성까지 실제 순서대로 따라가는 예시</p></section>
-      <div class="medical-note">이 페이지는 탐구보고서 작성 방법을 보여주는 교육용 예시이며 개인의 약 복용을 결정하는 의료 안내가 아닙니다. 실제 복용은 제품 설명서를 확인하고 보호자·약사·의료전문가와 상의해야 합니다.</div>
+      <section class="hero sample-hero"><p class="eyebrow">MODEL REPORT · SAMPLE</p><h1>두통이 있을 때 아세트아미노펜과 이부프로펜 중 <span class="highlight">어떤 성분을 선택해야 할까?</span></h1><p>탐구보고서 작성 흐름을 보여주는 예시입니다. 실제 보고서 분량은 약 10쪽 내외가 적당합니다.</p></section>
       <div class="sample-layout">
         <nav class="sample-toc" aria-label="샘플 예제 목차"><a href="#sample-topic">1. 주제 찾기 예시</a><a href="#sample-draft">2. 탐구 기획서 작성 예시</a><a href="#sample-explore">3. 탐구 활동 예시</a><a href="#sample-final">4. 보고서 완성 예시</a><a href="#sample-self-new">5. 자기평가서 작성 예시</a></nav>
         <div class="sample-content">
@@ -3174,6 +3697,577 @@ function docxZipBlob(files) {
   return new Blob([local, central, end], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
 }
 
+
+function hwpxXmlText(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function hwpxFontFace(lang) {
+  return `<hh:fontface lang="${lang}" fontCnt="1">
+    <hh:font id="0" face="맑은 고딕" type="TTF" isEmbedded="0">
+      <hh:typeInfo familyType="FCAT_GOTHIC" weight="6" proportion="4" contrast="0" strokeVariation="1" armStyle="1" letterform="1" midline="1" xHeight="1"/>
+    </hh:font>
+  </hh:fontface>`;
+}
+
+function hwpxCharPr(id, height, bold = false, color = "#000000") {
+  return `<hh:charPr id="${id}" height="${height}" textColor="${color}" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE" borderFillIDRef="2">
+    <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+    <hh:ratio hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>
+    <hh:spacing hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+    <hh:relSz hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>
+    <hh:offset hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+    ${bold ? "<hh:bold/>" : ""}
+    <hh:underline type="NONE" shape="SOLID" color="#000000"/>
+    <hh:strikeout shape="NONE" color="#000000"/>
+    <hh:outline type="NONE"/>
+    <hh:shadow type="NONE" color="#C0C0C0" offsetX="10" offsetY="10"/>
+  </hh:charPr>`;
+}
+
+function hwpxParaPr(id, align = "JUSTIFY", prev = 0, next = 0, borderFillIDRef = 2) {
+  return `<hh:paraPr id="${id}" tabPrIDRef="0" condense="0" fontLineHeight="0" snapToGrid="1" suppressLineNumbers="0" checked="0" textDir="LTR">
+    <hh:align horizontal="${align}" vertical="BASELINE"/>
+    <hh:heading type="NONE" idRef="0" level="0"/>
+    <hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="BREAK_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
+    <hh:autoSpacing eAsianEng="0" eAsianNum="0"/>
+    <hp:switch>
+      <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+        <hh:margin>
+          <hc:intent value="0" unit="HWPUNIT"/>
+          <hc:left value="0" unit="HWPUNIT"/>
+          <hc:right value="0" unit="HWPUNIT"/>
+          <hc:prev value="${prev}" unit="HWPUNIT"/>
+          <hc:next value="${next}" unit="HWPUNIT"/>
+        </hh:margin>
+        <hh:lineSpacing type="PERCENT" value="165" unit="HWPUNIT"/>
+      </hp:case>
+      <hp:default>
+        <hh:margin>
+          <hc:intent value="0" unit="HWPUNIT"/>
+          <hc:left value="0" unit="HWPUNIT"/>
+          <hc:right value="0" unit="HWPUNIT"/>
+          <hc:prev value="${prev}" unit="HWPUNIT"/>
+          <hc:next value="${next}" unit="HWPUNIT"/>
+        </hh:margin>
+        <hh:lineSpacing type="PERCENT" value="165" unit="HWPUNIT"/>
+      </hp:default>
+    </hp:switch>
+    <hh:border borderFillIDRef="${borderFillIDRef}" offsetLeft="0" offsetRight="0" offsetTop="0" offsetBottom="0" connect="0" ignoreMargin="0"/>
+  </hh:paraPr>`;
+}
+
+function hwpxHeaderXml() {
+  const langs = ["HANGUL","LATIN","HANJA","JAPANESE","OTHER","SYMBOL","USER"];
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"
+         xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+         xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+         version="1.5" secCnt="1">
+  <hh:beginNum page="1" footnote="1" endnote="1" pic="1" tbl="1" equation="1"/>
+  <hh:refList>
+    <hh:fontfaces itemCnt="7">${langs.map(hwpxFontFace).join("")}</hh:fontfaces>
+    <hh:borderFills itemCnt="5">
+      <hh:borderFill id="1" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">
+        <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:leftBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:rightBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:topBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:bottomBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+      </hh:borderFill>
+
+      <hh:borderFill id="2" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">
+        <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:leftBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:rightBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:topBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:bottomBorder type="NONE" width="0.1 mm" color="#000000"/>
+        <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+        <hc:fillBrush><hc:winBrush faceColor="none" hatchColor="#999999" alpha="0"/></hc:fillBrush>
+      </hh:borderFill>
+
+      <!-- 표 일반 셀: Word 표와 비슷한 얇은 회청색 선 -->
+      <hh:borderFill id="3" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">
+        <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:leftBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:rightBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:topBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:bottomBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+        <hc:fillBrush><hc:winBrush faceColor="#FFFFFF" hatchColor="#FFFFFF" alpha="0"/></hc:fillBrush>
+      </hh:borderFill>
+
+      <!-- 표 항목명 셀: 연한 회색 배경 -->
+      <hh:borderFill id="4" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">
+        <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:leftBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:rightBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:topBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:bottomBorder type="SOLID" width="0.12 mm" color="#B7C0CC"/>
+        <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+        <hc:fillBrush><hc:winBrush faceColor="#F1F4F6" hatchColor="#F1F4F6" alpha="0"/></hc:fillBrush>
+      </hh:borderFill>
+
+      <!-- 본문 대제목 밑줄 -->
+      <hh:borderFill id="5" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">
+        <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+        <hh:leftBorder type="NONE" width="0.1 mm" color="#192238"/>
+        <hh:rightBorder type="NONE" width="0.1 mm" color="#192238"/>
+        <hh:topBorder type="NONE" width="0.1 mm" color="#192238"/>
+        <hh:bottomBorder type="SOLID" width="0.3 mm" color="#192238"/>
+        <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+      </hh:borderFill>
+    </hh:borderFills>
+    <hh:charProperties itemCnt="7">
+      ${hwpxCharPr(0, 1050, false, "#172039")}
+      ${hwpxCharPr(1, 1050, true, "#1F5962")}
+      ${hwpxCharPr(2, 1300, true, "#192238")}
+      ${hwpxCharPr(3, 2600, true, "#192238")}
+      ${hwpxCharPr(4, 1700, true, "#192238")}
+      ${hwpxCharPr(5, 1000, false, "#4B5568")}
+      ${hwpxCharPr(6, 1050, true, "#192238")}
+    </hh:charProperties>
+    <hh:tabProperties itemCnt="1"><hh:tabPr id="0" autoTabLeft="0" autoTabRight="0"/></hh:tabProperties>
+    <hh:paraProperties itemCnt="5">
+      ${hwpxParaPr(0, "JUSTIFY", 0, 100)}
+      ${hwpxParaPr(1, "CENTER", 0, 120)}
+      ${hwpxParaPr(2, "LEFT", 0, 100)}
+      ${hwpxParaPr(3, "LEFT", 0, 100, 5)}
+      ${hwpxParaPr(4, "JUSTIFY", 520, 100)}
+    </hh:paraProperties>
+    <hh:styles itemCnt="1">
+      <hh:style id="0" type="PARA" name="바탕글" engName="Normal" paraPrIDRef="0" charPrIDRef="0" nextStyleIDRef="0" langID="1042" lockForm="0"/>
+    </hh:styles>
+  </hh:refList>
+  <hh:compatibleDocument targetProgram="HWP201X"><hh:layoutCompatibility/></hh:compatibleDocument>
+  <hh:docOption><hh:linkinfo path="" pageInherit="0" footnoteInherit="0"/></hh:docOption>
+</hh:head>`;
+}
+
+let hwpxParagraphSequence = 1000000000;
+
+function hwpxParagraphXml(value, options = {}) {
+  const charPr = options.charPr ?? 0;
+  const paraPr = options.paraPr ?? 0;
+  const pageBreak = options.pageBreak ? 1 : 0;
+  const normalized = options.normalizeMath === false ? String(value ?? "") : normalizeReportMath(value);
+  const textValue = normalized || " ";
+  const id = hwpxParagraphSequence++;
+  return `<hp:p id="${id}" paraPrIDRef="${paraPr}" styleIDRef="0" pageBreak="${pageBreak}" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="${charPr}"><hp:t>${hwpxXmlText(textValue)}</hp:t></hp:run>
+  </hp:p>`;
+}
+
+function hwpxBodyXml(value, options = {}) {
+  const lines = String(value ?? "").replace(/\r\n/g, "\n").split("\n");
+  if (!lines.some((line) => line.trim())) return hwpxParagraphXml(" ", options);
+
+  const firstParaPr = options.firstParaPr;
+  const baseOptions = { ...options };
+  delete baseOptions.firstParaPr;
+
+  return lines.map((line, index) =>
+    hwpxParagraphXml(line.trim() || " ", {
+      ...baseOptions,
+      ...(index === 0 && firstParaPr !== undefined ? { paraPr: firstParaPr } : {}),
+    })
+  ).join("");
+}
+
+let hwpxTableSequence = 1000000100;
+
+function hwpxCellXml(textValue, options = {}) {
+  const colAddr = options.colAddr ?? 0;
+  const rowAddr = options.rowAddr ?? 0;
+  const colSpan = options.colSpan ?? 1;
+  const rowSpan = options.rowSpan ?? 1;
+  const width = options.width ?? 10000;
+  const height = options.height ?? 3200;
+  const borderFillIDRef = options.borderFillIDRef ?? 3;
+  const charPr = options.charPr ?? 0;
+  const paraPr = options.paraPr ?? 2;
+  const vertAlign = options.vertAlign ?? "CENTER";
+  const marginLeft = options.marginLeft ?? 360;
+  const marginRight = options.marginRight ?? 360;
+  const marginTop = options.marginTop ?? 260;
+  const marginBottom = options.marginBottom ?? 260;
+  const normalized = options.normalizeMath === false ? String(textValue ?? "") : normalizeReportMath(textValue);
+  const value = normalized || " ";
+  const paragraphId = hwpxParagraphSequence++;
+
+  return `<hp:tc name="" header="0" hasMargin="1" protect="0" editable="0" dirty="1" borderFillIDRef="${borderFillIDRef}">
+    <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="${vertAlign}" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
+      <hp:p id="${paragraphId}" paraPrIDRef="${paraPr}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+        <hp:run charPrIDRef="${charPr}"><hp:t>${hwpxXmlText(value)}</hp:t></hp:run>
+      </hp:p>
+    </hp:subList>
+    <hp:cellAddr colAddr="${colAddr}" rowAddr="${rowAddr}"/>
+    <hp:cellSpan colSpan="${colSpan}" rowSpan="${rowSpan}"/>
+    <hp:cellSz width="${width}" height="${height}"/>
+    <hp:cellMargin left="${marginLeft}" right="${marginRight}" top="${marginTop}" bottom="${marginBottom}"/>
+  </hp:tc>`;
+}
+
+function hwpxTableXml(rows, options = {}) {
+  const width = options.width ?? 43000;
+  const totalHeight = rows.reduce((sum, row) => sum + (row.height ?? 3200), 0);
+  const colCnt = options.colCnt ?? Math.max(...rows.map((row) => row.colCnt ?? row.cells.length));
+  const tableId = hwpxTableSequence++;
+
+  const rowsXml = rows.map((row, rowIndex) => {
+    const cellsXml = row.cells.map((cell) =>
+      hwpxCellXml(cell.text, {
+        ...cell,
+        rowAddr: rowIndex,
+        height: row.height ?? 3200,
+      })
+    ).join("");
+    return `<hp:tr>${cellsXml}</hp:tr>`;
+  }).join("");
+
+  const tableXml = `<hp:tbl id="${tableId}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="${rows.length}" colCnt="${colCnt}" cellSpacing="0" borderFillIDRef="3" noAdjust="0">
+    <hp:sz width="${width}" widthRelTo="ABSOLUTE" height="${totalHeight}" heightRelTo="ABSOLUTE" protect="0"/>
+    <hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="CENTER" vertOffset="0" horzOffset="0"/>
+    <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+    <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+    ${rowsXml}
+  </hp:tbl>`;
+
+  const paragraphId = hwpxParagraphSequence++;
+  return `<hp:p id="${paragraphId}" paraPrIDRef="1" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">${tableXml}</hp:run>
+  </hp:p>`;
+}
+
+function hwpxResearchInfoTableXml(topic, type, question) {
+  const labelWidth = 6500;
+  const valueWidth = 35500;
+
+  return hwpxTableXml([
+    {
+      height: 4700,
+      colCnt: 2,
+      cells: [
+        { text: "탐구 주제", colAddr: 0, width: labelWidth, borderFillIDRef: 4, charPr: 1, paraPr: 1 },
+        { text: topic, colAddr: 1, width: valueWidth, borderFillIDRef: 3, charPr: 6, paraPr: 2, marginLeft: 1200, marginRight: 420 },
+      ],
+    },
+    {
+      height: 3700,
+      colCnt: 2,
+      cells: [
+        { text: "탐구 유형", colAddr: 0, width: labelWidth, borderFillIDRef: 4, charPr: 1, paraPr: 1 },
+        { text: type, colAddr: 1, width: valueWidth, borderFillIDRef: 3, charPr: 0, paraPr: 2, marginLeft: 1200, marginRight: 420 },
+      ],
+    },
+    {
+      height: 4300,
+      colCnt: 2,
+      cells: [
+        { text: "핵심 질문", colAddr: 0, width: labelWidth, borderFillIDRef: 4, charPr: 1, paraPr: 1 },
+        { text: question, colAddr: 1, width: valueWidth, borderFillIDRef: 3, charPr: 0, paraPr: 2, marginLeft: 1200, marginRight: 420 },
+      ],
+    },
+  ], { width: 42000, colCnt: 2 });
+}
+
+function hwpxStudentInfoTableXml() {
+  const grade = String(state.fields["student-grade"] ?? "").trim();
+  const classNo = String(state.fields["student-class"] ?? "").trim();
+  const number = String(state.fields["student-number"] ?? "").trim();
+  const name = String(state.fields["student-name"] ?? "").trim();
+
+  return hwpxTableXml([
+    {
+      height: 3700,
+      colCnt: 6,
+      cells: [
+        { text: "학년", colAddr: 0, width: 4300, borderFillIDRef: 4, charPr: 6, paraPr: 1 },
+        { text: grade ? `${grade}학년` : "", colAddr: 1, width: 9000, borderFillIDRef: 3, charPr: 0, paraPr: 1 },
+        { text: "반", colAddr: 2, width: 3400, borderFillIDRef: 4, charPr: 6, paraPr: 1 },
+        { text: classNo ? `${classNo}반` : "", colAddr: 3, width: 8000, borderFillIDRef: 3, charPr: 0, paraPr: 1 },
+        { text: "번호", colAddr: 4, width: 4300, borderFillIDRef: 4, charPr: 6, paraPr: 1 },
+        { text: number ? `${number}번` : "", colAddr: 5, width: 13000, borderFillIDRef: 3, charPr: 0, paraPr: 1 },
+      ],
+    },
+    {
+      height: 3800,
+      colCnt: 6,
+      cells: [
+        { text: "이름", colAddr: 0, width: 4300, borderFillIDRef: 4, charPr: 6, paraPr: 1 },
+        { text: name, colAddr: 1, colSpan: 5, width: 37700, borderFillIDRef: 3, charPr: 6, paraPr: 1 },
+      ],
+    },
+  ], { width: 42000, colCnt: 6 });
+}
+
+function hwpxSpacerXml(count = 1) {
+  return Array.from({ length: Math.max(0, count) }, () =>
+    hwpxParagraphXml(" ", { charPr: 0, paraPr: 1 })
+  ).join("");
+}
+
+function hwpxSectionXml(contentXml) {
+  hwpxParagraphSequence = 1000000000;
+  const secPr = `<hp:p id="1" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">
+        <hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
+        <hp:startNum pageStartsOn="BOTH" page="1" pic="1" tbl="1" equation="1"/>
+        <hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>
+        <hp:pagePr landscape="WIDELY" width="59528" height="84188" gutterType="LEFT_ONLY">
+          <hp:margin header="4252" footer="4252" gutter="0" left="8504" right="8504" top="5668" bottom="4252"/>
+        </hp:pagePr>
+      </hp:secPr>
+      <hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl>
+    </hp:run>
+  </hp:p>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">${secPr}${contentXml}</hs:sec>`;
+}
+
+function hwpxPackageFiles(title, sectionXml, previewText = "") {
+  const safeTitle = hwpxXmlText(title);
+  return {
+    "mimetype": "application/hwp+zip",
+    "version.xml": `<?xml version="1.0" encoding="UTF-8"?>
+<hv:HCFVersion xmlns:hv="http://www.hancom.co.kr/hwpml/2011/version" tagetApplication="WORDPROCESSOR" major="5" minor="1" micro="1" buildNumber="0" os="1" xmlVersion="1.5" application="Hancom Office Hangul" appVersion="13, 0, 0, 1408 WIN32LEWindows_10"/>`,
+    "META-INF/container.xml": `<?xml version="1.0" encoding="UTF-8"?>
+<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf">
+  <ocf:rootfiles>
+    <ocf:rootfile full-path="Contents/content.hpf" media-type="application/hwpml-package+xml"/>
+  </ocf:rootfiles>
+</ocf:container>`,
+    "META-INF/manifest.xml": `<?xml version="1.0" encoding="UTF-8"?>
+<odf:manifest xmlns:odf="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
+  <odf:file-entry odf:full-path="/" odf:media-type="application/hwp+zip"/>
+  <odf:file-entry odf:full-path="version.xml" odf:media-type="text/xml"/>
+  <odf:file-entry odf:full-path="Contents/content.hpf" odf:media-type="text/xml"/>
+  <odf:file-entry odf:full-path="Contents/header.xml" odf:media-type="text/xml"/>
+  <odf:file-entry odf:full-path="Contents/section0.xml" odf:media-type="text/xml"/>
+  <odf:file-entry odf:full-path="Preview/PrvText.txt" odf:media-type="text/plain"/>
+</odf:manifest>`,
+    "Contents/content.hpf": `<?xml version="1.0" encoding="UTF-8"?>
+<opf:package xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf/" version="" unique-identifier="" id="">
+  <opf:metadata>
+    <opf:title>${safeTitle}</opf:title>
+    <opf:language>ko</opf:language>
+    <opf:meta name="creator" content="탐구보고서 작성 워크북"/>
+    <opf:meta name="description" content="${safeTitle}"/>
+  </opf:metadata>
+  <opf:manifest>
+    <opf:item id="header" href="Contents/header.xml" media-type="application/xml"/>
+    <opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/>
+  </opf:manifest>
+  <opf:spine>
+    <opf:itemref idref="header" linear="yes"/>
+    <opf:itemref idref="section0" linear="yes"/>
+  </opf:spine>
+</opf:package>`,
+    "Contents/header.xml": hwpxHeaderXml(),
+    "Contents/section0.xml": sectionXml,
+    "Preview/PrvText.txt": String(previewText ?? "").slice(0, 4096),
+  };
+}
+
+function hwpxZipBlob(files) {
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let localOffset = 0;
+  const now = new Date();
+  const year = Math.max(1980, now.getFullYear());
+  const dosTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((Math.floor(now.getSeconds() / 2)) & 31);
+  const dosDate = (((year - 1980) & 127) << 9) | (((now.getMonth() + 1) & 15) << 5) | (now.getDate() & 31);
+
+  // HWPX 규격상 mimetype은 첫 ZIP 엔트리여야 하며 압축하지 않는다.
+  const entries = Object.entries(files);
+  entries.sort(([a], [b]) => a === "mimetype" ? -1 : b === "mimetype" ? 1 : 0);
+
+  for (const [name, content] of entries) {
+    const nameBytes = encoder.encode(name);
+    const data = encoder.encode(content);
+    const crc = docxCrc32(data);
+    const localHeader = docxConcat([
+      docxLe32(0x04034B50), docxLe16(20), docxLe16(0x0800), docxLe16(0), docxLe16(dosTime), docxLe16(dosDate),
+      docxLe32(crc), docxLe32(data.length), docxLe32(data.length), docxLe16(nameBytes.length), docxLe16(0), nameBytes,
+    ]);
+    localParts.push(localHeader, data);
+
+    const centralHeader = docxConcat([
+      docxLe32(0x02014B50), docxLe16(20), docxLe16(20), docxLe16(0x0800), docxLe16(0), docxLe16(dosTime), docxLe16(dosDate),
+      docxLe32(crc), docxLe32(data.length), docxLe32(data.length), docxLe16(nameBytes.length), docxLe16(0), docxLe16(0),
+      docxLe16(0), docxLe16(0), docxLe32(0), docxLe32(localOffset), nameBytes,
+    ]);
+    centralParts.push(centralHeader);
+    localOffset += localHeader.length + data.length;
+  }
+
+  const central = docxConcat(centralParts);
+  const local = docxConcat(localParts);
+  const count = entries.length;
+  const end = docxConcat([
+    docxLe32(0x06054B50), docxLe16(0), docxLe16(0), docxLe16(count), docxLe16(count),
+    docxLe32(central.length), docxLe32(local.length), docxLe16(0),
+  ]);
+  return new Blob([local, central, end], { type: "application/hwp+zip" });
+}
+
+function downloadHwpx(title, sectionXml, fileName, previewText, message) {
+  const blob = hwpxZipBlob(hwpxPackageFiles(title, sectionXml, previewText));
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  saveNow(true);
+  showToast(message);
+}
+
+function downloadReportHwpx() {
+  const selected = workflowSelection() ?? {
+    custom: true,
+    category: { label: "직접 입력" },
+    major: { label: "직접 정한 주제" },
+    topic: {
+      id: "custom-topic",
+      question: String(state.fields["draft-topic"] ?? "").trim() || "탐구보고서",
+      coreQuestion: String(state.fields.final02 ?? "").trim() || String(state.fields["draft-topic"] ?? "").trim() || "탐구 질문",
+    },
+  };
+
+  syncReportFromPrevious(false);
+  const topic = String(state.fields["draft-topic"] || cleanQuestion(selected.topic.question));
+  const question = summaryCoreQuestion(selected.topic);
+  const student = `${String(state.fields["student-grade"] ?? "")}학년 ${String(state.fields["student-class"] ?? "")}반 ${String(state.fields["student-number"] ?? "")}번 ${String(state.fields["student-name"] ?? "")}`.trim();
+  const outline = reportOutline(selected.topic);
+
+  let content = "";
+  // Word 표지와 최대한 비슷하게: 제목 → 탐구정보 표 → 하단 인적사항 표
+  content += hwpxSpacerXml(3);
+  content += hwpxParagraphXml("탐구보고서", { charPr: 3, paraPr: 1 });
+  content += hwpxSpacerXml(3);
+  content += hwpxResearchInfoTableXml(topic, "논문·자료 조사 및 비교 분석", question);
+  content += hwpxSpacerXml(7);
+  content += hwpxStudentInfoTableXml();
+
+  const addHeading = (label, pageBreak = false) => {
+    // 이전 섹션의 마지막 본문과 다음 대제목이 붙지 않도록
+    // 2~8번 대제목 앞에 실제 빈 줄 1개를 넣습니다.
+    if (!pageBreak) {
+      content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+    }
+
+    content += hwpxParagraphXml(label, { charPr: 2, paraPr: 3, pageBreak });
+
+    // 대제목 아래 구분선과 첫 본문 사이에도 빈 줄 1개를 유지합니다.
+    content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+  };
+  const addBody = (value, afterHeading = true) => {
+    content += hwpxBodyXml(value, {
+      charPr: 0,
+      paraPr: 0,
+    });
+  };
+
+  addHeading("1. 탐구 동기 및 목적", true); addBody(state.fields.final01);
+  addHeading("2. 연구문제와 가설"); addBody(state.fields.final02);
+  addHeading("3. 이론적 배경"); addBody(state.fields.final03);
+  addHeading("4. 자료 수집 기준 및 탐구 방법"); addBody(state.fields.final04);
+  addHeading("5. 분석 결과 및 해석");
+  outline.forEach((title, index) => {
+    content += hwpxParagraphXml(String(state.fields[`analysis-title-${index}`] ?? title), { charPr: 1, paraPr: 2 });
+    addBody(stripAnalysisNumber(state.fields[`analysis-content-${index}`]), false);
+  });
+  addHeading("6. 결론 및 한계"); addBody(state.fields.final06);
+  addHeading("7. 후속 탐구 계획"); addBody(state.fields.final07);
+  addHeading("8. 참고자료 및 출처"); addBody(state.fields.final08);
+
+  const date = new Date().toISOString().slice(0,10).replaceAll("-","");
+  const preview = [topic, student, state.fields.final01, state.fields.final06].filter(Boolean).join("\n");
+  downloadHwpx(
+    "탐구보고서",
+    hwpxSectionXml(content),
+    `${studentFilePrefix()}탐구보고서_${date}.hwpx`,
+    preview,
+    "완성 보고서를 HWPX 파일로 다운로드했습니다."
+  );
+}
+
+function downloadSelfHwpx() {
+  const selected = workflowSelection();
+  if (!selected) { showToast("먼저 탐구주제를 작성하세요."); return; }
+
+  const output = String(state.fields["self-output"] ?? "").trim() || composeSelfEvaluation();
+  initializeSummaryDraft(false);
+  const summary = summarySnapshot();
+  if (!summary) { showToast("요약할 탐구 내용이 없습니다."); return; }
+
+  const student = `${String(state.fields["student-grade"] ?? "")}학년 ${String(state.fields["student-class"] ?? "")}반 ${String(state.fields["student-number"] ?? "")}번 ${String(state.fields["student-name"] ?? "")}`.trim();
+
+  let content = "";
+  content += hwpxParagraphXml("탐구내용 요약정리", { charPr: 4, paraPr: 3 });
+  content += hwpxSpacerXml(1);
+  content += hwpxResearchInfoTableXml(summary.topic, summary.type, summary.question);
+  content += hwpxSpacerXml(1);
+
+  summary.sections.forEach(([label, value], index) => {
+    // 보고서 본문과 동일하게:
+    // 이전 내용과 다음 항목 제목 사이에 실제 빈 줄 1개
+    if (index > 0) {
+      content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+    }
+
+    content += hwpxParagraphXml(label, { charPr: 1, paraPr: 2 });
+
+    // 항목 제목과 본문 사이에도 실제 빈 줄 1개
+    content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+
+    const bodyText = Array.isArray(value) ? value.join("\n") : value;
+    content += hwpxBodyXml(bodyText, { charPr: 0, paraPr: 0 });
+  });
+
+  // 자기평가서 새 페이지
+  content += hwpxParagraphXml("탐구활동 자기평가서", { charPr: 4, paraPr: 2, pageBreak: true });
+  content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+
+  content += hwpxParagraphXml(student, { charPr: 5, paraPr: 2 });
+  content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+
+  content += hwpxParagraphXml("자기평가서", { charPr: 1, paraPr: 3 });
+
+  // 제목 아래 구분선과 본문 사이 실제 빈 줄 1개
+  content += hwpxParagraphXml(" ", { charPr: 0, paraPr: 0 });
+
+  content += hwpxBodyXml(output, { charPr: 0, paraPr: 0 });
+
+  const date = new Date().toISOString().slice(0,10).replaceAll("-","");
+  const preview = [summary.topic, student, output].filter(Boolean).join("\n");
+  downloadHwpx(
+    "탐구활동 자기평가서",
+    hwpxSectionXml(content),
+    `${studentFilePrefix()}탐구활동_자기평가서_${date}.hwpx`,
+    preview,
+    "요약정리와 자기평가서를 HWPX 파일로 다운로드했습니다."
+  );
+}
+
 function downloadDocx(title, bodyXml, fileName, message, options = {}) {
   const blob = docxZipBlob(docxPackageFiles(title, bodyXml, options));
   const url = URL.createObjectURL(blob);
@@ -3302,7 +4396,7 @@ function downloadReportWord() {
     "탐구보고서",
     body,
     `${studentFilePrefix()}탐구보고서_${date}.docx`,
-    "완성 보고서를 DOCX 파일로 내려받았습니다.",
+    "완성 보고서를 DOCX 파일로 다운로드했습니다.",
     { pageNumbers: true, hideFirstPageNumber: true, pageNumberStart: 0 }
   );
 }
@@ -3387,7 +4481,7 @@ function downloadSelfWord() {
     }),
   ].join("");
   const date = new Date().toISOString().slice(0,10).replaceAll("-","");
-  downloadDocx("탐구활동 자기평가서", body, `${studentFilePrefix()}탐구활동_자기평가서_${date}.docx`, "요약정리와 자기평가서를 DOCX 파일로 내려받았습니다.");
+  downloadDocx("탐구활동 자기평가서", body, `${studentFilePrefix()}탐구활동_자기평가서_${date}.docx`, "요약정리와 자기평가서를 DOCX 파일로 다운로드했습니다.");
 }
 
 function insertPlainTextAtCursor(textValue) {
@@ -3434,10 +4528,19 @@ document.addEventListener("click", async (event) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
+  if (target.hasAttribute("data-guide-start")) {
+    // 첫 페이지의 '확인하고 시작하기'는 저장된 이전 화면과 관계없이
+    // 항상 1. 주제 찾기부터 시작하도록 한다.
+    resumeVisible = false;
+    resumeTargetView = "topics";
+    state.view = "topics";
+    render();
+    return;
+  }
   if (target.dataset.nav) {
     const next = target.dataset.nav;
     state.view = next;
-    saveNow(true);
+    if (next !== "guide") saveNow(true);
     render();
     return;
   }
@@ -3616,7 +4719,9 @@ document.addEventListener("click", async (event) => {
   }
   if (target.hasAttribute("data-sync-report")) { syncReportFromPrevious(true); render(); showToast("기획서·예상 목차·참고자료의 최신 내용을 다시 반영했습니다."); return; }
   if (target.hasAttribute("data-download-word")) { downloadReportWord(); return; }
+  if (target.hasAttribute("data-download-hwpx")) { downloadReportHwpx(); return; }
   if (target.hasAttribute("data-download-self-word")) { downloadSelfWord(); return; }
+  if (target.hasAttribute("data-download-self-hwpx")) { downloadSelfHwpx(); return; }
   if (target.hasAttribute("data-save-now")) { saveNow(false); return; }
   if (target.hasAttribute("data-reset")) {
     if (!window.confirm("이 브라우저에 저장된 작성 내용을 모두 지우고 새로 시작할까요?")) return;
@@ -3630,7 +4735,7 @@ document.addEventListener("click", async (event) => {
   }
   if (target.hasAttribute("data-resume-new")) {
     if (!window.confirm("저장된 작성 내용을 지우고 새로 시작할까요?")) return;
-    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeTargetView = "topics"; resumeVisible = false; render(); return;
+    localStorage.removeItem(STORAGE_KEY); state = defaultState(); state.view = "topics"; resumeTargetView = "topics"; resumeVisible = false; render(); return;
   }
 });
 
@@ -3711,7 +4816,7 @@ try {
         state.selfOutputCustomized = true;
       }
       resumeTargetView = ["draft","explore","report","self"].includes(saved.view) ? saved.view : "draft";
-      state.view = "topics";
+      state.view = "guide";
       resumeVisible = hasMeaningfulDraft();
     }
   }
