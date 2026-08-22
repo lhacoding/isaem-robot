@@ -1668,7 +1668,6 @@ function renderTopics() {
 }
 
 function topicOutline(topic) {
-  const core = cleanQuestion(topic.coreQuestion).replace(/[?？]+$/g, "");
   const conceptA = topic.concepts[0] ?? "핵심 개념";
   const conceptB = topic.concepts[1] ?? "적용 원리";
   return [
@@ -1677,8 +1676,6 @@ function topicOutline(topic) {
     `5-3. ${withJosa(conceptB, "와")} 결과가 나타난 조건 비교`,
     `5-4. 자료별 공통점·차이점과 그 원인`,
     `5-5. ${topic.majorLabel ?? "관련 분야"}에서의 적용과 의미`,
-    `5-6. 예상·가설 판단`,
-    `5-7. ${core}에 대한 종합 해석과 한계`,
   ].join("\n");
 }
 
@@ -1711,8 +1708,8 @@ function draftExamples(topic) {
     ],
     "draft-outline": [
       topicOutline(topic),
-      [`5-1. 분석 자료의 대상·조건·측정 기준`,`5-2. ${concept}에 관한 자료별 핵심 결과`,`5-3. 결과가 비슷하게 나타난 조건`,`5-4. 서로 다른 결과와 그 원인`,`5-5. 자료의 신뢰도와 적용 범위`,`5-6. 예상·가설 판단`,`5-7. 종합 해석과 한계`].join("\n"),
-      [`5-1. 사용한 자료의 종류와 선정 이유`,`5-2. 연구 사례별 주요 수치와 결과`,`5-3. 국내외 사례의 공통점과 차이점`,`5-4. 결과에 영향을 준 조건`,`5-5. ${career} 분야에서의 활용 가능성`,`5-6. 예상과 실제 자료의 일치 여부`,`5-7. 최종 해석과 탐구의 한계`].join("\n"),
+      [`5-1. 분석 자료의 대상·조건·측정 기준`,`5-2. ${concept}에 관한 자료별 핵심 결과`,`5-3. 결과가 비슷하게 나타난 조건`,`5-4. 서로 다른 결과와 그 원인`,`5-5. 자료의 신뢰도와 적용 범위`].join("\n"),
+      [`5-1. 사용한 자료의 종류와 선정 이유`,`5-2. 연구 사례별 주요 수치와 결과`,`5-3. 국내외 사례의 공통점과 차이점`,`5-4. 결과에 영향을 준 조건`,`5-5. ${career} 분야에서의 활용 가능성`].join("\n"),
     ],
     "draft-expectation": [
       `자료마다 결과가 완전히 같기보다 대상과 조건에 따라 차이가 나타날 것으로 예상한다. 교과 개념을 실제 연구에 적용하고 근거의 신뢰도와 한계를 판단하는 능력을 기를 수 있을 것이다.`,
@@ -1778,7 +1775,7 @@ function renderDraft() {
       ${fieldBlock(2,"draft-motivation-purpose","탐구 동기 및 목적","왜 이 주제를 선택했는지, 무엇을 알아보고 싶은지 함께 작성하세요.",examples["draft-motivation-purpose"],{anchorId:"draft-motivation-section"})}
       ${fieldBlock(3,"draft-question-hypothesis","핵심 질문 및 예상·가설","답하려는 질문을 질문형으로 쓰고, 조사 전 예상은 단정하지 않게 작성하세요.",examples["draft-question-hypothesis"],{anchorId:"draft-question-section"})}
       ${fieldBlock(4,"draft-method","자료 조사 및 비교 계획","찾을 자료의 종류, 선정 기준, 비교 항목과 진행 순서를 구체적으로 작성하세요.",examples["draft-method"],{anchorId:"draft-method-section"})}
-      ${fieldBlock(5,"draft-outline","예상 목차","최종 보고서에서 정리할 세부 내용을 순서대로 계획하세요. 이 목차는 분석 결과의 소제목으로 연결됩니다.",examples["draft-outline"],{anchorId:"draft-outline-section"})}
+      ${fieldBlock(5,"draft-outline","예상 목차","분석할 세부 내용을 순서대로 계획하세요. 예상·가설 판단과 해석·한계는 제외하며, 작성한 목차는 분석 결과의 소제목으로 연결됩니다.",examples["draft-outline"],{anchorId:"draft-outline-section"})}
       ${fieldBlock(6,"draft-expectation","예상 결과와 기대 효과","예상되는 경향과 교과·진로 학습에 어떤 도움이 될지 작성하세요.",examples["draft-expectation"],{anchorId:"draft-expectation-section"})}
       <div class="report-actions"><button type="button" class="primary-button" data-nav="explore">기획서 저장하고 탐구 활동으로</button></div>
       </div>
@@ -2774,7 +2771,7 @@ function renderSampleLegacy() {
         <h3>2. 탐구 동기 및 목적</h3><blockquote>일상에서 두통이 생겼을 때 두 성분이 모두 사용되지만 차이를 알지 못한 채 제품 이름만 보고 선택하는 경우가 많다. 작용 원리, 진통 효과, 부작용과 주의사항을 논문과 공공기관 자료로 비교하여 특정 성분이 항상 우수한지, 개인의 상태와 두통 특성에 따라 기준이 달라지는지 알아보고자 한다.</blockquote>
         <h3>3. 핵심 질문 및 예상·가설</h3><blockquote><b>핵심 질문:</b> 두 성분은 작용 원리, 두통 완화 효과, 안전성에서 어떤 차이를 보이며 성분 선택 시 무엇을 고려해야 하는가?<br><b>예상·가설:</b> 이부프로펜은 일부 조건에서 빠른 진통 효과를 보일 수 있지만 위장과 신장 관련 주의사항이 많고, 아세트아미노펜은 항염 작용은 약하지만 과다복용 시 간 손상 위험이 중요한 기준이 될 것으로 예상한다.</blockquote>
         <h3>4. 자료 조사 및 비교 계획</h3><blockquote>긴장형 두통을 대상으로 한 체계적 문헌고찰, 임상시험, 공공기관 의약품 정보를 찾는다. 작용 원리, 연구 대상, 복용 후 2시간 통증 소실률, 부작용, 복용 시 주의사항을 같은 기준으로 비교한다. 블로그나 제품 광고는 주요 근거에서 제외하고 원문을 직접 확인한다.</blockquote>
-        <h3>5. 예상 목차</h3><ol><li>두통과 진통제 선택의 필요성</li><li>아세트아미노펜과 이부프로펜의 특징</li><li>두 성분의 작용 원리 비교</li><li>긴장형 두통 완화 효과 비교</li><li>부작용과 복용 시 주의사항 비교</li><li>개인의 상태에 따른 선택 기준</li><li>결론 및 탐구의 한계</li></ol>
+        <h3>5. 예상 목차</h3><ol><li>두통과 진통제 선택의 필요성</li><li>아세트아미노펜과 이부프로펜의 특징</li><li>두 성분의 작용 원리 비교</li><li>긴장형 두통 완화 효과 비교</li><li>부작용과 복용 시 주의사항 비교</li><li>개인의 상태에 따른 선택 기준</li></ol>
         <h3>6. 예상 결과와 기대 효과</h3><blockquote>한 성분이 모든 사람에게 항상 더 적합하다는 결론보다 두통 유형, 개인 질환, 함께 복용하는 약과 부작용 위험에 따라 기준이 달라진다는 결과가 나올 것으로 예상한다.</blockquote>
       </div></details>
 
@@ -3059,8 +3056,6 @@ function renderSample() {
     "5-3. 효과가 나타나는 시간 비교",
     "5-4. 부작용과 복용 시 주의사항 비교",
     "5-5. 개인의 상태에 따른 선택 기준",
-    "5-6. 가설 판단",
-    "5-7. 종합 해석",
   ];
   return `
     <main class="page-shell">
