@@ -1550,7 +1550,7 @@ function sectionSidebar(items, label) {
 function renderGuide() {
   const guideSteps = [
     ["1", "주제 찾기", "관심 분야에서 탐구할 주제를 선택하거나 직접 정합니다."],
-    ["2", "기획서 작성", "질문·가설·자료 조사 계획과 예상 목차를 정리합니다."],
+    ["2", "기획서 작성", "질문·가설·자료 조사 계획과 탐구 내용 및 분석 항목을 정리합니다."],
     ["3", "탐구 활동", "자료를 찾고 핵심 내용을 비교·분석하여 구조화합니다."],
     ["4", "보고서 완성", "앞에서 작성한 내용을 연결하여 탐구보고서를 완성합니다."],
     ["5", "자기평가서 작성", "탐구 내용을 요약하고 자신의 활동과 성장을 돌아봅니다."],
@@ -1761,7 +1761,7 @@ function renderDraft() {
         ["draft-motivation-section", "2. 탐구 동기 및 목적"],
         ["draft-question-section", "3. 핵심 질문 및 예상·가설"],
         ["draft-method-section", "4. 자료 조사 및 비교 계획"],
-        ["draft-outline-section", "5. 예상 목차"],
+        ["draft-outline-section", "5. 탐구 내용 및 분석 항목"],
         ["draft-expectation-section", "6. 예상 결과와 기대 효과"],
       ], "탐구 기획서 항목")}
       <div class="workspace-content">
@@ -1775,7 +1775,7 @@ function renderDraft() {
       ${fieldBlock(2,"draft-motivation-purpose","탐구 동기 및 목적","왜 이 주제를 선택했는지, 무엇을 알아보고 싶은지 함께 작성하세요.",examples["draft-motivation-purpose"],{anchorId:"draft-motivation-section"})}
       ${fieldBlock(3,"draft-question-hypothesis","핵심 질문 및 예상·가설","답하려는 질문을 질문형으로 쓰고, 조사 전 예상은 단정하지 않게 작성하세요.",examples["draft-question-hypothesis"],{anchorId:"draft-question-section"})}
       ${fieldBlock(4,"draft-method","자료 조사 및 비교 계획","찾을 자료의 종류, 선정 기준, 비교 항목과 진행 순서를 구체적으로 작성하세요.",examples["draft-method"],{anchorId:"draft-method-section"})}
-      ${fieldBlock(5,"draft-outline","예상 목차","분석할 세부 내용을 순서대로 계획하세요. 예상·가설 판단과 해석·한계는 제외하며, 작성한 목차는 분석 결과의 소제목으로 연결됩니다.",examples["draft-outline"],{anchorId:"draft-outline-section"})}
+      ${fieldBlock(5,"draft-outline","탐구 내용 및 분석 항목","분석할 세부 내용을 순서대로 계획하세요. 예상·가설 판단과 해석·한계는 제외하며, 작성한 항목은 분석 결과의 소제목으로 연결됩니다.",examples["draft-outline"],{anchorId:"draft-outline-section"})}
       ${fieldBlock(6,"draft-expectation","예상 결과와 기대 효과","예상되는 경향과 교과·진로 학습에 어떤 도움이 될지 작성하세요.",examples["draft-expectation"],{anchorId:"draft-expectation-section"})}
       <div class="report-actions"><button type="button" class="primary-button" data-nav="explore">기획서 저장하고 탐구 활동으로</button></div>
       </div>
@@ -2119,7 +2119,7 @@ function renderReport() {
 
       <section class="form-card section-anchor" id="report-analysis">
         <span class="form-card-number">5.</span><h3>분석 결과 및 해석</h3>
-        <p class="guide">${isCustom ? "보고서에서 분석할 내용을 소제목으로 나누어 작성하세요. 소제목을 수정·추가·삭제할 수 있으며 최소 1개는 유지됩니다." : "기획서에서 정한 예상 목차가 소제목으로 연결됩니다. 보고서를 작성하면서 필요한 소제목은 추가·수정·삭제할 수 있으며 최소 1개는 유지됩니다."}</p>
+        <p class="guide">${isCustom ? "보고서에서 분석할 내용을 소제목으로 나누어 작성하세요. 소제목을 수정·추가·삭제할 수 있으며 최소 1개는 유지됩니다." : "기획서에서 정한 탐구 내용 및 분석 항목이 소제목으로 연결됩니다. 보고서를 작성하면서 필요한 소제목은 추가·수정·삭제할 수 있으며 최소 1개는 유지됩니다."}</p>
         <p class="input-note">각 칸은 ‘자료에서 확인한 사실 → 자료 간 비교 → 차이의 이유 → 나의 해석 → 한계’ 순서로 작성하세요.</p>
         <div class="outline-chips">${outline.map((item,index) => `<span>${escapeHTML(state.fields[`analysis-title-${index}`] ?? item)}</span>`).join("")}</div>
         ${outline.map((title,index) => {
@@ -2771,7 +2771,7 @@ function renderSampleLegacy() {
         <h3>2. 탐구 동기 및 목적</h3><blockquote>일상에서 두통이 생겼을 때 두 성분이 모두 사용되지만 차이를 알지 못한 채 제품 이름만 보고 선택하는 경우가 많다. 작용 원리, 진통 효과, 부작용과 주의사항을 논문과 공공기관 자료로 비교하여 특정 성분이 항상 우수한지, 개인의 상태와 두통 특성에 따라 기준이 달라지는지 알아보고자 한다.</blockquote>
         <h3>3. 핵심 질문 및 예상·가설</h3><blockquote><b>핵심 질문:</b> 두 성분은 작용 원리, 두통 완화 효과, 안전성에서 어떤 차이를 보이며 성분 선택 시 무엇을 고려해야 하는가?<br><b>예상·가설:</b> 이부프로펜은 일부 조건에서 빠른 진통 효과를 보일 수 있지만 위장과 신장 관련 주의사항이 많고, 아세트아미노펜은 항염 작용은 약하지만 과다복용 시 간 손상 위험이 중요한 기준이 될 것으로 예상한다.</blockquote>
         <h3>4. 자료 조사 및 비교 계획</h3><blockquote>긴장형 두통을 대상으로 한 체계적 문헌고찰, 임상시험, 공공기관 의약품 정보를 찾는다. 작용 원리, 연구 대상, 복용 후 2시간 통증 소실률, 부작용, 복용 시 주의사항을 같은 기준으로 비교한다. 블로그나 제품 광고는 주요 근거에서 제외하고 원문을 직접 확인한다.</blockquote>
-        <h3>5. 예상 목차</h3><ol><li>두통과 진통제 선택의 필요성</li><li>아세트아미노펜과 이부프로펜의 특징</li><li>두 성분의 작용 원리 비교</li><li>긴장형 두통 완화 효과 비교</li><li>부작용과 복용 시 주의사항 비교</li><li>개인의 상태에 따른 선택 기준</li></ol>
+        <h3>5. 탐구 내용 및 분석 항목</h3><ol><li>두통과 진통제 선택의 필요성</li><li>아세트아미노펜과 이부프로펜의 특징</li><li>두 성분의 작용 원리 비교</li><li>긴장형 두통 완화 효과 비교</li><li>부작용과 복용 시 주의사항 비교</li><li>개인의 상태에 따른 선택 기준</li></ol>
         <h3>6. 예상 결과와 기대 효과</h3><blockquote>한 성분이 모든 사람에게 항상 더 적합하다는 결론보다 두통 유형, 개인 질환, 함께 복용하는 약과 부작용 위험에 따라 기준이 달라진다는 결과가 나올 것으로 예상한다.</blockquote>
       </div></details>
 
@@ -3075,7 +3075,7 @@ function renderSample() {
         <h3>2. 탐구 동기 및 목적</h3><blockquote>두통약마다 성분과 주의사항이 다른 이유가 궁금했다. 제품명이 아니라 성분과 연구 근거를 기준으로 두 성분의 작용·효과·안전성을 비교하고, 개인의 상태에 따라 확인해야 할 선택 기준을 알아보고자 한다.</blockquote>
         <h3>3. 핵심 질문 및 예상·가설</h3><blockquote>핵심 질문: 두 성분은 긴장형 두통 완화 효과와 안전성에서 어떤 차이를 보이며 선택할 때 무엇을 확인해야 하는가?<br>예상·가설: 이부프로펜은 일부 조건에서 효과가 더 빨리 나타날 수 있지만 NSAID 관련 주의사항이 많고, 아세트아미노펜은 위장 부담은 상대적으로 적지만 과다·중복복용에 따른 간 손상 위험이 중요한 기준이 될 것이다.</blockquote>
         <h3>4. 자료 조사 및 비교 계획</h3><blockquote>성인의 급성 긴장형 두통을 대상으로 한 체계적 문헌고찰과 직접 비교 임상시험을 찾는다. 효과 자료는 연구 대상·용량·제형·측정시간·통증 소실률을, 안전자료는 위험 기관·기존 질환·중복복용 조건을 기준으로 비교한다.</blockquote>
-        <h3>5. 예상 목차</h3><ol class="sample-outline-list">${sampleOutline.map((item) => `<li>${item}</li>`).join("")}</ol>
+        <h3>5. 탐구 내용 및 분석 항목</h3><ol class="sample-outline-list">${sampleOutline.map((item) => `<li>${item}</li>`).join("")}</ol>
         <h3>6. 예상 결과와 기대 효과</h3><blockquote>한 성분이 항상 더 우수하다는 결론보다 두통 유형, 기존 질환, 복용 중인 약과 성분별 위험에 따라 선택 기준이 달라질 것으로 예상한다. 연구 수치의 조건과 한계를 해석하는 능력을 기를 수 있을 것이다.</blockquote>
       </div></details>
 
@@ -4712,7 +4712,7 @@ document.addEventListener("click", async (event) => {
     syncSelfOutputFromParts(true);
     scheduleSave(); showToast("위 항목을 기준으로 자기평가서 문장을 다시 만들었습니다."); return;
   }
-  if (target.hasAttribute("data-sync-report")) { syncReportFromPrevious(true); render(); showToast("기획서·예상 목차·참고자료의 최신 내용을 다시 반영했습니다."); return; }
+  if (target.hasAttribute("data-sync-report")) { syncReportFromPrevious(true); render(); showToast("기획서·탐구 내용 및 분석 항목·참고자료의 최신 내용을 다시 반영했습니다."); return; }
   if (target.hasAttribute("data-download-word")) { downloadReportWord(); return; }
   if (target.hasAttribute("data-download-hwpx")) { downloadReportHwpx(); return; }
   if (target.hasAttribute("data-download-self-word")) { downloadSelfWord(); return; }
