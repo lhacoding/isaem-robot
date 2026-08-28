@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>송도이샘로봇 · 탐구 보고서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- ════════════════════════════════════════════════════
+     🔧 FIREBASE 설정 — 아래 값을 본인 프로젝트 값으로 교체하세요
+     Firebase Console → 프로젝트 설정 → 앱 → SDK 설정 및 구성
+     ════════════════════════════════════════════════════ -->
+<script>
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyA1nT1MM-8kylY65S0kJS-DD0VhVyH0ZOc",
+  authDomain:        "isaem-robot.firebaseapp.com",
+  projectId:         "isaem-robot",
+  storageBucket:     "isaem-robot.firebasestorage.app",
+  messagingSenderId: "675895890150",
+  appId:             "1:675895890150:web:0779f4edfe688d9f7f6b27",
+  measurementId:     "G-FZG3BF2XYF"
+};
+</script>
+<!-- ════════════════════════════════════════════════════ -->
+
+<!-- Firebase SDK (compat - 스탠드얼론 HTML용) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<style>
+:root {
+  --bg:#f7f6f2; --surface:#fff; --border:#e0ddd6; --border2:#ccc9c0;
+  --accent:#1a4f8a; --accent2:#2e6db4; --text:#1c1c1c; --text2:#555; --text3:#999;
+  --req:#c0392b; --req-bg:#fdf3f2; --tag-bg:#eaf0f9; --tag:#1a4f8a;
+  --ok:#1a7a3a; --ok-bg:#f0faf3; --warn:#a05000; --warn-bg:#fff8ee;
+  --radius:8px; --shadow:0 2px 12px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.7}
+
+/* CONFIG BANNER */
+.config-banner{background:#fff3cd;border-bottom:2px solid #f0ad4e;padding:10px 28px;font-size:12px;color:#856404;display:flex;align-items:center;gap:8px}
+.config-banner.hidden{display:none}
+.config-banner a{color:var(--accent);font-weight:500}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:700;color:var(--accent)}
+.nav-logo span{font-weight:400;color:var(--text2);font-size:12px;margin-left:8px}
+.btn-new{background:var(--accent);color:#fff;border:none;padding:6px 16px;border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit}
+.btn-new:hover{background:var(--accent2)}
+.nav-status{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block}
+.dot.ok{background:var(--ok)}
+.dot.err{background:var(--req)}
+
+.view{display:none}.view.active{display:block}
+
+/* LIST */
+.wrap{max-width:860px;margin:36px auto;padding:0 18px}
+.list-header{margin-bottom:20px}
+.list-header h1{font-family:'Noto Serif KR',serif;font-size:21px;font-weight:700}
+.list-header p{color:var(--text3);font-size:12px;margin-top:3px}
+.card-grid{display:grid;gap:14px}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;cursor:pointer;transition:box-shadow .18s,border-color .18s}
+.report-card:hover{box-shadow:var(--shadow);border-color:var(--border2)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card-title{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:600}
+.card-meta{font-size:12px;color:var(--text3);margin-top:4px}
+.card-tag{display:inline-block;background:var(--tag-bg);color:var(--tag);font-size:11px;padding:2px 8px;border-radius:4px;margin-top:6px}
+.btn-sm{font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:inherit}
+.btn-sm.del{color:var(--req);border-color:#ecc}
+.btn-sm.del:hover{background:var(--req-bg)}
+.empty-state{text-align:center;padding:70px 20px;color:var(--text3)}
+.empty-state .ico{font-size:44px;margin-bottom:14px}
+.empty-state p{font-size:14px;margin-bottom:18px}
+
+/* FORM */
+.form-wrap{max-width:800px;margin:36px auto;padding:0 18px 60px}
+.form-header{margin-bottom:22px}
+.form-header h2{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700}
+.form-header p{color:var(--text3);font-size:12px;margin-top:3px}
+
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.sec-head{background:#f0f4fa;border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;gap:9px}
+.sec-num{background:var(--accent);color:#fff;width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.sec-ttl{font-size:13px;font-weight:500}
+.sec-hint{font-size:11px;color:var(--text3);margin-left:4px}
+.form-body{padding:15px 18px}
+
+.htoolbar{display:flex;flex-wrap:wrap;gap:4px;padding:7px 10px;background:#f5f5f2;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;align-items:center}
+.htoolbar .tb-label{font-size:10px;color:var(--text3);margin-right:3px;white-space:nowrap}
+.hbtn{font-size:11px;padding:2px 9px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:var(--surface);color:var(--text2);font-family:inherit;white-space:nowrap}
+.hbtn:hover{background:var(--tag-bg);border-color:var(--accent2);color:var(--accent)}
+.hbtn.lv1{font-weight:600;font-size:12px}
+.hbtn.plain{background:transparent;border-color:transparent;color:var(--text3)}
+.hbtn.plain:hover{background:var(--bg)}
+.tb-sep{width:1px;height:16px;background:var(--border);margin:0 2px}
+
+.reditor{width:100%;border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:12px 14px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);resize:vertical;line-height:1.9;transition:border-color .15s}
+.reditor:focus{outline:none;border-color:var(--accent2)}
+
+.char-counter{display:flex;align-items:center;justify-content:space-between;margin-top:5px;font-size:11px}
+.char-num{color:var(--text3)}
+.char-num.below{color:var(--req)}
+.char-num.ok{color:var(--ok)}
+.char-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:2px;margin:0 10px}
+.char-bar{height:100%;border-radius:2px;background:var(--border2);transition:width .2s,background .2s;max-width:100%}
+.char-min{color:var(--text3);white-space:nowrap}
+
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:11px;color:var(--text2);font-weight:500}
+.field input{border:1px solid var(--border);border-radius:var(--radius);padding:8px 11px;font-size:13px;font-family:inherit;color:var(--text);background:var(--bg)}
+.field input:focus{outline:none;border-color:var(--accent2);background:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+
+.img-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:all .15s}
+.img-zone:hover{border-color:var(--accent2);background:#f5f8ff}
+.img-zone.req{border-color:#e0a0a0;background:var(--req-bg)}
+.img-zone.req:hover{border-color:var(--req)}
+.img-zone input[type=file]{display:none}
+.img-zone .up-lbl{font-size:11px;color:var(--text3);margin-top:3px}
+.req-badge{display:inline-block;background:var(--req);color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:5px}
+.img-preview{width:100%;max-height:180px;object-fit:contain;border-radius:6px;margin-top:8px;border:1px solid var(--border)}
+.img-clear{font-size:11px;color:var(--req);cursor:pointer;margin-top:4px;display:inline-block}
+.upload-progress{font-size:11px;color:var(--accent2);margin-top:4px;display:none}
+
+.sub-lbl{font-size:13px;font-weight:500;padding-left:9px;border-left:2px solid var(--accent2);margin:14px 0 8px}
+.sub-sublbl{font-size:12px;color:var(--text2);margin:8px 0 5px 16px;font-weight:500}
+
+.form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+.btn-cancel{padding:8px 20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:var(--radius);cursor:pointer;font-size:13px;font-family:inherit}
+.btn-submit{padding:8px 26px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500;display:flex;align-items:center;gap:6px}
+.btn-submit:hover{background:var(--accent2)}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spinner.show{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DETAIL */
+.detail-wrap{max-width:780px;margin:36px auto;padding:0 18px 60px}
+.detail-back{display:flex;align-items:center;gap:5px;color:var(--text3);font-size:13px;cursor:pointer;margin-bottom:20px}
+.detail-back:hover{color:var(--accent)}
+.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.detail-head{background:#f0f4fa;padding:22px 26px;border-bottom:1px solid var(--border)}
+.detail-title{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700}
+.detail-meta{font-size:12px;color:var(--text3);margin-top:5px}
+.detail-tag{display:inline-block;background:var(--tag-bg);color:var(--tag);font-size:11px;padding:2px 9px;border-radius:4px;margin-top:7px}
+.detail-body{padding:22px 26px}
+.d-section{margin-bottom:26px}
+.d-sec-title{font-size:14px;font-weight:600;color:var(--accent);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:12px;font-family:'Noto Serif KR',serif}
+.d-sub{margin-left:10px;margin-bottom:12px}
+.d-sub-title{font-size:13px;font-weight:500;margin-bottom:7px}
+.d-sub-sub-title{font-size:12px;color:var(--text2);margin:9px 0 5px 12px;font-weight:500}
+.d-content{font-size:13px;line-height:1.85;white-space:pre-wrap;background:var(--bg);padding:11px 13px;border-radius:var(--radius);border:1px solid var(--border)}
+.d-img{width:100%;max-height:280px;object-fit:contain;border-radius:7px;border:1px solid var(--border);margin-top:7px}
+.d-img-wrap{margin-left:12px}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#1c1c1c;color:#fff;padding:9px 20px;border-radius:22px;font-size:13px;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--req)}
+</style>
+</head>
+<body>
+
+<!-- Firebase 설정 안내 배너 -->
+<div class="config-banner" id="config-banner">
+  ⚙️ <strong>Firebase 설정 필요:</strong> 파일 상단 <code>FIREBASE_CONFIG</code>에 본인 프로젝트 값을 입력하세요.
+  <a href="https://console.firebase.google.com" target="_blank">Firebase Console 열기 →</a>
+  &nbsp;|&nbsp; 지금은 localStorage 모드로 동작 중입니다.
+</div>
+
+<nav>
+  <div class="nav-logo">송도이샘로봇 <span>과학전람회 탐구 보고서</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="nav-status"><span class="dot" id="fb-dot"></span><span id="fb-label">연결 중...</span></div>
+    <button class="btn-new" onclick="showForm()">+ 새 보고서</button>
+  </div>
+</nav>
+
+<!-- 목록 -->
+<div id="view-list" class="view active">
+  <div class="wrap">
+    <div class="list-header">
+      <h1>탐구 보고서 목록</h1>
+      <p id="list-sub">불러오는 중...</p>
+    </div>
+    <div id="card-grid" class="card-grid"></div>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <div class="ico">📋</div>
+      <p>아직 작성된 보고서가 없어요</p>
+      <button class="btn-new" onclick="showForm()">첫 번째 보고서 작성하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 작성 -->
+<div id="view-form" class="view">
+  <div class="form-wrap">
+    <div class="form-header">
+      <h2 id="form-header-title">과학전람회 탐구 계획서</h2>
+      <p>각 항목의 최소 글자수를 채워야 합니다 · 저장 시 Firebase에 보관됩니다</p>
+    </div>
+
+    <!-- 기본정보 -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">✦</div><span class="sec-ttl">기본 정보</span></div>
+      <div class="form-body">
+        <div class="field-row">
+          <div class="field"><label>제목 *</label><input id="f-title" placeholder="탐구 제목을 입력하세요" /></div>
+          <div class="field"><label>출품 부문 *</label><input id="f-category" placeholder="예) 산업 및 에너지" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>작성자 이름 *</label><input id="f-author" placeholder="학생 이름" /></div>
+          <div class="field"><label>학교 / 학년</label><input id="f-school" placeholder="예) 해송고등학교 1학년" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ⅰ -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">Ⅰ</div><span class="sec-ttl">탐구(연구) 동기 및 목적</span><span class="sec-hint">학생의 삶과 연계하여 작성</span></div>
+      <div class="form-body">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">소제목을 삽입해 <b>1. 동기 / 2. 목적 / 3. 연구 문제</b> 구조로 작성하세요</p>
+        <div class="htoolbar">
+          <span class="tb-label">소제목 삽입</span>
+          <button class="hbtn lv1" onclick="insertHeading('f-sec1','1')">1. 첫째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec1','가')">가. 둘째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec1','1)')">1) 셋째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec1','가)')">가) 넷째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec1','(1)')">(1) 다섯째</button>
+          <button class="hbtn" onclick="insertHeading('f-sec1','(가)')">(가) 여섯째</button>
+          <div class="tb-sep"></div>
+          <button class="hbtn plain" onclick="insertText('f-sec1','\n')">줄바꿈</button>
+        </div>
+        <textarea class="reditor" id="f-sec1" rows="14"
+          placeholder="1. 동기&#10;일상에서 탐구 주제와 연결된 경험을 구체적으로 서술하세요...&#10;&#10;2. 목적&#10;가. 첫 번째 목적&#10;나. 두 번째 목적&#10;&#10;3. 연구 문제&#10;가. 연구 문제 1&#10;나. 연구 문제 2"
+          oninput="updateCounter('f-sec1','cc-sec1','cb-sec1',800)"></textarea>
+        <div class="char-counter">
+          <span class="char-num" id="cc-sec1">0자</span>
+          <div class="char-bar-wrap"><div class="char-bar" id="cb-sec1" style="width:0%"></div></div>
+          <span class="char-min">최소 800자 권장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ⅱ -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">Ⅱ</div><span class="sec-ttl">탐구(연구) 방법</span><span class="sec-hint">도면이나 사진으로 구체적으로 설명</span></div>
+      <div class="form-body">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">연구 대상 / 기본 조건 / 분석 방법 / 변수 설정 등을 소제목으로 구분하세요</p>
+        <div class="htoolbar">
+          <span class="tb-label">소제목 삽입</span>
+          <button class="hbtn lv1" onclick="insertHeading('f-sec2','1')">1. 첫째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec2','가')">가. 둘째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec2','1)')">1) 셋째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec2','가)')">가) 넷째항목</button>
+          <div class="tb-sep"></div>
+          <button class="hbtn plain" onclick="insertText('f-sec2','\n')">줄바꿈</button>
+        </div>
+        <textarea class="reditor" id="f-sec2" rows="12"
+          placeholder="1. 연구 대상 및 기본 조건 설정&#10;가. 연구 대상&#10;나. 기본 조건&#10;&#10;2. 분석 방법&#10;&#10;3. 변수 설정&#10;가) 독립변수&#10;나) 종속변수&#10;다) 통제변수"
+          oninput="updateCounter('f-sec2','cc-sec2','cb-sec2',600)"></textarea>
+        <div class="char-counter">
+          <span class="char-num" id="cc-sec2">0자</span>
+          <div class="char-bar-wrap"><div class="char-bar" id="cb-sec2" style="width:0%"></div></div>
+          <span class="char-min">최소 600자 권장</span>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>도면 / 사진 (선택)</label>
+          <div class="img-zone" id="zone-s2" onclick="document.getElementById('img-s2').click()">
+            <input type="file" id="img-s2" accept="image/*" onchange="handleImgSelect(this,'prv-s2','clr-s2','prog-s2')">
+            <div style="font-size:20px">🖼</div>
+            <div class="up-lbl">클릭하여 업로드 또는 Ctrl+V로 붙여넣기</div>
+          </div>
+          <img id="prv-s2" class="img-preview" style="display:none">
+          <span id="clr-s2" class="img-clear" style="display:none" onclick="clearImgZone('prv-s2','img-s2','clr-s2','zone-s2')">✕ 이미지 제거</span>
+          <div id="prog-s2" class="upload-progress">업로드 중...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ⅲ -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">Ⅲ</div><span class="sec-ttl">예상 결과</span><span class="sec-hint">유사작품 및 과학적 원리를 활용하여 작성</span></div>
+      <div class="form-body">
+        <div class="htoolbar">
+          <span class="tb-label">소제목 삽입</span>
+          <button class="hbtn lv1" onclick="insertHeading('f-sec3','1')">1. 첫째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec3','가')">가. 둘째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec3','1)')">1) 셋째항목</button>
+          <div class="tb-sep"></div>
+          <button class="hbtn plain" onclick="insertText('f-sec3','\n')">줄바꿈</button>
+        </div>
+        <textarea class="reditor" id="f-sec3" rows="10"
+          placeholder="1. 박스 배치 방식에 따른 적재 효율 변화 예상&#10;&#10;2. 층 조합에 따른 전체 효율 변화 예상&#10;&#10;3. 혼합 적재에 따른 공간 활용 변화 예상"
+          oninput="updateCounter('f-sec3','cc-sec3','cb-sec3',400)"></textarea>
+        <div class="char-counter">
+          <span class="char-num" id="cc-sec3">0자</span>
+          <div class="char-bar-wrap"><div class="char-bar" id="cb-sec3" style="width:0%"></div></div>
+          <span class="char-min">최소 400자 권장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ⅳ -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">Ⅳ</div><span class="sec-ttl">기대 효과</span></div>
+      <div class="form-body">
+        <div class="htoolbar">
+          <span class="tb-label">소제목 삽입</span>
+          <button class="hbtn lv1" onclick="insertHeading('f-sec4','1')">1. 첫째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec4','가')">가. 둘째항목</button>
+          <button class="hbtn" onclick="insertHeading('f-sec4','1)')">1) 셋째항목</button>
+          <div class="tb-sep"></div>
+          <button class="hbtn plain" onclick="insertText('f-sec4','\n')">줄바꿈</button>
+        </div>
+        <textarea class="reditor" id="f-sec4" rows="8"
+          placeholder="1. 탐구 결과 활용 가능성&#10;&#10;2. 비용 절감 효과&#10;&#10;3. 자동화 시스템 활용 가능성"
+          oninput="updateCounter('f-sec4','cc-sec4','cb-sec4',300)"></textarea>
+        <div class="char-counter">
+          <span class="char-num" id="cc-sec4">0자</span>
+          <div class="char-bar-wrap"><div class="char-bar" id="cb-sec4" style="width:0%"></div></div>
+          <span class="char-min">최소 300자 권장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ⅴ -->
+    <div class="form-card">
+      <div class="sec-head"><div class="sec-num">Ⅴ</div><span class="sec-ttl">유사작품 검색 및 차별성</span></div>
+      <div class="form-body">
+
+        <div class="sub-lbl">1. 국립중앙과학관 과학전람회 DB 검색</div>
+        <div class="sub-sublbl">가. 검색 결과 <span style="font-size:11px;color:var(--text3)">(선택)</span></div>
+        <div style="margin-left:16px;margin-bottom:10px">
+          <div class="img-zone" id="zone-db1" onclick="document.getElementById('img-db1').click()">
+            <input type="file" id="img-db1" accept="image/*" onchange="handleImgSelect(this,'prv-db1','clr-db1','prog-db1')">
+            <div style="font-size:20px">📸</div>
+            <div class="up-lbl">클릭하여 업로드 또는 Ctrl+V로 붙여넣기</div>
+          </div>
+          <img id="prv-db1" class="img-preview" style="display:none">
+          <span id="clr-db1" class="img-clear" style="display:none" onclick="clearImgZone('prv-db1','img-db1','clr-db1','zone-db1')">✕ 제거</span>
+          <div id="prog-db1" class="upload-progress">업로드 중...</div>
+          <textarea class="reditor" id="f-db1r" rows="3" placeholder="검색된 유사작품 제목, 연도, 수상 내역 등을 입력하세요..." style="margin-top:8px;border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius)"></textarea>
+        </div>
+
+        <div class="sub-sublbl">나. 차별성</div>
+        <div style="margin-left:16px;margin-bottom:16px">
+          <div class="htoolbar" style="border-radius:var(--radius) var(--radius) 0 0">
+            <span class="tb-label">소제목</span>
+            <button class="hbtn lv1" onclick="insertHeading('f-db1d','1')">1. 항목</button>
+            <button class="hbtn" onclick="insertHeading('f-db1d','가')">가. 항목</button>
+          </div>
+          <textarea class="reditor" id="f-db1d" rows="5" placeholder="유사작품과 본 탐구의 차이점을 구체적으로 서술하세요..."
+            oninput="updateCounter('f-db1d','cc-db1d','cb-db1d',150)"></textarea>
+          <div class="char-counter">
+            <span class="char-num" id="cc-db1d">0자</span>
+            <div class="char-bar-wrap"><div class="char-bar" id="cb-db1d" style="width:0%"></div></div>
+            <span class="char-min">최소 150자 권장</span>
+          </div>
+        </div>
+
+        <div class="sub-lbl">2. 학술연구정보서비스(RISS) 논문 검색 DB 검색</div>
+        <div class="sub-sublbl">가. 검색 결과 <span style="font-size:11px;color:var(--text3)">(선택)</span></div>
+        <div style="margin-left:16px;margin-bottom:10px">
+          <div class="img-zone" id="zone-db2" onclick="document.getElementById('img-db2').click()">
+            <input type="file" id="img-db2" accept="image/*" onchange="handleImgSelect(this,'prv-db2','clr-db2','prog-db2')">
+            <div style="font-size:20px">📸</div>
+            <div class="up-lbl">클릭하여 업로드 또는 Ctrl+V로 붙여넣기</div>
+          </div>
+          <img id="prv-db2" class="img-preview" style="display:none">
+          <span id="clr-db2" class="img-clear" style="display:none" onclick="clearImgZone('prv-db2','img-db2','clr-db2','zone-db2')">✕ 제거</span>
+          <div id="prog-db2" class="upload-progress">업로드 중...</div>
+          <textarea class="reditor" id="f-db2r" rows="3" placeholder="검색된 유사 논문 제목, 저자, 내용 요약 등을 입력하세요..." style="margin-top:8px;border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius)"></textarea>
+        </div>
+
+        <div class="sub-sublbl">나. 차별성</div>
+        <div style="margin-left:16px">
+          <div class="htoolbar" style="border-radius:var(--radius) var(--radius) 0 0">
+            <span class="tb-label">소제목</span>
+            <button class="hbtn lv1" onclick="insertHeading('f-db2d','1')">1. 항목</button>
+            <button class="hbtn" onclick="insertHeading('f-db2d','가')">가. 항목</button>
+          </div>
+          <textarea class="reditor" id="f-db2d" rows="5" placeholder="기존 논문과 본 탐구의 차이점을 구체적으로 서술하세요..."
+            oninput="updateCounter('f-db2d','cc-db2d','cb-db2d',150)"></textarea>
+          <div class="char-counter">
+            <span class="char-num" id="cc-db2d">0자</span>
+            <div class="char-bar-wrap"><div class="char-bar" id="cb-db2d" style="width:0%"></div></div>
+            <span class="char-min">최소 150자 권장</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="showList()">취소</button>
+      <button class="btn-submit" id="btn-save" onclick="saveReport()">
+        <div class="spinner" id="save-spinner"></div>
+        <span id="save-label">보고서 저장</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 -->
+<div id="view-detail" class="view">
+  <div class="detail-wrap">
+    <div class="detail-back" onclick="showList()">← 목록으로</div>
+    <div class="detail-card">
+      <div class="detail-head">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="detail-title" id="d-title"></div>
+            <div class="detail-meta" id="d-meta"></div>
+            <div class="detail-tag" id="d-tag"></div>
+          </div>
+          <button class="btn-new" id="btn-edit" style="flex-shrink:0;margin-top:4px" onclick="editReport()">✏️ 수정</button>
+        </div>
+      </div>
+      <div class="detail-body" id="d-body"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// Firebase 초기화 & fallback
+// ═══════════════════════════════════════════════
+let db = null, storage = null, useFirebase = false;
+const COLLECTION = 'science_reports';
+let _editingId = null;   // 수정 중인 보고서 ID (null이면 신규)
+let _currentDetailId = null; // 현재 상세보기 중인 ID
+
+function initFirebase() {
+  try {
+    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') throw new Error('config not set');
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    storage = firebase.storage();
+    useFirebase = true;
+    document.getElementById('fb-dot').className = 'dot ok';
+    document.getElementById('fb-label').textContent = 'Firebase 연결됨';
+    document.getElementById('config-banner').className = 'config-banner hidden';
+    console.log('✅ Firebase 연결 성공');
+  } catch(e) {
+    document.getElementById('fb-dot').className = 'dot err';
+    document.getElementById('fb-label').textContent = 'localStorage 모드';
+    console.warn('⚠️ Firebase 미설정, localStorage 사용:', e.message);
+  }
+}
+initFirebase();
+
+// ═══════════════════════════════════════════════
+// localStorage fallback helpers
+// ═══════════════════════════════════════════════
+const SK = 'isaem_reports_v3';
+const lsGet = () => { try { return JSON.parse(localStorage.getItem(SK)) || []; } catch { return []; } };
+const lsSet = arr => localStorage.setItem(SK, JSON.stringify(arr));
+
+// ═══════════════════════════════════════════════
+// 이미지 선택 → preview (파일 객체는 input에서 직접 읽음)
+// ═══════════════════════════════════════════════
+function handleImgSelect(input, prevId, clearId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prv = document.getElementById(prevId);
+    prv.src = e.target.result;
+    prv.style.display = 'block';
+    document.getElementById(clearId).style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImgZone(prevId, inputId, clearId, zoneId) {
+  document.getElementById(prevId).style.display = 'none';
+  document.getElementById(prevId).src = '';
+  document.getElementById(inputId).value = '';
+  document.getElementById(clearId).style.display = 'none';
+  if (zoneId) {
+    const z = document.getElementById(zoneId);
+    if (z) z._pasteFile = null;
+  }
+}
+
+function clearImg(prevId, inputId, clearId) {
+  clearImgZone(prevId, inputId, clearId, null);
+}
+
+// ═══════════════════════════════════════════════
+// Ctrl+V 붙여넣기 → 이미지 존에 표시
+// ═══════════════════════════════════════════════
+const IMG_ZONES = [
+  { zoneId: 'zone-s2',  prevId: 'prv-s2',  clearId: 'clr-s2',  progId: 'prog-s2'  },
+  { zoneId: 'zone-db1', prevId: 'prv-db1', clearId: 'clr-db1', progId: 'prog-db1' },
+  { zoneId: 'zone-db2', prevId: 'prv-db2', clearId: 'clr-db2', progId: 'prog-db2' },
+];
+
+// 마지막으로 포커스된 존 추적
+let _lastFocusedZone = null;
+document.addEventListener('DOMContentLoaded', () => {
+  IMG_ZONES.forEach(({ zoneId }) => {
+    const zone = document.getElementById(zoneId);
+    if (zone) {
+      zone.addEventListener('mouseenter', () => _lastFocusedZone = zoneId);
+      zone.addEventListener('click',      () => _lastFocusedZone = zoneId);
+    }
+  });
+});
+
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (!file) continue;
+
+      // 가장 최근 포커스된 존 또는 첫 번째 빈 존 찾기
+      let target = IMG_ZONES.find(z => z.zoneId === _lastFocusedZone)
+                || IMG_ZONES.find(z => {
+                     const prv = document.getElementById(z.prevId);
+                     return prv && prv.style.display === 'none';
+                   })
+                || IMG_ZONES[0];
+
+      const { zoneId, prevId, clearId } = target;
+      const zone = document.getElementById(zoneId);
+      if (zone) zone._pasteFile = file;  // 저장해두기
+
+      // 미리보기 표시
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const prv = document.getElementById(prevId);
+        prv.src = ev.target.result;
+        prv.style.display = 'block';
+        document.getElementById(clearId).style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+      showToast('이미지가 붙여넣어졌어요 ✓');
+      break;
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════
+// GitHub 이미지 저장 설정
+// 아래 token 값을 발급받은 토큰으로 교체하세요
+// ═══════════════════════════════════════════════
+const GITHUB = {
+  owner:  'lhacoding',
+  repo:   'isaem-robot-images',
+  token:  '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',  // ← 여기에 토큰 붙여넣기
+  branch: 'main',
+};
+
+// ═══════════════════════════════════════════════
+// GitHub API 이미지 업로드 → raw URL 반환
+// ═══════════════════════════════════════════════
+async function uploadImage(inputId, progId, folder) {
+  const input = document.getElementById(inputId);
+
+  // 파일 입력 또는 붙여넣기 파일 중 하나 사용
+  const zoneId = 'zone-' + inputId.replace('img-', '');
+  const zone   = document.getElementById(zoneId);
+  const file   = input.files[0] || (zone && zone._pasteFile) || null;
+
+  // 새 파일 없고 기존 URL 있으면 기존 URL 반환 (수정 시)
+  if (!file) {
+    return (zone && zone._existingUrl) || null;
+  }
+
+  const prog = document.getElementById(progId);
+  if (prog) { prog.style.display = 'block'; prog.textContent = '업로드 중...'; }
+
+  // 파일 → base64
+  const base64 = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+
+  const ext  = file.name.split('.').pop();
+  const path = `${folder}/${inputId}_${Date.now()}.${ext}`;
+  const apiUrl = `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`;
+
+  if (GITHUB.token === 'YOUR_GITHUB_TOKEN') {
+    // 토큰 미설정 시 base64 data URL로 fallback
+    if (prog) prog.style.display = 'none';
+    return 'data:image/' + ext + ';base64,' + base64;
+  }
+
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${GITHUB.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: `upload ${path}`,
+      content: base64,
+      branch:  GITHUB.branch,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error('GitHub 업로드 실패: ' + (err.message || res.status));
+  }
+
+  const data = await res.json();
+  if (prog) prog.style.display = 'none';
+
+  // raw URL로 변환
+  return `https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${path}`;
+}
+
+// ═══════════════════════════════════════════════
+// 보고서 저장 (Firestore or localStorage)
+// ═══════════════════════════════════════════════
+async function saveReport() {
+  const title    = v('f-title');
+  const category = v('f-category');
+  const author   = v('f-author');
+
+  if (!title)    return showToast('제목을 입력하세요', true);
+  if (!category) return showToast('출품 부문을 입력하세요', true);
+  if (!author)   return showToast('작성자 이름을 입력하세요', true);
+
+  setSaving(true);
+  try {
+    const prefix = `reports/${author}_${Date.now()}`;
+    const [sec2img, db1img, db2img] = await Promise.all([
+      uploadImage('img-s2',  'prog-s2',  prefix),
+      uploadImage('img-db1', 'prog-db1', prefix),
+      uploadImage('img-db2', 'prog-db2', prefix),
+    ]);
+
+    const report = {
+      title, category, author,
+      school:  v('f-school'),
+      sec1:    v('f-sec1'), sec2: v('f-sec2'),
+      sec2img: sec2img || '',
+      sec3:    v('f-sec3'), sec4: v('f-sec4'),
+      db1img:  db1img || '',
+      db1r:    v('f-db1r'), db1d: v('f-db1d'),
+      db2img:  db2img || '',
+      db2r:    v('f-db2r'), db2d: v('f-db2d'),
+      updatedAt: new Date().toISOString(),
+    };
+    // date, createdAt은 신규일 때만 추가
+    if (!_editingId) {
+      report.date = new Date().toLocaleDateString('ko-KR');
+      report.createdAt = new Date().toISOString();
+    }
+
+    if (useFirebase) {
+      if (_editingId) {
+        await db.collection(COLLECTION).doc(_editingId).update(report);
+      } else {
+        await db.collection(COLLECTION).add(report);
+      }
+    } else {
+      const list = lsGet();
+      if (_editingId) {
+        const idx = list.findIndex(r => r.id === _editingId);
+        if (idx !== -1) list[idx] = { ...list[idx], ...report };
+      } else {
+        list.unshift({ ...report, id: Date.now().toString() });
+      }
+      lsSet(list);
+    }
+
+    showToast(_editingId ? '수정되었습니다! ✓' : '보고서가 저장되었습니다! 🎉');
+    setTimeout(() => showList(), 900);
+  } catch(err) {
+    console.error(err);
+    showToast('저장 실패: ' + err.message, true);
+  } finally {
+    setSaving(false);
+  }
+}
+
+function setSaving(on) {
+  const btn = document.getElementById('btn-save');
+  const spin = document.getElementById('save-spinner');
+  const lbl = document.getElementById('save-label');
+  btn.disabled = on;
+  spin.className = on ? 'spinner show' : 'spinner';
+  lbl.textContent = on ? '저장 중...' : '보고서 저장';
+}
+
+// ═══════════════════════════════════════════════
+// 보고서 목록 불러오기
+// ═══════════════════════════════════════════════
+async function loadReports() {
+  if (useFirebase) {
+    const snap = await db.collection(COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  return lsGet();
+}
+
+async function deleteReport(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 보고서를 삭제할까요?')) return;
+  if (useFirebase) {
+    await db.collection(COLLECTION).doc(id).delete();
+  } else {
+    lsSet(lsGet().filter(r => r.id !== id));
+  }
+  renderList();
+  showToast('삭제되었습니다');
+}
+
+// ═══════════════════════════════════════════════
+// 뷰 전환
+// ═══════════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showList() { _editingId = null; renderList(); showView('view-list'); }
+function showForm() { _editingId = null; resetForm(); document.getElementById('form-header-title').textContent = '과학전람회 탐구 계획서'; document.getElementById('save-label').textContent = '보고서 저장'; showView('view-form'); }
+
+// ═══════════════════════════════════════════════
+// 목록 렌더링
+// ═══════════════════════════════════════════════
+async function renderList() {
+  const sub = document.getElementById('list-sub');
+  sub.textContent = '불러오는 중...';
+
+  let reports = [];
+  try { reports = await loadReports(); } catch(e) { sub.textContent = '불러오기 실패: ' + e.message; return; }
+
+  const grid  = document.getElementById('card-grid');
+  const empty = document.getElementById('empty-state');
+  sub.textContent = useFirebase ? 'Firebase에서 불러온 데이터' : 'localStorage 모드 · Firebase 설정 후 클라우드 저장됩니다';
+
+  if (!reports.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = reports.map(r => `
+    <div class="report-card" onclick="showDetail('${r.id}')">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${r.title}</div>
+          <div class="card-meta">${r.author} · ${r.school || ''} · ${r.date}</div>
+          <span class="card-tag">${r.category}</span>
+        </div>
+        <button class="btn-sm del" onclick="deleteReport('${r.id}',event)">삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// 상세 보기
+// ═══════════════════════════════════════════════
+async function showDetail(id) {
+  _currentDetailId = id;
+  let r;
+  if (useFirebase) {
+    const doc = await db.collection(COLLECTION).doc(id).get();
+    r = { id: doc.id, ...doc.data() };
+  } else {
+    r = lsGet().find(x => x.id === id);
+  }
+  if (!r) return;
+
+  document.getElementById('d-title').textContent = r.title;
+  document.getElementById('d-meta').textContent  = `${r.author} · ${r.school || ''} · ${r.date}`;
+  document.getElementById('d-tag').textContent   = r.category;
+
+  const img = src => src ? `<img src="${src}" class="d-img">` : '';
+  const txt = t   => t   ? `<div class="d-content">${t}</div>` : '<div class="d-content" style="color:#bbb">내용 없음</div>';
+
+  document.getElementById('d-body').innerHTML = `
+    <div class="d-section"><div class="d-sec-title">Ⅰ. 탐구(연구) 동기 및 목적</div>${txt(r.sec1)}</div>
+    <div class="d-section"><div class="d-sec-title">Ⅱ. 탐구(연구) 방법</div>${txt(r.sec2)}${img(r.sec2img)}</div>
+    <div class="d-section"><div class="d-sec-title">Ⅲ. 예상 결과</div>${txt(r.sec3)}</div>
+    <div class="d-section"><div class="d-sec-title">Ⅳ. 기대 효과</div>${txt(r.sec4)}</div>
+    <div class="d-section">
+      <div class="d-sec-title">Ⅴ. 유사작품 검색 및 차별성</div>
+      <div class="d-sub">
+        <div class="d-sub-title">1. 국립중앙과학관 과학전람회 DB 검색</div>
+        <div class="d-sub-sub-title">가. 검색 결과</div>
+        <div class="d-img-wrap">${img(r.db1img)}</div>
+        ${r.db1r ? txt(r.db1r) : ''}
+        <div class="d-sub-sub-title">나. 차별성</div>${txt(r.db1d)}
+      </div>
+      <div class="d-sub">
+        <div class="d-sub-title">2. 학술연구정보서비스(RISS) 논문 검색 DB 검색</div>
+        <div class="d-sub-sub-title">가. 검색 결과</div>
+        <div class="d-img-wrap">${img(r.db2img)}</div>
+        ${r.db2r ? txt(r.db2r) : ''}
+        <div class="d-sub-sub-title">나. 차별성</div>${txt(r.db2d)}
+      </div>
+    </div>`;
+  showView('view-detail');
+}
+
+// ═══════════════════════════════════════════════
+// 수정 모드 진입 — 폼에 기존 데이터 채우기
+// ═══════════════════════════════════════════════
+async function editReport() {
+  const id = _currentDetailId;
+  if (!id) return;
+  let r;
+  if (useFirebase) {
+    const doc = await db.collection(COLLECTION).doc(id).get();
+    r = { id: doc.id, ...doc.data() };
+  } else {
+    r = lsGet().find(x => x.id === id);
+  }
+  if (!r) return;
+
+  resetForm();
+  _editingId = id;
+
+  // 기본정보
+  document.getElementById('f-title').value    = r.title    || '';
+  document.getElementById('f-category').value = r.category || '';
+  document.getElementById('f-author').value   = r.author   || '';
+  document.getElementById('f-school').value   = r.school   || '';
+
+  // 본문
+  document.getElementById('f-sec1').value = r.sec1 || '';
+  document.getElementById('f-sec2').value = r.sec2 || '';
+  document.getElementById('f-sec3').value = r.sec3 || '';
+  document.getElementById('f-sec4').value = r.sec4 || '';
+  document.getElementById('f-db1r').value = r.db1r || '';
+  document.getElementById('f-db1d').value = r.db1d || '';
+  document.getElementById('f-db2r').value = r.db2r || '';
+  document.getElementById('f-db2d').value = r.db2d || '';
+
+  // 글자수 카운터 갱신
+  [['f-sec1','cc-sec1','cb-sec1',800],['f-sec2','cc-sec2','cb-sec2',600],
+   ['f-sec3','cc-sec3','cb-sec3',400],['f-sec4','cc-sec4','cb-sec4',300],
+   ['f-db1d','cc-db1d','cb-db1d',150],['f-db2d','cc-db2d','cb-db2d',150]
+  ].forEach(([f,c,b,m]) => updateCounter(f,c,b,m));
+
+  // 기존 이미지 미리보기
+  const showExisting = (url, prevId, clearId, zoneId) => {
+    if (!url) return;
+    const prv = document.getElementById(prevId);
+    prv.src = url; prv.style.display = 'block';
+    document.getElementById(clearId).style.display = 'inline-block';
+    const z = document.getElementById(zoneId);
+    if (z) z._existingUrl = url;  // 새 파일 없으면 기존 URL 유지
+  };
+  showExisting(r.sec2img, 'prv-s2',  'clr-s2',  'zone-s2');
+  showExisting(r.db1img,  'prv-db1', 'clr-db1', 'zone-db1');
+  showExisting(r.db2img,  'prv-db2', 'clr-db2', 'zone-db2');
+
+  // 헤더 텍스트 변경
+  document.getElementById('form-header-title').textContent = '보고서 수정';
+  document.getElementById('save-label').textContent = '수정 저장';
+
+  showView('view-form');
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════
+// 소제목 삽입 / 글자수 카운터 / 폼 리셋
+// ═══════════════════════════════════════════════
+const NUMS = {
+  '1': ['1','2','3','4','5','6','7','8','9','10'],
+  '가': ['가','나','다','라','마','바','사','아','자','차'],
+  '1)': ['1','2','3','4','5'],
+  '가)': ['가','나','다','라','마'],
+  '(1)': ['1','2','3','4','5'],
+  '(가)': ['가','나','다','라','마'],
+};
+
+function insertHeading(id, type) {
+  const el = document.getElementById(id);
+  const pos = el.selectionStart;
+  const before = el.value.substring(0, pos);
+  const after  = el.value.substring(pos);
+  const nums = NUMS[type] || NUMS['1'];
+  let count = 0;
+  before.split('\n').forEach(line => {
+    nums.forEach((n, i) => {
+      const t = type.includes('(') ? `(${n})` : type.endsWith(')') ? `${n})` : `${n}.`;
+      if (line.trim().startsWith(t)) count++;
+    });
+  });
+  const label = nums[Math.min(count, nums.length - 1)];
+  let prefix = type.startsWith('(') ? `\n(${label}) ` : type.endsWith(')') ? `\n${label}) ` : `\n${label}. `;
+  el.value = before + prefix + after;
+  el.selectionStart = el.selectionEnd = pos + prefix.length;
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+function insertText(id, text) {
+  const el = document.getElementById(id);
+  const pos = el.selectionStart;
+  el.value = el.value.substring(0, pos) + text + el.value.substring(pos);
+  el.selectionStart = el.selectionEnd = pos + text.length;
+  el.focus();
+}
+
+function updateCounter(fieldId, counterId, barId, minChars) {
+  const el  = document.getElementById(fieldId);
+  const cnt = document.getElementById(counterId);
+  const bar = document.getElementById(barId);
+  if (!el || !cnt) return;
+  const len = el.value.replace(/\s/g, '').length;
+  cnt.textContent = len + '자';
+  if (minChars > 0) {
+    const pct = Math.min(100, (len / minChars) * 100);
+    bar.style.width = pct + '%';
+    if (len === 0)          { bar.style.background = 'var(--border2)'; cnt.className = 'char-num'; }
+    else if (len < minChars){ bar.style.background = '#e08030';        cnt.className = 'char-num below'; }
+    else                    { bar.style.background = 'var(--ok)';      cnt.className = 'char-num ok'; }
+  }
+}
+
+function resetForm() {
+  ['f-title','f-category','f-author','f-school',
+   'f-sec1','f-sec2','f-sec3','f-sec4',
+   'f-db1r','f-db1d','f-db2r','f-db2d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['prv-s2','prv-db1','prv-db2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.src = ''; }
+  });
+  ['img-s2','img-db1','img-db2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['clr-s2','clr-db1','clr-db2','prog-s2','prog-db1','prog-db2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['cc-sec1','cc-sec2','cc-sec3','cc-sec4','cc-db1d','cc-db2d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '0자'; el.className = 'char-num'; }
+  });
+  ['cb-sec1','cb-sec2','cb-sec3','cb-sec4','cb-db1d','cb-db2d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.width = '0%'; el.style.background = 'var(--border2)'; }
+  });
+}
+
+const v = id => document.getElementById(id).value.trim();
+
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ═══════════════════════════════════════════════
+// 초기 로드
+// ═══════════════════════════════════════════════
+renderList();
+</script>
+</body>
+</html>
