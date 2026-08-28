@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="탐구보고서 작성 워크북 교사용 보고서 확인 페이지">
+  <title>탐구보고서 교사용 관리</title>
+  <style>
+    :root {
+      --navy: #192238;
+      --navy2: #24314d;
+      --paper: #f3efe7;
+      --panel: #fffdf9;
+      --ink: #172039;
+      --muted: #697184;
+      --line: #ddd6ca;
+      --orange: #b95139;
+      --gold: #e8c84e;
+      --teal: #177c72;
+      --danger: #9d3d2e;
+      --shadow: 0 16px 40px rgba(24,32,52,.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(25,34,56,.025) 1px, transparent 1px),
+        var(--paper);
+      background-size: 100% 32px;
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    [hidden] { display: none !important; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 66px;
+      padding: 10px 20px;
+      color: white;
+      background: rgba(25,34,56,.985);
+      box-shadow: 0 10px 28px rgba(14,20,35,.18);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-badge {
+      padding: 7px 10px;
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .11em;
+      border: 1px solid rgba(255,255,255,.42);
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .brand strong { font-size: 14px; white-space: nowrap; }
+    .account { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .account-email { color: #d8dfeb; font-size: 11px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ghost-button, .primary-button, .small-button {
+      border: 0;
+      border-radius: 10px;
+      font-weight: 900;
+    }
+    .ghost-button {
+      padding: 9px 11px;
+      color: white;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.28);
+    }
+    .primary-button {
+      padding: 12px 17px;
+      color: white;
+      background: var(--orange);
+      box-shadow: 0 8px 18px rgba(185,81,57,.22);
+    }
+    .small-button {
+      padding: 9px 11px;
+      color: var(--navy);
+      background: white;
+      border: 1px solid var(--line);
+    }
+    .small-button:hover { border-color: #b9b1a4; }
+
+    .page-shell { width: min(1360px, calc(100% - 30px)); margin: 0 auto; padding: 34px 0 80px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 36px 40px;
+      color: white;
+      background:
+        radial-gradient(circle at 92% 10%, rgba(232,200,78,.20), transparent 28%),
+        radial-gradient(circle at 6% 120%, rgba(23,124,114,.25), transparent 34%),
+        var(--navy);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero .eyebrow { margin: 0 0 9px; color: var(--gold); font-size: 10px; font-weight: 950; letter-spacing: .16em; }
+    .hero h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); line-height: 1.24; letter-spacing: -.045em; }
+    .hero p { max-width: 840px; margin: 13px 0 0; color: #d3dbe8; font-size: 13px; line-height: 1.8; }
+
+    .setup-card, .login-card, .toolbar-card, .table-card, .empty-card {
+      margin-top: 20px;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(25,34,56,.055);
+    }
+    .setup-card { border-left: 5px solid var(--gold); }
+    .setup-card h2, .login-card h2 { margin: 0 0 9px; font-size: 20px; }
+    .setup-card p, .login-card p, .empty-card p { margin: 7px 0; color: var(--muted); font-size: 13px; line-height: 1.75; }
+    .setup-card code { padding: 2px 5px; background: #f1ede5; border-radius: 5px; font-size: 12px; }
+    .login-card { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 20px; }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .summary-item {
+      padding: 18px 19px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 7px 20px rgba(25,34,56,.045);
+    }
+    .summary-item span { display: block; color: var(--muted); font-size: 11px; font-weight: 850; }
+    .summary-item strong { display: block; margin-top: 6px; font-size: 24px; }
+
+    .toolbar-card {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.8fr) repeat(2, minmax(120px,.7fr)) auto auto;
+      gap: 9px;
+      align-items: end;
+    }
+    .field label { display: block; margin: 0 0 6px; color: #4f596c; font-size: 11px; font-weight: 900; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 11px;
+      color: var(--ink);
+      background: white;
+      border: 1px solid #d8d1c5;
+      border-radius: 10px;
+    }
+
+    .table-card { padding: 0; overflow: hidden; }
+    .table-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 17px 19px;
+      border-bottom: 1px solid var(--line);
+    }
+    .table-head h2 { margin: 0; font-size: 18px; }
+    .table-head span { color: var(--muted); font-size: 11px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th, td { padding: 12px 13px; text-align: left; border-bottom: 1px solid #e6e0d6; font-size: 12px; vertical-align: middle; }
+    th { color: #4d586c; font-size: 11px; background: #f7f4ee; white-space: nowrap; }
+    tbody tr:hover { background: #fffaf7; }
+    td.name { font-weight: 900; }
+    td.topic { max-width: 390px; line-height: 1.55; }
+    .stage-badge {
+      display: inline-flex;
+      padding: 5px 7px;
+      color: #245e59;
+      font-size: 10px;
+      font-weight: 900;
+      background: #edf8f6;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .view-button {
+      padding: 8px 10px;
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      background: var(--teal);
+      border: 0;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .error-banner {
+      margin-top: 16px;
+      padding: 13px 15px;
+      color: #7f3528;
+      font-size: 12px;
+      line-height: 1.7;
+      background: #fff1ec;
+      border: 1px solid #edc1b6;
+      border-left: 5px solid var(--danger);
+      border-radius: 11px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(12,17,29,.62);
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      width: min(980px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.28);
+    }
+    .modal-head {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 24px;
+      color: white;
+      background: var(--navy);
+    }
+    .modal-head small { color: var(--gold); font-size: 10px; font-weight: 900; letter-spacing: .12em; }
+    .modal-head h2 { margin: 6px 0 0; font-size: 21px; line-height: 1.45; }
+    .modal-head p { margin: 8px 0 0; color: #ced7e3; font-size: 11px; }
+    .modal-actions { display: flex; gap: 7px; flex: 0 0 auto; }
+    .modal-body { padding: 24px; }
+    .student-meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .student-meta div { padding: 12px; background: #f7f4ee; border-radius: 10px; }
+    .student-meta b { display: block; color: #5e687a; font-size: 10px; }
+    .student-meta span { display: block; margin-top: 5px; font-size: 13px; font-weight: 850; }
+    .report-section { padding: 18px 3px; border-top: 1px solid #dde1e7; }
+    .report-section:first-of-type { border-top: 0; }
+    .report-section h3 { margin: 0 0 9px; color: var(--navy); font-size: 16px; }
+    .report-section h4 { margin: 15px 0 7px; color: #2b5d64; font-size: 13px; }
+    .report-section p { margin: 0; color: #3f495d; font-size: 13px; line-height: 1.85; white-space: pre-wrap; word-break: keep-all; }
+    .report-section .empty { color: #9aa1ad; font-style: italic; }
+    .reference-list { display: grid; gap: 8px; }
+    .reference-item { padding: 11px 12px; background: #faf8f3; border: 1px solid #e2dcd1; border-radius: 9px; }
+    .reference-item b { display: block; font-size: 12px; }
+    .reference-item span, .reference-item a { display: block; margin-top: 4px; color: #697184; font-size: 11px; line-height: 1.6; word-break: break-all; }
+
+    @media print {
+      .topbar, .hero, .summary-strip, .toolbar-card, .table-card, .setup-card, .login-card, .error-banner, .modal-actions { display: none !important; }
+      .modal-backdrop { position: static; display: block; padding: 0; background: white; }
+      .modal { width: 100%; max-height: none; overflow: visible; box-shadow: none; border-radius: 0; }
+      .modal-head { position: static; color: var(--ink); background: white; border-bottom: 2px solid var(--navy); }
+      .modal-head small, .modal-head p { color: #5e687a; }
+      .page-shell { width: 100%; padding: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .summary-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .toolbar-card { grid-template-columns: 1fr 1fr; }
+      .toolbar-card .field:first-child { grid-column: 1 / -1; }
+      .login-card { grid-template-columns: 1fr; }
+      .student-meta { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 560px) {
+      .topbar { padding: 9px 11px; }
+      .brand strong { display: none; }
+      .account-email { display: none; }
+      .page-shell { width: min(100% - 16px, 1360px); padding-top: 18px; }
+      .hero { padding: 27px 20px; border-radius: 18px; }
+      .summary-strip { grid-template-columns: 1fr 1fr; }
+      .toolbar-card { grid-template-columns: 1fr; }
+      .toolbar-card .field:first-child { grid-column: auto; }
+      .student-meta { grid-template-columns: 1fr 1fr; }
+      .modal-backdrop { padding: 0; }
+      .modal { max-height: 100vh; border-radius: 0; }
+      .modal-head { padding: 18px; }
+      .modal-body { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-badge">TEACHER</span>
+      <strong>탐구보고서 교사용 관리</strong>
+    </div>
+    <div class="account">
+      <span class="account-email" id="account-email">로그인 필요</span>
+      <button type="button" class="ghost-button" id="logout-button" hidden>로그아웃</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">FIREBASE REPORT VIEWER</p>
+      <h1>학생이 저장한 탐구보고서를<br>웹에서 바로 확인합니다.</h1>
+      <p>학년·반·번호·이름·탐구주제로 검색하고, 학생별 완성 보고서와 자기평가서를 한 화면에서 확인할 수 있습니다. 학생이 올린 탐구 사진은 현재 워크북 정책에 따라 Firebase에 저장되지 않으므로 이 페이지에도 표시되지 않습니다.</p>
+    </section>
+
+    <section class="setup-card" id="setup-card" hidden>
+      <h2>Firebase 설정이 필요합니다.</h2>
+      <p><code>admin.html</code> 안의 <code>FIREBASE_CONFIG</code>와 <code>ADMIN_EMAILS</code>를 실제 값으로 바꾸세요. 학생용 <code>index.html</code>에 사용한 Firebase 설정값을 그대로 복사하면 됩니다.</p>
+      <p>Firestore 보안 규칙에도 같은 관리자 Google 계정을 등록해야 실제 보고서를 읽을 수 있습니다.</p>
+    </section>
+
+    <section class="login-card" id="login-card">
+      <div>
+        <h2>선생님 Google 계정으로 로그인</h2>
+        <p>지정된 관리자 계정만 학생 보고서를 조회할 수 있습니다. 로그인 후 Firestore의 모든 학생 보고서를 불러옵니다.</p>
+      </div>
+      <button type="button" class="primary-button" id="login-button">Google로 로그인</button>
+    </section>
+
+    <div class="error-banner" id="error-banner" hidden></div>
+
+    <section id="dashboard" hidden>
+      <div class="summary-strip">
+        <div class="summary-item"><span>전체 저장 보고서</span><strong id="count-all">0</strong></div>
+        <div class="summary-item"><span>학생 수</span><strong id="count-students">0</strong></div>
+        <div class="summary-item"><span>오늘 저장</span><strong id="count-today">0</strong></div>
+        <div class="summary-item"><span>현재 검색 결과</span><strong id="count-filtered">0</strong></div>
+      </div>
+
+      <section class="toolbar-card">
+        <div class="field">
+          <label for="search-input">검색</label>
+          <input id="search-input" type="search" placeholder="이름 · 번호 · 탐구주제 검색">
+        </div>
+        <div class="field">
+          <label for="grade-filter">학년</label>
+          <select id="grade-filter"><option value="">전체 학년</option></select>
+        </div>
+        <div class="field">
+          <label for="class-filter">반</label>
+          <select id="class-filter"><option value="">전체 반</option></select>
+        </div>
+        <button type="button" class="small-button" id="refresh-button">새로고침</button>
+        <button type="button" class="small-button" id="clear-filter-button">검색 초기화</button>
+      </section>
+
+      <section class="table-card">
+        <div class="table-head">
+          <h2>학생 보고서 목록</h2>
+          <span id="load-status">Firebase에서 불러오는 중…</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>학년</th>
+                <th>반</th>
+                <th>번호</th>
+                <th>이름</th>
+                <th>탐구주제</th>
+                <th>작성 단계</th>
+                <th>마지막 저장</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="report-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="empty-card" id="empty-card" hidden>
+        <p>조건에 맞는 보고서가 없습니다.</p>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="report-modal" hidden>
+    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <header class="modal-head">
+        <div>
+          <small>STUDENT REPORT</small>
+          <h2 id="modal-title">학생 탐구보고서</h2>
+          <p id="modal-subtitle"></p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-button" id="print-button">인쇄</button>
+          <button type="button" class="ghost-button" id="close-modal-button">닫기</button>
+        </div>
+      </header>
+      <div class="modal-body" id="modal-body"></div>
+    </article>
+  </div>
+
+  <script type="module">
+    // ========================================================================
+    // 1. 학생용 index.html에 넣은 Firebase 설정값과 동일하게 입력하세요.
+    // ========================================================================
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyA1nT1MM-8kylY65S0kJS-DD0VhVyH0ZOc",
+      authDomain: "isaem-robot.firebaseapp.com",
+      projectId: "isaem-robot",
+      storageBucket: "isaem-robot.firebasestorage.app",
+      messagingSenderId: "PASTE_MESSAGING_SENDER_ID_HERE",
+      appId: "PASTE_APP_ID_HERE"
+    };
+
+    // ========================================================================
+    // 2. 보고서를 열람할 선생님 Google 계정을 입력하세요.
+    //    여러 명이면 쉼표가 아니라 배열 항목을 추가합니다.
+    //    예: ["teacher1@gmail.com", "teacher2@gmail.com"]
+    // ========================================================================
+    const ADMIN_EMAILS = ["lhahsc@gmail.com"];
+
+    const FIREBASE_SDK_VERSION = "12.18.0";
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}`;
+
+    const [appModule, authModule, firestoreModule] = await Promise.all([
+      import(`${base}/firebase-app.js`),
+      import(`${base}/firebase-auth.js`),
+      import(`${base}/firebase-firestore.js`),
+    ]);
+
+    const $ = (selector) => document.querySelector(selector);
+    const setupCard = $("#setup-card");
+    const loginCard = $("#login-card");
+    const loginButton = $("#login-button");
+    const logoutButton = $("#logout-button");
+    const accountEmail = $("#account-email");
+    const dashboard = $("#dashboard");
+    const errorBanner = $("#error-banner");
+    const loadStatus = $("#load-status");
+    const rows = $("#report-rows");
+    const emptyCard = $("#empty-card");
+    const reportModal = $("#report-modal");
+    const modalTitle = $("#modal-title");
+    const modalSubtitle = $("#modal-subtitle");
+    const modalBody = $("#modal-body");
+
+    let auth = null;
+    let db = null;
+    let allReports = [];
+    let filteredReports = [];
+    let currentReport = null;
+
+    function firebaseReady() {
+      const required = [FIREBASE_CONFIG.apiKey, FIREBASE_CONFIG.projectId, FIREBASE_CONFIG.appId];
+      return required.every((value) => {
+        const text = String(value ?? "").trim();
+        return text && !text.startsWith("PASTE_");
+      });
+    }
+
+    function adminEmailsReady() {
+      return ADMIN_EMAILS.some((email) => {
+        const text = String(email ?? "").trim();
+        return text && !text.startsWith("PASTE_") && text.includes("@");
+      });
+    }
+
+    function normalizedAdminEmails() {
+      return ADMIN_EMAILS.map((email) => String(email ?? "").trim().toLowerCase()).filter(Boolean);
+    }
+
+    function isAllowedAdmin(user) {
+      const email = String(user?.email ?? "").trim().toLowerCase();
+      return Boolean(email && normalizedAdminEmails().includes(email));
+    }
+
+    function showError(message) {
+      errorBanner.textContent = message;
+      errorBanner.hidden = false;
+    }
+
+    function clearError() {
+      errorBanner.hidden = true;
+      errorBanner.textContent = "";
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function stageLabel(view) {
+      return ({ topics: "주제 찾기", draft: "보고서 초안", explore: "탐구 활동", report: "보고서 완성", self: "자기평가서", sample: "샘플" })[view] || "작성 중";
+    }
+
+    function reportTime(report) {
+      const server = report.updatedAt;
+      if (server && typeof server.toDate === "function") return server.toDate();
+      const client = report.updatedAtClient;
+      const date = client ? new Date(client) : null;
+      return date && !Number.isNaN(date.getTime()) ? date : null;
+    }
+
+    function formatDateTime(report) {
+      const date = reportTime(report);
+      if (!date) return "저장 시각 없음";
+      return new Intl.DateTimeFormat("ko-KR", {
+        month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit"
+      }).format(date);
+    }
+
+    function safeStudent(report) {
+      const direct = report.student && typeof report.student === "object" ? report.student : {};
+      const fields = report.state?.fields ?? {};
+      return {
+        grade: String(direct.grade ?? fields["student-grade"] ?? "").trim(),
+        className: String(direct.className ?? fields["student-class"] ?? "").trim(),
+        number: String(direct.number ?? fields["student-number"] ?? "").trim(),
+        name: String(direct.name ?? fields["student-name"] ?? "").trim(),
+      };
+    }
+
+    function safeTopic(report) {
+      const fields = report.state?.fields ?? {};
+      return String(report.topic ?? fields["draft-topic"] ?? "").trim() || "탐구주제 미입력";
+    }
+
+    function valueOrEmpty(fields, key) {
+      return String(fields?.[key] ?? "").trim();
+    }
+
+    function textBlock(text) {
+      const value = String(text ?? "").trim();
+      return value ? `<p>${escapeHTML(value)}</p>` : `<p class="empty">작성 내용 없음</p>`;
+    }
+
+    function reportIdentity(report) {
+      const s = safeStudent(report);
+      const name = s.name || "이름 미입력";
+      return `${s.grade || "-"}학년 ${s.className || "-"}반 ${s.number || "-"}번 ${name}`;
+    }
+
+    function referenceItems(fields, state) {
+      const max = Math.max(1, Number(state?.referenceCount) || 3);
+      const list = [];
+      for (let i = 1; i <= max; i += 1) {
+        const title = valueOrEmpty(fields, `reference-${i}-title`) || valueOrEmpty(fields, `source-${i}-title`);
+        const author = valueOrEmpty(fields, `reference-${i}-author`) || valueOrEmpty(fields, `source-${i}-author`);
+        const year = valueOrEmpty(fields, `reference-${i}-year`) || valueOrEmpty(fields, `source-${i}-year`);
+        const url = valueOrEmpty(fields, `reference-${i}-url`) || valueOrEmpty(fields, `source-${i}-url`);
+        const clipping = valueOrEmpty(fields, `reference-${i}-clipping`) || valueOrEmpty(fields, `source-${i}-clipping`);
+        if (!title && !author && !year && !url && !clipping) continue;
+        list.push({ title, author, year, url, clipping });
+      }
+      return list;
+    }
+
+    function analysisItems(fields) {
+      const indexes = new Set();
+      Object.keys(fields ?? {}).forEach((key) => {
+        const match = key.match(/^analysis-(?:title|content)-(\d+)$/);
+        if (match) indexes.add(Number(match[1]));
+      });
+      return [...indexes]
+        .sort((a,b) => a-b)
+        .map((index) => ({
+          title: valueOrEmpty(fields, `analysis-title-${index}`) || `소제목 ${index + 1}`,
+          content: valueOrEmpty(fields, `analysis-content-${index}`),
+        }))
+        .filter((item) => item.title || item.content);
+    }
+
+    function buildReportHTML(report) {
+      const fields = report.state?.fields ?? {};
+      const state = report.state ?? {};
+      const student = safeStudent(report);
+      const analyses = analysisItems(fields);
+      const references = referenceItems(fields, state);
+      const sections = [
+        ["1. 탐구 동기 및 목적", valueOrEmpty(fields, "final01") || valueOrEmpty(fields, "draft-motivation-purpose")],
+        ["2. 연구문제와 가설", valueOrEmpty(fields, "final02") || valueOrEmpty(fields, "draft-question-hypothesis")],
+        ["3. 이론적 배경", valueOrEmpty(fields, "final03") || valueOrEmpty(fields, "draft-theory")],
+        ["4. 탐구 방법", valueOrEmpty(fields, "final04") || valueOrEmpty(fields, "draft-method")],
+      ];
+
+      const basic = `
+        <div class="student-meta">
+          <div><b>학년</b><span>${escapeHTML(student.grade || "-")}</span></div>
+          <div><b>반</b><span>${escapeHTML(student.className || "-")}</span></div>
+          <div><b>번호</b><span>${escapeHTML(student.number || "-")}</span></div>
+          <div><b>이름</b><span>${escapeHTML(student.name || "-")}</span></div>
+        </div>`;
+
+      let html = basic + `<section class="report-section"><h3>탐구주제</h3>${textBlock(safeTopic(report))}</section>`;
+      html += sections.map(([title, value]) => `<section class="report-section"><h3>${escapeHTML(title)}</h3>${textBlock(value)}</section>`).join("");
+
+      html += `<section class="report-section"><h3>5. 분석 결과 및 해석</h3>`;
+      if (analyses.length) {
+        html += analyses.map((item) => `<h4>${escapeHTML(item.title)}</h4>${textBlock(item.content)}`).join("");
+      } else {
+        html += `<p class="empty">작성 내용 없음</p>`;
+      }
+      html += `</section>`;
+
+      html += `<section class="report-section"><h3>6. 결론 및 한계</h3>${textBlock(valueOrEmpty(fields, "final06"))}</section>`;
+      html += `<section class="report-section"><h3>7. 후속 탐구 계획</h3>${textBlock(valueOrEmpty(fields, "final07"))}</section>`;
+
+      html += `<section class="report-section"><h3>8. 참고자료 및 출처</h3>`;
+      if (references.length) {
+        html += `<div class="reference-list">${references.map((item, index) => `
+          <div class="reference-item">
+            <b>${index + 1}. ${escapeHTML(item.title || "자료 제목 미입력")}</b>
+            ${item.author || item.year ? `<span>${escapeHTML([item.author, item.year].filter(Boolean).join(" · "))}</span>` : ""}
+            ${item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.url)}</a>` : ""}
+            ${item.clipping ? `<span>${escapeHTML(item.clipping)}</span>` : ""}
+          </div>`).join("")}</div>`;
+      } else {
+        html += `<p class="empty">등록된 참고자료 없음</p>`;
+      }
+      html += `</section>`;
+
+      const self = valueOrEmpty(fields, "self-output");
+      html += `<section class="report-section"><h3>자기평가서</h3>${textBlock(self)}</section>`;
+
+      return html;
+    }
+
+    function updateFilterOptions() {
+      const grade = $("#grade-filter");
+      const clazz = $("#class-filter");
+      const currentGrade = grade.value;
+      const currentClass = clazz.value;
+      const grades = [...new Set(allReports.map((r) => safeStudent(r).grade).filter(Boolean))].sort((a,b) => Number(a) - Number(b));
+      const classes = [...new Set(allReports.map((r) => safeStudent(r).className).filter(Boolean))].sort((a,b) => Number(a) - Number(b));
+      grade.innerHTML = `<option value="">전체 학년</option>${grades.map((v) => `<option value="${escapeHTML(v)}">${escapeHTML(v)}학년</option>`).join("")}`;
+      clazz.innerHTML = `<option value="">전체 반</option>${classes.map((v) => `<option value="${escapeHTML(v)}">${escapeHTML(v)}반</option>`).join("")}`;
+      grade.value = grades.includes(currentGrade) ? currentGrade : "";
+      clazz.value = classes.includes(currentClass) ? currentClass : "";
+    }
+
+    function applyFilters() {
+      const q = String($("#search-input").value ?? "").trim().toLowerCase();
+      const grade = $("#grade-filter").value;
+      const clazz = $("#class-filter").value;
+      filteredReports = allReports.filter((report) => {
+        const s = safeStudent(report);
+        if (grade && s.grade !== grade) return false;
+        if (clazz && s.className !== clazz) return false;
+        if (!q) return true;
+        const haystack = [s.grade, s.className, s.number, s.name, safeTopic(report)].join(" ").toLowerCase();
+        return haystack.includes(q);
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      rows.innerHTML = filteredReports.map((report, index) => {
+        const s = safeStudent(report);
+        return `<tr>
+          <td>${escapeHTML(s.grade || "-")}</td>
+          <td>${escapeHTML(s.className || "-")}</td>
+          <td>${escapeHTML(s.number || "-")}</td>
+          <td class="name">${escapeHTML(s.name || "이름 미입력")}</td>
+          <td class="topic">${escapeHTML(safeTopic(report))}</td>
+          <td><span class="stage-badge">${escapeHTML(stageLabel(report.currentView || report.state?.view))}</span></td>
+          <td>${escapeHTML(formatDateTime(report))}</td>
+          <td><button type="button" class="view-button" data-report-index="${index}">보고서 보기</button></td>
+        </tr>`;
+      }).join("");
+      emptyCard.hidden = filteredReports.length > 0;
+      $("#count-filtered").textContent = String(filteredReports.length);
+      loadStatus.textContent = `${filteredReports.length}건 표시 · 최근 저장순`;
+    }
+
+    function updateSummary() {
+      $("#count-all").textContent = String(allReports.length);
+      const students = new Set(allReports.map((r) => {
+        const s = safeStudent(r);
+        return [s.grade, s.className, s.number, s.name, r.ownerUid].join("|");
+      }));
+      $("#count-students").textContent = String(students.size);
+      const now = new Date();
+      const todayCount = allReports.filter((r) => {
+        const d = reportTime(r);
+        return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+      }).length;
+      $("#count-today").textContent = String(todayCount);
+    }
+
+    async function loadReports() {
+      clearError();
+      loadStatus.textContent = "Firebase에서 불러오는 중…";
+      rows.innerHTML = "";
+      try {
+        const snapshot = await firestoreModule.getDocs(firestoreModule.collectionGroup(db, "reports"));
+        allReports = snapshot.docs.map((docSnap) => ({
+          ...docSnap.data(),
+          _docId: docSnap.id,
+          _path: docSnap.ref.path,
+        }));
+        allReports.sort((a,b) => (reportTime(b)?.getTime() || 0) - (reportTime(a)?.getTime() || 0));
+        updateSummary();
+        updateFilterOptions();
+        applyFilters();
+      } catch (error) {
+        console.error(error);
+        const message = String(error?.message ?? error ?? "보고서를 불러오지 못했습니다.");
+        loadStatus.textContent = "불러오기 실패";
+        showError(`학생 보고서를 불러오지 못했습니다. Firestore 규칙의 관리자 이메일과 현재 로그인 계정이 같은지 확인하세요. 오류: ${message}`);
+      }
+    }
+
+    function openReport(report) {
+      currentReport = report;
+      modalTitle.textContent = safeTopic(report);
+      modalSubtitle.textContent = `${reportIdentity(report)} · 마지막 저장 ${formatDateTime(report)}`;
+      modalBody.innerHTML = buildReportHTML(report);
+      reportModal.hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeReport() {
+      reportModal.hidden = true;
+      currentReport = null;
+      document.body.style.overflow = "";
+    }
+
+    async function login() {
+      clearError();
+      if (!firebaseReady() || !adminEmailsReady()) {
+        setupCard.hidden = false;
+        showError("admin.html의 Firebase 설정값과 관리자 이메일을 먼저 입력해야 합니다.");
+        return;
+      }
+      try {
+        const provider = new authModule.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        await authModule.signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error(error);
+        const code = String(error?.code ?? "");
+        if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request") {
+          try {
+            await authModule.signInWithRedirect(auth, new authModule.GoogleAuthProvider());
+            return;
+          } catch (redirectError) {
+            console.error(redirectError);
+          }
+        }
+        showError(`Google 로그인에 실패했습니다. Firebase Authentication에서 Google 로그인 제공업체가 활성화되어 있는지 확인하세요. 오류: ${String(error?.message ?? error)}`);
+      }
+    }
+
+    function showSignedOut() {
+      accountEmail.textContent = "로그인 필요";
+      logoutButton.hidden = true;
+      loginCard.hidden = false;
+      dashboard.hidden = true;
+      allReports = [];
+      filteredReports = [];
+      rows.innerHTML = "";
+    }
+
+    async function handleSignedIn(user) {
+      accountEmail.textContent = user.email || "Google 로그인";
+      logoutButton.hidden = false;
+      if (!isAllowedAdmin(user)) {
+        loginCard.hidden = true;
+        dashboard.hidden = true;
+        showError(`현재 로그인한 ${user.email || "계정"}은 admin.html의 ADMIN_EMAILS에 등록된 관리자 계정이 아닙니다.`);
+        return;
+      }
+      clearError();
+      loginCard.hidden = true;
+      dashboard.hidden = false;
+      await loadReports();
+    }
+
+    async function initialize() {
+      const configured = firebaseReady() && adminEmailsReady();
+      setupCard.hidden = configured;
+      if (!firebaseReady()) {
+        showError("Firebase 설정값이 아직 입력되지 않았습니다. 학생용 index.html에 사용한 firebaseConfig를 admin.html에 복사하세요.");
+        return;
+      }
+
+      try {
+        const firebaseApp = appModule.initializeApp(FIREBASE_CONFIG);
+        auth = authModule.getAuth(firebaseApp);
+        db = firestoreModule.getFirestore(firebaseApp);
+        try { await authModule.getRedirectResult(auth); } catch (error) { console.error(error); }
+        authModule.onAuthStateChanged(auth, async (user) => {
+          if (!user) return showSignedOut();
+          await handleSignedIn(user);
+        });
+      } catch (error) {
+        console.error(error);
+        showError(`Firebase 초기화에 실패했습니다. firebaseConfig 값을 확인하세요. 오류: ${String(error?.message ?? error)}`);
+      }
+    }
+
+    loginButton.addEventListener("click", login);
+    logoutButton.addEventListener("click", async () => {
+      if (auth) await authModule.signOut(auth);
+      clearError();
+      closeReport();
+    });
+    $("#refresh-button").addEventListener("click", loadReports);
+    $("#clear-filter-button").addEventListener("click", () => {
+      $("#search-input").value = "";
+      $("#grade-filter").value = "";
+      $("#class-filter").value = "";
+      applyFilters();
+    });
+    $("#search-input").addEventListener("input", applyFilters);
+    $("#grade-filter").addEventListener("change", applyFilters);
+    $("#class-filter").addEventListener("change", applyFilters);
+    rows.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-report-index]");
+      if (!button) return;
+      const index = Number(button.dataset.reportIndex);
+      if (Number.isInteger(index) && filteredReports[index]) openReport(filteredReports[index]);
+    });
+    $("#close-modal-button").addEventListener("click", closeReport);
+    $("#print-button").addEventListener("click", () => window.print());
+    reportModal.addEventListener("click", (event) => {
+      if (event.target === reportModal) closeReport();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !reportModal.hidden) closeReport();
+    });
+
+    initialize();
+  </script>
+</body>
+</html>
