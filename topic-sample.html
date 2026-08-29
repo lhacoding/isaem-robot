@@ -161,30 +161,37 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
   font-size:10px;
 }
 .flow {
+  width:100%;
   display:flex;
   align-items:center;
-  flex-wrap:wrap;
-  gap:8px 6px;
+  justify-content:space-between;
+  flex-wrap:nowrap;
+  gap:2px;
+  white-space:nowrap;
+  overflow:hidden;
 }
 .flow span:not(.arrow) {
   min-height:32px;
   display:inline-flex;
   align-items:center;
-  gap:7px;
-  padding:5px 9px 5px 6px;
+  justify-content:center;
+  flex:0 1 auto;
+  padding:6px clamp(6px, .55vw, 9px);
   color:#38435a;
   background:#f6f3ed;
   border:1px solid #e3ddd2;
   border-radius:10px;
-  font-size:10px;
+  font-size:clamp(10px, .72vw, 12px);
   font-weight:850;
+  letter-spacing:-.02em;
 }
 .flow .arrow {
-  padding:0;
+  flex:0 0 auto;
+  padding:0 1px;
   color:#b49a37;
   background:transparent;
   border:0;
-  font-size:11px;
+  font-size:clamp(10px, .7vw, 12px);
   font-weight:900;
 }
 
@@ -350,9 +357,10 @@ hr { height:1px; margin:30px 0; border:0; background:#e4ddd2; }
   .hero h1 { font-size:clamp(29px, 9vw, 42px); }
   .hero p:not(.eyebrow) { font-size:14px; }
   .sample-flow-head { align-items:flex-start; flex-direction:column; gap:2px; }
+  .flow { flex-wrap:wrap; white-space:normal; }
   .flow { gap:7px 5px; }
-  .flow span:not(.arrow) { min-height:32px; padding-right:9px; font-size:9px; }
-  .flow .arrow { font-size:10px; }
+  .flow span:not(.arrow) { min-height:32px; padding-right:9px; font-size:10px; }
+  .flow .arrow { font-size:11px; }
   .usage-roadmap { padding:18px; }
   .usage-roadmap-head { align-items:flex-start; flex-direction:column; gap:4px; }
   .usage-roadmap-grid { grid-template-columns:1fr; gap:8px; }
@@ -431,19 +439,13 @@ GPT 답변 모두 접기
   </div>
   <div class="flow">
     <span>학년·과목·진로</span><span class="arrow">→</span>
-    <span>키워드 찾기</span><span class="arrow">→</span>
-    <span>연구문제</span><span class="arrow">→</span>
-    <span>탐구유형</span><span class="arrow">→</span>
-    <span>주제확정</span><span class="arrow">→</span>
-    <span>GPT와 탐구 방향 구체화</span><span class="arrow">→</span>
-    <span>탐구설계</span><span class="arrow">→</span>
-    <span>코드 작성·수정·실행</span><span class="arrow">→</span>
-    <span>실행 결과 확인·기록</span><span class="arrow">→</span>
-    <span>결과 분석·해석</span><span class="arrow">→</span>
-    <span>결론 도출</span><span class="arrow">→</span>
-    <span>보고서 완성</span><span class="arrow">→</span>
-    <span>자기평가</span><span class="arrow">→</span>
-    <span>세특 반영 요소</span>
+    <span>키워드·연구문제</span><span class="arrow">→</span>
+    <span>주제 확정</span><span class="arrow">→</span>
+    <span>GPT와 탐구 방향·방법 구체화</span><span class="arrow">→</span>
+    <span>탐구 설계·직접 수행</span><span class="arrow">→</span>
+    <span>결과 기록·분석</span><span class="arrow">→</span>
+    <span>결론·보고서 완성</span><span class="arrow">→</span>
+    <span>자기평가·세특 반영 요소</span>
   </div>
 </section>
 
@@ -879,21 +881,8 @@ Python만 있어도 수행할 수 있으며 입력 데이터 크기와 처리시
 
 <div class="next-step">
 
-<strong>
-다음 입력 예시
-</strong>
-
-<br>
-
-관심 있는 키워드나 직접 생각한 연구문제를 입력합니다.
-
-<br><br>
-
-예:
-<strong>
-정렬할 데이터가 많아질수록
-정렬 알고리즘별 실행시간 차이는 어떻게 달라질까?
-</strong>
+<p><strong>탐구하고 싶은 키워드 1~3개를 번호로 선택하거나 직접 입력해 주세요.</strong></p>
+<p>예: <strong><code>1, 2</code></strong> / <strong><code>AI 하고 싶어</code></strong> / <strong><code>추천</code></strong></p>
 
 </div>
 
@@ -1368,18 +1357,21 @@ Python의 <code>random</code>으로
 
 <div class="next-step">
 
-<strong>
-다음 단계
-</strong>
+<strong>다음 단계</strong>
 
-<br>
+<p>이제 탐구 유형을 확정하면 다음 단계로 넘어가서<br>
+<strong>주제 후보 확정 → 탐구 설계 구체화 → 탐구활동 실행 가이드</strong>로 진행할 수 있습니다.</p>
 
-탐구 유형을 선택합니다.
+<p><strong>탐구 유형을 선택해 주세요.</strong><br>
+추천은 <strong>3번 코딩·제어형</strong>입니다.</p>
 
-<br><br>
-
-추천:
-<strong>3번 코딩·제어형</strong>
+<p>입력 예시:</p>
+<ul>
+<li><strong><code>3번</code></strong></li>
+<li><strong><code>추천대로 진행</code></strong></li>
+<li><strong><code>버블/선택/삽입으로 확정</code></strong></li>
+<li><strong><code>탐구보고서 작성</code></strong></li>
+</ul>
 
 </div>
 
@@ -1832,17 +1824,9 @@ Python 내장 정렬의 실행시간 비교
 
 <div class="next-step">
 
-<strong>
-다음 입력
-</strong>
+<strong>다음 단계</strong>
 
-<br><br>
-
-추천 주제를 선택한다면
-
-<br>
-
-<strong>2번</strong>
+<p><strong>주제 번호를 선택해 주세요. 추천대로라면 <code>2번</code>이라고 입력하면 됩니다.</strong></p>
 
 </div>
 
@@ -2276,18 +2260,10 @@ y축: 평균 실행시간
 <div class="next-step">
 
 <strong>
-다음 입력
+다음 단계
 </strong>
 
-<br><br>
-
-탐구 설계와 실제 실행 코드를 받으려면
-
-<br>
-
-<strong>
-탐구보고서작성
-</strong>
+<p>최종 주제가 정해졌다면 이제 <strong>탐구 방법, 데이터 생성·수집 방식, 코드 작성 순서, 반복 측정 기준, 결과를 정리할 표와 그래프</strong>를 구체화합니다. 실제 실행 전에는 결과를 미리 만들지 않고, 직접 수행할 수 있는 절차와 분석 기준부터 설계합니다.</p>
 
 </div>
 
@@ -3422,13 +3398,15 @@ y축을 평균 실행시간으로 설정한
 <div class="next-step">
 
 <strong>
-학생이 실제로 해야 할 일
+다음 단계
 </strong>
 
 <br><br>
 
-Colab에서 코드를 실행한 뒤
-실제 평균 실행시간을 GPT에 입력합니다.
+다음으로 Colab에서 <strong>셀 1~8을 실제로 실행</strong>한 뒤
+<strong><code>average_result</code> 또는 <code>table</code>의 출력값을 그대로 복사해서 보내 주세요.</strong>
+그러면 그 실제값으로 그래프 해석, 알고리즘별 성능 비교, 오차 분석까지 하고
+<strong>보고서 5~7번을 완성</strong>하겠습니다.
 
 </div>
 
@@ -3456,7 +3434,7 @@ STEP 06 · 반복 횟수 검토 · 탐구 방법 보완
 
 <div class="user-row">
 
-<div class="user-bubble">5번은 너무 작은 거 아니야? 실행시간이 매번 조금씩 달라질 수 있는데 10번 정도 반복하는 게 더 정확하지 않을까?</div>
+<div class="user-bubble">5번만 해도 되나?</div>
 
 </div>
 
@@ -3495,8 +3473,10 @@ ChatGPT
 <p>가능하면 평균만 확인하지 말고 <strong>10회 측정값의 중앙값과 표준편차</strong>도 함께 살펴보세요. 평균과 중앙값이 크게 다르거나 표준편차가 크다면 특정 실행에서 시간이 많이 흔들렸는지 확인할 수 있습니다.</p>
 
 <div class="next-step">
-<strong>탐구 방법 보완</strong><br><br>
-처음 제안된 방법을 그대로 따르기보다 측정 횟수가 충분한지 검토하고, <strong>5회 → 10회</strong>로 직접 수정했습니다. 이제 수정한 조건으로 코드를 실행하고 결과를 기록합니다.
+<strong>다음 단계</strong><br><br>
+코드의 <code>repeat_count</code>를 <strong>10</strong>으로 수정한 뒤 Colab에서 셀 1~8을 실제로 실행해 주세요.
+실행이 끝나면 <strong><code>average_result</code> 또는 <code>table</code>의 출력값을 그대로 복사해서 보내 주세요.</strong>
+그 실제값을 바탕으로 그래프 해석, 알고리즘별 성능 비교, 오차 분석과 보고서 5~7번을 이어서 작성합니다.
 </div>
 
 </div>
@@ -3517,7 +3497,7 @@ ChatGPT
 <section class="turn">
 
 <div class="turn-label">
-STEP 07 · 실제 코딩 · 측정 수행
+STEP 07 · 실제 실행 결과 입력
 </div>
 
 
@@ -4115,16 +4095,13 @@ Colab의 실행환경,
 <div class="next-step">
 
 <strong>
-확인할 내용
+다음 단계
 </strong>
 
 <br><br>
 
-위 값이 각 조건을 10회 반복한 평균이라면
-
-<br>
-
-<strong>10회 반복한 평균값이야</strong>
+실제 결과의 분석과 보고서 5~7번까지 확인한 뒤 탐구를 마쳤다면
+<strong>탐구완료</strong>라고 입력합니다.
 
 </div>
 
@@ -4147,7 +4124,7 @@ Colab의 실행환경,
 <section class="turn">
 
 <div class="turn-label">
-STEP 08 · 반복 측정 조건 확인
+STEP 08 · 탐구 완료 · 최종 보고서 정리
 </div>
 
 
@@ -4896,12 +4873,13 @@ Google Colab에서 데이터 개수별로
 <div class="next-step">
 
 <strong>
-보고서와 실제 탐구가 모두 끝났다면
+다음 단계
 </strong>
 
 <br><br>
 
-<strong>탐구완료</strong>
+최종 보고서를 확인한 뒤 탐구 과정에서 배운 점과 수정한 내용을 정리하려면
+<strong>자기평가서 작성</strong>이라고 입력합니다.
 
 </div>
 
@@ -4924,7 +4902,7 @@ Google Colab에서 데이터 개수별로
 <section class="turn">
 
 <div class="turn-label">
-STEP 09 · 탐구 완료 후 자기평가서
+STEP 09 · 자기평가서 작성
 </div>
 
 
