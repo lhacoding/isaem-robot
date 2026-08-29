@@ -1472,7 +1472,12 @@ async function saveByResumeCode() {
     showToast("저장코드로 보고서를 저장했습니다. 코드를 꼭 메모하세요.");
   } catch (error) {
     console.error("Resume-code save failed:", error);
-    showToast("저장코드 저장에 실패했습니다. Firebase 연결과 규칙을 확인하세요.");
+    const code = String(error?.code ?? "");
+    if (code.includes("permission-denied")) {
+      showToast("저장코드 저장 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
+    } else {
+      showToast("저장코드 저장에 실패했습니다. Firebase 연결을 확인하세요.");
+    }
   } finally {
     resumeCodeBusy = false;
     setResumeCodeButtonsDisabled(false);
@@ -1522,7 +1527,12 @@ async function loadByResumeCode() {
     showToast("저장코드의 보고서를 불러왔습니다. 사진은 포함되지 않습니다.");
   } catch (error) {
     console.error("Resume-code load failed:", error);
-    showToast("저장코드 불러오기에 실패했습니다. Firebase 연결과 규칙을 확인하세요.");
+    const code = String(error?.code ?? "");
+    if (code.includes("permission-denied")) {
+      showToast("저장코드 불러오기 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
+    } else {
+      showToast("저장코드 불러오기에 실패했습니다. Firebase 연결을 확인하세요.");
+    }
   } finally {
     resumeCodeBusy = false;
     setResumeCodeButtonsDisabled(false);
@@ -2032,16 +2042,203 @@ function renderTopics() {
     </main>`;
 }
 
-function topicOutline(topic) {
+function outlineDetail(value, fallback) {
+  const text = String(value ?? "").trim();
+  if (!text || /탐구 질문에서|선택한 방법에서|선택한 탐구 방법/.test(text)) return fallback;
+  return text;
+}
+
+function numberedOutline(items) {
+  return items.map((item, index) => `5-${index + 1}. ${item}`).join("\n");
+}
+
+// 같은 주제라도 결과를 정리하는 관점이 서로 달라지도록 3가지 소제목 예시를 만듭니다.
+// 선택한 탐구 방법의 유형에 따라 '측정 중심 / 관계 중심 / 검증 중심'처럼 관점을 달리합니다.
+function topicOutlineExamples(topic) {
   const method = selectedMethodForTopic(topic);
   const type = methodTypeId(method);
   const core = cleanQuestion(topic.coreQuestion).replace(/[?？]+$/g, "");
-  const concept = topic.concepts[0] ?? "핵심 개념";
-  if (type === "data") return ["5-1. 데이터 출처·대상·기간과 변수", "5-2. 결측값·중복값·이상값 정제 과정", "5-3. 집단별 대표값과 그래프 분석", "5-4. 변수 사이의 관계와 가설 판단", "5-5. 데이터 범위와 인과 해석의 한계", `5-6. ${core}에 대한 종합 결론`].join("\n");
-  if (type === "model") return ["5-1. 모형의 가정과 입력·출력변수", "5-2. 입력 조건별 실행 결과", "5-3. 출력값·변화량·오차 비교", "5-4. 실제 자료와 모형 결과의 일치 여부", "5-5. 모형의 적용 범위와 한계", `5-6. ${core}에 대한 종합 결론`].join("\n");
-  if (type === "literature") return ["5-1. 분석에 사용한 자료의 대상·조건", `5-2. ${concept} 관련 핵심 근거 비교`, "5-3. 자료별 공통점과 차이점", "5-4. 결과가 달라진 조건과 이유", "5-5. 예상·가설 판단", `5-6. ${core}에 대한 종합 해석과 한계`].join("\n");
-  if (type === "objective") return ["5-1. 과제·문항과 비교 조건", "5-2. 조건별 시행 수·정답률·반응시간", "5-3. 오류 수와 결과의 변동 폭", "5-4. 순서 효과와 개인차", "5-5. 가설 판단과 일반화의 한계", `5-6. ${core}에 대한 종합 결론`].join("\n");
-  return ["5-1. 실험·제작 조건과 측정 기준", "5-2. 조건별 반복 측정 결과", "5-3. 평균·변동 폭과 그래프 비교", "5-4. 예상·가설 판단", "5-5. 오차 원인과 검증의 한계", `5-6. ${core}에 대한 종합 결론`].join("\n");
+  const concept = topic.concepts?.[0] ?? "핵심 개념";
+  const change = outlineDetail(topic.change, "비교 조건");
+  const measure = outlineDetail(topic.measure, "측정 결과");
+  const methodTitle = String(method?.title ?? "선택한 탐구 방법").trim();
+  const isBuild = /제작|검증|시제품|장치|설계|구현/.test(`${method?.kind ?? ""} ${methodTitle}`);
+
+  if (type === "data") {
+    return [
+      numberedOutline([
+        "데이터 출처·대상·기간과 분석 변수",
+        "결측값·중복값·이상값 정제 결과",
+        "집단·기간별 대표값과 분포 비교",
+        `${change}에 따른 ${measure} 변화`,
+        "그래프 경향과 가설 판단",
+        `${core}에 대한 해석과 데이터의 한계`,
+      ]),
+      numberedOutline([
+        "분석 대상과 비교 집단 설정",
+        "핵심 지표의 기초 통계와 시각화",
+        "조건별 차이와 변화율 비교",
+        "예외값·특이 구간과 그 영향",
+        "다른 영향 요인과 인과 해석의 한계",
+        `${core}에 대한 종합 결론`,
+      ]),
+      numberedOutline([
+        "연구문제와 분석 지표의 연결",
+        "주요 변수별 그래프와 패턴 확인",
+        "변수 사이의 관계와 가설 검토",
+        "분석 방법을 달리했을 때 결과 비교",
+        "자료 범위·표본·측정 기준의 한계",
+        `${core}에 대한 최종 해석`,
+      ]),
+    ];
+  }
+
+  if (type === "model") {
+    return [
+      numberedOutline([
+        "모형의 가정과 입력·출력변수",
+        "입력 조건별 실행 결과",
+        "출력값·변화량·오차 비교",
+        "입력 변화에 따른 결과의 민감도",
+        "모형의 적용 범위와 한계",
+        `${core}에 대한 종합 결론`,
+      ]),
+      numberedOutline([
+        "기준 조건과 비교 조건 설정",
+        "조건별 출력값과 변화 추세",
+        "입력값 증가에 따른 결과 변화율",
+        "조건 간 차이가 커지는 구간 분석",
+        "가정 변화가 결과에 미친 영향",
+        `${core}에 대한 조건별 해석`,
+      ]),
+      numberedOutline([
+        "이론값·예상값과 검증 기준",
+        "모형 실행값과 실제 자료 비교",
+        "예측값과 실제값의 오차 분석",
+        "이론과 실제 결과의 일치·불일치 원인",
+        "검증 결과로 본 모형의 신뢰 범위",
+        `${core}에 대한 종합 해석`,
+      ]),
+    ];
+  }
+
+  if (type === "literature") {
+    return [
+      numberedOutline([
+        "분석에 사용한 자료의 대상·조건",
+        `${concept} 관련 핵심 근거 비교`,
+        "자료별 공통점과 차이점",
+        "결과가 달라진 조건과 이유",
+        "자료를 근거로 한 가설 판단",
+        `${core}에 대한 종합 해석과 한계`,
+      ]),
+      numberedOutline([
+        "자료 선정 기준과 비교 항목",
+        "자료별 핵심 결과와 근거 정리",
+        "연구 대상·조건에 따른 결과 차이",
+        `${concept}으로 설명한 공통 원리`,
+        "자료별 적용 범위와 해석의 한계",
+        `${core}에 대한 결론`,
+      ]),
+      numberedOutline([
+        "자료의 출처·연도·연구 대상 비교",
+        "서로 일치하는 결과와 근거",
+        "서로 다른 결과와 상반된 근거",
+        "차이를 만든 조건·측정 기준 분석",
+        "가장 신뢰할 수 있는 근거와 그 이유",
+        `${core}에 대한 종합 판단`,
+      ]),
+    ];
+  }
+
+  if (type === "objective") {
+    return [
+      numberedOutline([
+        "과제·문항과 비교 조건",
+        "조건별 시행 수·정답률·반응시간",
+        "오류 수와 결과의 변동 폭",
+        "조건에 따른 수행 차이",
+        "순서 효과·개인차와 일반화의 한계",
+        `${core}에 대한 종합 결론`,
+      ]),
+      numberedOutline([
+        "측정 지표와 동일하게 유지한 조건",
+        "조건별 정확도와 완료시간 비교",
+        "오류 유형과 자주 나타난 조건",
+        "반복 시행에 따른 변화와 학습 효과",
+        "표본 수와 측정 방법의 한계",
+        `${core}에 대한 결과 해석`,
+      ]),
+      numberedOutline([
+        "비교 조건과 예상 결과",
+        "개인별·조건별 수행 결과 분포",
+        "평균값과 결과 범위 비교",
+        "예상과 다른 결과가 나타난 사례",
+        "다른 영향 요인과 해석상의 주의점",
+        `${core}에 대한 최종 판단`,
+      ]),
+    ];
+  }
+
+  if (isBuild) {
+    return [
+      numberedOutline([
+        `${methodTitle}의 구조와 검증 조건`,
+        "조건별 반복 시험과 측정 결과",
+        "성능 지표의 평균·변동 폭 비교",
+        "예상 성능과 실제 성능의 차이",
+        "오차 원인·구조적 한계와 개선점",
+        `${core}에 대한 종합 결론`,
+      ]),
+      numberedOutline([
+        "시제품별 달라진 설계 조건",
+        "설계 조건에 따른 성능 변화",
+        "효율·정확도·안정성의 비교",
+        "가장 성능이 좋은 조건과 그 이유",
+        "재료·제작·측정 과정의 한계",
+        `${core}에 대한 설계 관점의 해석`,
+      ]),
+      numberedOutline([
+        "검증 기준과 성공·실패 조건",
+        "반복 시험에서 나타난 공통 결과",
+        "오작동·예외 상황과 원인 분석",
+        "수정 전후 성능 변화 비교",
+        "실제 적용을 위해 필요한 보완점",
+        `${core}에 대한 최종 검증 결과`,
+      ]),
+    ];
+  }
+
+  return [
+    numberedOutline([
+      "실험 조건과 측정 기준",
+      "조건별 반복 측정 결과",
+      "평균·변동 폭과 그래프 비교",
+      `${change}에 따른 ${measure} 변화`,
+      "오차 원인과 검증의 한계",
+      `${core}에 대한 종합 결론`,
+    ]),
+    numberedOutline([
+      "독립변인·종속변인과 통제조건",
+      "조건별 측정값과 대표값 비교",
+      "변인 변화에 따른 결과의 증가·감소 추세",
+      "예상·가설과 실제 결과 비교",
+      "반복값의 편차와 예상 밖 결과 분석",
+      `${core}에 대한 관계 중심 해석`,
+    ]),
+    numberedOutline([
+      "가설과 결과 판단 기준",
+      "반복 실험 결과의 재현성 확인",
+      "가장 큰 차이가 나타난 조건 분석",
+      "이론·예상값과 실제 측정값 비교",
+      "측정오차·통제조건·실험 범위의 한계",
+      `${core}에 대한 최종 판단`,
+    ]),
+  ];
+}
+
+function topicOutline(topic) {
+  return topicOutlineExamples(topic)[0];
 }
 
 function draftExamples(topic) {
@@ -2061,7 +2258,7 @@ function draftExamples(topic) {
     ],
     "draft-question-hypothesis": [`핵심 질문: ${q}?\n예상·가설: ${topic.hypothesis}`, `핵심 질문: ${q}에서 조건별 결과는 어떤 차이를 보이는가?\n예상·가설: ${topic.hypothesis}`, `핵심 질문: ${q}에 대한 결과가 달라지는 조건은 무엇인가?\n예상·가설: 조건과 측정 기준의 차이에 따라 결과의 크기가 달라질 것이다.`],
     "draft-method": [method?.detail ?? profile.planGuide, processText, `${profile.planGuide} 결과는 ${profile.resultGuide}`],
-    "draft-outline": [topicOutline(topic), topicOutline(topic).split("\n").slice(0, 5).join("\n")],
+    "draft-outline": topicOutlineExamples(topic),
     "draft-expectation": [`${topic.hypothesis} 선택한 ${profile.type}을 통해 예상이 실제 결과와 일치하는지 확인하고, 결과의 적용 범위와 한계를 판단할 수 있을 것이다.`, `이 탐구를 통해 ${method?.kind ?? "탐구"}의 절차와 ${withJosa(concept, "을")} 결과 해석에 적용하는 방법을 익힐 수 있을 것이다.`, `결과가 예상과 다르더라도 반복값·자료 범위·모형의 가정 등 오차 원인을 분석하여 후속 탐구 질문을 찾을 수 있을 것이다.`],
   };
 }
