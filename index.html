@@ -589,6 +589,13 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .analysis-code-button.active { color: white; background: var(--teal); border-color: var(--teal); }
 .analysis-block .python-lab-card { margin-top: 10px; padding: 18px; border-radius: 13px; box-shadow: none; }
 .analysis-block .python-lab-head h3 { font-size: 17px; }
+.python-section-stack { display: grid; gap: 12px; margin-top: 10px; }
+.python-lab-head-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.python-cell-delete { padding: 6px 9px; color: #7b4b45; font-size: 10px; font-weight: 900; background: #fff; border: 1px solid #dfcbc7; border-radius: 8px; }
+.python-cell-delete:hover { background: #fff7f5; border-color: #cda59d; }
+.python-add-row { display: flex; justify-content: flex-start; margin-top: 2px; }
+.python-add-button { padding: 9px 12px; color: #315d5a; font-size: 11px; font-weight: 900; background: #f5fbfa; border: 1px dashed #9dc8c2; border-radius: 9px; }
+.python-add-button:hover { background: #edf8f6; border-color: #76b3aa; }
 @media (max-width: 700px) {
   .python-lab-card { padding: 16px; }
   .python-lab-head { flex-direction: column; gap: 8px; }
@@ -1237,10 +1244,11 @@ const FIREBASE_CONFIG = {
 };
 
 const FIREBASE_SDK_VERSION = "12.18.0";
-const FIREBASE_CLOUD_SAVE_DELAY = 3000;
+const FIREBASE_CLOUD_SAVE_DELAY = 5000;
 let firebaseContextPromise = null;
 let cloudSaveTimer = null;
 let cloudSaveInFlight = false;
+let cloudSaveQueued = false;
 let cloudSavedAt = null;
 let cloudSaveError = "";
 
@@ -1313,6 +1321,8 @@ function cloudStateSnapshot() {
   // 전체 자동저장이 실패하지 않도록 한 번 정리합니다.
   const snapshot = {
     ...state,
+    // 저장코드 문서 ID(hash)는 현재 브라우저에서만 유지합니다.
+    resumeCodeHash: undefined,
     researchPhotos: [],
     fields: cloudSafeFields(state.fields),
   };
@@ -1355,12 +1365,12 @@ function studentCloudMeta() {
 }
 
 function saveStatusText() {
-  if (!state.savedAt) return "입력 내용은 이 브라우저에 임시 자동 저장됩니다.";
-  if (!firebaseConfigIsReady()) return `이 브라우저에 임시 저장됨 · ${formatTime(state.savedAt)}`;
-  if (cloudSaveInFlight) return "브라우저 저장됨 · Firebase 저장 중…";
-  if (cloudSaveError) return `브라우저 저장됨 · ${cloudSaveError.label || "Firebase 연결 확인 필요"}`;
-  if (cloudSavedAt) return "저장됨";
-  return `브라우저 저장됨 · Firebase 저장 대기 중`;
+  if (!state.savedAt) return "자동 저장 대기 중";
+  if (!firebaseConfigIsReady()) return `저장됨 · ${formatTime(state.savedAt)}`;
+  if (cloudSaveInFlight || cloudSaveTimer) return "저장 중…";
+  if (cloudSaveError) return cloudSaveError.label || "저장 오류";
+  if (cloudSavedAt) return `저장됨 · ${formatTime(cloudSavedAt)}`;
+  return "저장 중…";
 }
 
 function updateSaveStatus() {
@@ -1370,9 +1380,13 @@ function updateSaveStatus() {
 
 async function saveToFirebaseCloud(silent = true) {
   if (!firebaseConfigIsReady() || !hasMeaningfulDraft()) return false;
-  if (cloudSaveInFlight) return false;
+  if (cloudSaveInFlight) {
+    cloudSaveQueued = true;
+    return false;
+  }
 
   cloudSaveInFlight = true;
+  cloudSaveQueued = false;
   cloudSaveError = "";
   updateSaveStatus();
 
@@ -1409,7 +1423,7 @@ async function saveToFirebaseCloud(silent = true) {
     cloudSaveError = "";
     // cloudReportId가 처음 생성된 경우 로컬에도 즉시 반영합니다.
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
-    if (!silent) showToast("현재 작성 내용을 Firebase에도 백업했습니다.");
+    // 정상 저장 시에는 별도의 팝업을 띄우지 않고 상단 저장 상태만 갱신합니다.
     return true;
   } catch (error) {
     console.error("Firebase cloud save failed:", error);
@@ -1422,14 +1436,20 @@ async function saveToFirebaseCloud(silent = true) {
   } finally {
     cloudSaveInFlight = false;
     updateSaveStatus();
+    // 저장 중에 내용이 다시 바뀌었다면 가장 최신 상태를 한 번 더 저장합니다.
+    if (cloudSaveQueued) scheduleFirebaseSave(false, true);
   }
 }
 
 function scheduleFirebaseSave(immediate = false, silent = true) {
   if (!firebaseConfigIsReady() || !hasMeaningfulDraft()) return;
+  cloudSaveQueued = true;
   window.clearTimeout(cloudSaveTimer);
   cloudSaveTimer = window.setTimeout(
-    () => { void saveToFirebaseCloud(silent); },
+    () => {
+      cloudSaveTimer = null;
+      void saveToFirebaseCloud(silent);
+    },
     immediate ? 0 : FIREBASE_CLOUD_SAVE_DELAY
   );
   updateSaveStatus();
@@ -1470,23 +1490,27 @@ function closeResumeCodeModal() {
   document.querySelector("#resume-code-modal")?.remove();
 }
 
-function openResumeCodeModal() {
+function openResumeCodeModal(mode = "save") {
   closeResumeCodeModal();
+  const isLoad = mode === "load";
   document.body.insertAdjacentHTML("beforeend", `
-    <div class="modal-backdrop" id="resume-code-modal" role="dialog" aria-modal="true" aria-labelledby="resume-code-title">
+    <div class="modal-backdrop" id="resume-code-modal" data-resume-code-mode="${isLoad ? "load" : "save"}" role="dialog" aria-modal="true" aria-labelledby="resume-code-title">
       <div class="modal">
-        <p class="eyebrow">CLOUD CONTINUE</p>
-        <h2 id="resume-code-title">저장코드로 이어쓰기</h2>
-        <p>학생이 직접 정한 <b>6~24자 저장코드</b>를 입력하면 현재 보고서를 Firebase에 저장하고, 다른 컴퓨터에서도 같은 코드를 입력해 불러올 수 있습니다.</p>
+        <p class="eyebrow">${isLoad ? "OPEN SAVED WORK" : "SAVE FOR LATER"}</p>
+        <h2 id="resume-code-title">${isLoad ? "저장코드 열기" : "저장코드 만들기"}</h2>
+        <p>${isLoad
+          ? "다른 기기나 브라우저에서 저장한 보고서의 저장코드를 입력하세요."
+          : "처음 한 번만 6~24자의 저장코드를 정하세요. 이후에는 같은 코드에 현재 내용이 바로 업데이트됩니다."}</p>
         <label>
           <span class="field-label">저장코드</span>
           <input id="resume-code-input" autocomplete="off" maxlength="24" placeholder="예: 별빛7294">
         </label>
-        <p class="input-note">저장코드는 비밀번호처럼 다른 사람과 공유하지 마세요. 업로드한 사진은 코드 저장에 포함되지 않으므로 Word/HWPX 파일도 반드시 내려받아 보관하세요.</p>
+        <p class="input-note">저장코드는 다른 사람이 추측하기 어렵게 정하고, 잊지 않도록 따로 기록해 두세요.</p>
         <div class="modal-actions">
           <button type="button" class="secondary-button" data-close-resume-code>닫기</button>
-          <button type="button" class="secondary-button" data-load-resume-code>이 코드 불러오기</button>
-          <button type="button" class="primary-button" data-save-resume-code>이 코드로 저장</button>
+          ${isLoad
+            ? '<button type="button" class="primary-button" data-load-resume-code>열기</button>'
+            : '<button type="button" class="primary-button" data-save-resume-code>저장</button>'}
         </div>
       </div>
     </div>`);
@@ -1494,7 +1518,7 @@ function openResumeCodeModal() {
 }
 
 function setResumeCodeButtonsDisabled(disabled) {
-  document.querySelectorAll("[data-save-resume-code], [data-load-resume-code]").forEach((button) => {
+  document.querySelectorAll("[data-save-resume-code], [data-load-resume-code], [data-save-code], [data-open-code]").forEach((button) => {
     button.disabled = disabled;
   });
 }
@@ -1504,11 +1528,71 @@ function loadedStateFromCode(snapshot) {
   return {
     ...defaultState(),
     ...safe,
+    resumeCodeHash: null,
     fields: safe.fields && typeof safe.fields === "object" ? safe.fields : {},
     selectedMethods: safe.selectedMethods && typeof safe.selectedMethods === "object" ? safe.selectedMethods : {},
     researchPhotos: [],
     savedAt: new Date().toISOString(),
   };
+}
+
+function resumeCodePayload(ctx) {
+  const selected = typeof workflowSelection === "function" ? workflowSelection() : null;
+  const topic = String(state.fields?.["draft-topic"] || selected?.topic?.question || "").trim();
+  return {
+    schemaVersion: 1,
+    student: studentCloudMeta(),
+    topic,
+    updatedAt: ctx.serverTimestamp(),
+    updatedAtClient: new Date().toISOString(),
+    savedByUid: ctx.auth.currentUser.uid,
+    state: cloudStateSnapshot(),
+  };
+}
+
+async function updateLinkedResumeCode({ silent = false } = {}) {
+  if (resumeCodeBusy || !state.resumeCodeHash) return false;
+  if (!hasMeaningfulDraft()) {
+    if (!silent) showToast("먼저 보고서 내용을 작성하세요.");
+    return false;
+  }
+  if (!firebaseConfigIsReady()) {
+    if (!silent) showToast("Firebase 설정이 완료되지 않아 저장코드를 사용할 수 없습니다.");
+    return false;
+  }
+
+  resumeCodeBusy = true;
+  setResumeCodeButtonsDisabled(true);
+  try {
+    saveNow(true);
+    const ctx = await getFirebaseContext();
+    if (!ctx?.auth?.currentUser) throw new Error("Firebase 익명 인증에 실패했습니다.");
+    const ref = ctx.doc(ctx.db, RESUME_CODE_COLLECTION, state.resumeCodeHash);
+    await ctx.setDoc(ref, resumeCodePayload(ctx), { merge: false });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    if (!silent) showToast("저장코드의 내용을 최신 내용으로 업데이트했습니다.");
+    return true;
+  } catch (error) {
+    console.error("Resume-code update failed:", error);
+    const errorCode = String(error?.code ?? "");
+    if (!silent) {
+      showToast(errorCode.includes("permission-denied")
+        ? "저장코드 저장 권한이 없습니다. Firestore 규칙을 확인하세요."
+        : "저장코드 업데이트에 실패했습니다. Firebase 연결을 확인하세요.");
+    }
+    return false;
+  } finally {
+    resumeCodeBusy = false;
+    setResumeCodeButtonsDisabled(false);
+  }
+}
+
+async function startCodeSave() {
+  if (state.resumeCodeHash) {
+    await updateLinkedResumeCode({ silent: false });
+    return;
+  }
+  openResumeCodeModal("save");
 }
 
 async function saveByResumeCode() {
@@ -1539,27 +1623,23 @@ async function saveByResumeCode() {
     const hash = await resumeCodeHash(code);
     const ref = ctx.doc(ctx.db, RESUME_CODE_COLLECTION, hash);
     const existing = await ctx.getDoc(ref);
-    if (existing.exists() && !window.confirm("이미 같은 저장코드로 저장된 보고서가 있습니다. 현재 내용으로 덮어쓸까요?")) return;
+    if (existing.exists()) {
+      showToast("이미 사용 중인 저장코드입니다. 다른 코드를 입력하세요.");
+      input?.focus();
+      return;
+    }
 
-    const selected = typeof workflowSelection === "function" ? workflowSelection() : null;
-    const topic = String(state.fields?.["draft-topic"] || selected?.topic?.question || "").trim();
-    const payload = {
-      schemaVersion: 1,
-      codeLength: code.length,
-      student: studentCloudMeta(),
-      topic,
-      updatedAt: ctx.serverTimestamp(),
-      updatedAtClient: new Date().toISOString(),
-      savedByUid: ctx.auth.currentUser.uid,
-      state: cloudStateSnapshot(),
-    };
-    await ctx.setDoc(ref, payload, { merge: false });
+    await ctx.setDoc(ref, resumeCodePayload(ctx), { merge: false });
+    state.resumeCodeHash = hash;
+    state.savedAt = new Date().toISOString();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
     closeResumeCodeModal();
-    showToast("저장코드로 보고서를 저장했습니다. 코드를 꼭 메모하세요.");
+    updateSaveStatus();
+    showToast("저장코드가 설정되었습니다. 이후에는 '코드 저장'을 누르면 바로 업데이트됩니다.");
   } catch (error) {
     console.error("Resume-code save failed:", error);
-    const code = String(error?.code ?? "");
-    if (code.includes("permission-denied")) {
+    const errorCode = String(error?.code ?? "");
+    if (errorCode.includes("permission-denied")) {
       showToast("저장코드 저장 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
     } else {
       showToast("저장코드 저장에 실패했습니다. Firebase 연결을 확인하세요.");
@@ -1598,10 +1678,11 @@ async function loadByResumeCode() {
       return;
     }
 
-    if (hasMeaningfulDraft() && !window.confirm("현재 브라우저에서 작성 중인 내용을 저장코드의 내용으로 바꿀까요? 사진은 불러오지 않습니다.")) return;
+    if (hasMeaningfulDraft() && !window.confirm("현재 브라우저에서 작성 중인 내용을 저장코드의 내용으로 바꿀까요?")) return;
 
     const data = docSnap.data() ?? {};
     state = loadedStateFromCode(data.state);
+    state.resumeCodeHash = hash;
     // 새 기기에서 불러온 뒤에는 현재 익명 계정의 일반 Firebase 백업으로 새로 연결합니다.
     state.cloudReportId = null;
     resumeVisible = false;
@@ -1610,11 +1691,11 @@ async function loadByResumeCode() {
     closeResumeCodeModal();
     render();
     scheduleFirebaseSave(true, true);
-    showToast("저장코드의 보고서를 불러왔습니다. 사진은 포함되지 않습니다.");
+    showToast("저장코드의 보고서를 불러왔습니다.");
   } catch (error) {
     console.error("Resume-code load failed:", error);
-    const code = String(error?.code ?? "");
-    if (code.includes("permission-denied")) {
+    const errorCode = String(error?.code ?? "");
+    if (errorCode.includes("permission-denied")) {
       showToast("저장코드 불러오기 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
     } else {
       showToast("저장코드 불러오기에 실패했습니다. Firebase 연결을 확인하세요.");
@@ -1647,12 +1728,15 @@ function defaultState() {
     referenceCount: 3,
     analysisExtraCount: 0,
     analysisManualOutline: null,
+    pythonCellCounts: {},
     researchPhotos: [],
     summaryDraftInitialized: false,
     summaryManualEdits: {},
     fields: {},
     selfOutputCustomized: false,
     selfOutputNeedsSync: false,
+    // 현재 브라우저에 연결된 저장코드 hash(일반 Firebase state에는 업로드하지 않음)
+    resumeCodeHash: null,
     cloudReportId: createCloudReportId(),
     savedAt: null,
   };
@@ -1923,7 +2007,7 @@ function scheduleSave() {
   window.clearTimeout(saveTimer);
   const label = document.querySelector("#save-status");
   if (label) label.textContent = "작성 중…";
-  saveTimer = window.setTimeout(() => saveNow(true), 450);
+  saveTimer = window.setTimeout(() => saveNow(true), 500);
 }
 
 function formatTime(value) {
@@ -1976,8 +2060,8 @@ function headerHTML() {
       </nav>
       <div class="save-cluster">
         <span class="save-status" id="save-status">${saveStatusText()}</span>
-        <button type="button" class="plain-action" data-open-resume-code>저장코드</button>
-        <button type="button" class="plain-action" data-save-now>지금 저장</button>
+        <button type="button" class="plain-action" data-save-code>저장</button>
+        <button type="button" class="plain-action" data-open-code>열기</button>
         <button type="button" class="plain-action" data-reset>새로 시작</button>
       </div>
     </header>`;
@@ -2509,35 +2593,122 @@ let pyodideReadyPromise = null;
 let pythonCsvFileName = "";
 let pythonLabRunning = false;
 let pythonLabOpenIndex = null;
+// 각 코드 실행창의 마지막 실행 결과를 현재 브라우저 세션 동안 유지합니다.
+// 코드 자체는 state에 저장하지만 실행 결과는 Firebase에 저장하지 않습니다.
+let pythonLabResults = Object.create(null);
 
-function pythonLabMarkup(sectionIndex = 0) {
-  const fieldId = `python-code-${sectionIndex}`;
-  const legacyCode = sectionIndex === 0 ? state.fields["python-code"] : undefined;
+function pythonResultKey(sectionIndex, cellIndex = 0) {
+  return `${sectionIndex}:${cellIndex}`;
+}
+
+function pythonCodeFieldId(sectionIndex, cellIndex = 0) {
+  // 기존 워크북의 첫 실행창 코드를 그대로 이어받기 위해 첫 칸은 예전 키를 유지합니다.
+  return cellIndex === 0 ? `python-code-${sectionIndex}` : `python-code-${sectionIndex}-${cellIndex}`;
+}
+
+function ensurePythonCellCounts() {
+  if (!state.pythonCellCounts || typeof state.pythonCellCounts !== "object" || Array.isArray(state.pythonCellCounts)) {
+    state.pythonCellCounts = {};
+  }
+  return state.pythonCellCounts;
+}
+
+function pythonCellCount(sectionIndex) {
+  const counts = ensurePythonCellCounts();
+  const saved = Number(counts[sectionIndex]);
+  let inferred = 1;
+  const prefix = `python-code-${sectionIndex}-`;
+  Object.keys(state.fields ?? {}).forEach((key) => {
+    if (!key.startsWith(prefix)) return;
+    const n = Number(key.slice(prefix.length));
+    if (Number.isInteger(n) && n >= 1) inferred = Math.max(inferred, n + 1);
+  });
+  return Math.max(1, Number.isInteger(saved) ? saved : 1, inferred);
+}
+
+function pythonLabMarkup(sectionIndex = 0, cellIndex = 0) {
+  const fieldId = pythonCodeFieldId(sectionIndex, cellIndex);
+  const legacyCode = sectionIndex === 0 && cellIndex === 0 ? state.fields["python-code"] : undefined;
   const code = String(state.fields[fieldId] ?? legacyCode ?? "");
-  return `<section class="python-lab-card" id="explore-python-${sectionIndex}" data-python-section="${sectionIndex}">
+  const resultKey = pythonResultKey(sectionIndex, cellIndex);
+  const cached = pythonLabResults[resultKey] ?? null;
+  const cachedText = cached ? String(cached.text ?? "") : "";
+  const cachedTable = cached ? String(cached.html ?? "") : "";
+  const cachedImages = cached && Array.isArray(cached.images) ? cached.images : [];
+  const cachedRuntime = cached ? String(cached.runtime ?? "") : "";
+  const hasCachedOutput = Boolean(cached);
+  const outputText = hasCachedOutput
+    ? (cachedText || (cachedTable ? "DataFrame 결과가 아래 표에 표시되었습니다." : "코드가 정상적으로 실행되었습니다. 출력된 텍스트는 없습니다."))
+    : "실행 결과와 오류 메시지가 여기에 표시됩니다.";
+  const displayHTML = cachedTable
+    ? `<section class="python-dataframe-wrap"><div class="python-dataframe-title">DataFrame 결과</div>${cachedTable}</section>`
+    : "";
+  const plotHTML = cachedImages.map((base64, index) => {
+    const src = `data:image/png;base64,${base64}`;
+    return `<article class="python-plot-card"><img src="${src}" alt="Python 그래프 ${index + 1}"><div class="python-plot-actions"><a href="${src}" download="python_graph_${sectionIndex + 1}_${cellIndex + 1}_${index + 1}.png">PNG 저장</a></div></article>`;
+  }).join("");
+  const cellCount = pythonCellCount(sectionIndex);
+  const editorId = `python-code-editor-${sectionIndex}-${cellIndex}`;
+  return `<section class="python-lab-card" id="explore-python-${sectionIndex}-${cellIndex}" data-python-section="${sectionIndex}" data-python-cell="${cellIndex}">
     <div class="python-lab-head">
-      <div><h3>Python 코드 실행</h3><p>필요할 때만 열어 계산·데이터 분석·그래프 작성을 실행하세요. 별도 설치 없이 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있고, Matplotlib 한글 표시도 자동으로 준비됩니다. 마지막 줄의 DataFrame은 표로 바로 표시됩니다.</p></div>
-      <span class="python-lab-badge">브라우저 실행</span>
+      <div><h3>Python 코드 실행${cellCount > 1 ? ` ${cellIndex + 1}` : ""}</h3><p>필요할 때만 열어 계산·데이터 분석·그래프 작성을 실행하세요. 별도 설치 없이 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있고, Matplotlib 한글 표시도 자동으로 준비됩니다. 마지막 줄의 DataFrame은 표로 바로 표시됩니다.</p></div>
+      <div class="python-lab-head-actions"><span class="python-lab-badge">브라우저 실행</span>${cellCount > 1 ? `<button type="button" class="python-cell-delete" data-delete-python-cell="${sectionIndex}:${cellIndex}">이 실행창 삭제</button>` : ""}</div>
     </div>
     <div class="python-lab-tools">
       <label class="python-file-button">CSV 파일 선택<input type="file" accept=".csv,text/csv" hidden data-python-csv></label>
-      <span class="python-file-name" id="python-file-name">${pythonCsvFileName ? escapeHTML(pythonCsvFileName) : "선택한 CSV 없음"}</span>
+      <span class="python-file-name" data-python-file-name>${pythonCsvFileName ? escapeHTML(pythonCsvFileName) : "선택한 CSV 없음"}</span>
       <button type="button" class="python-example-button" data-python-example="basic">기본 분석 예시</button>
       <button type="button" class="python-example-button" data-python-example="csv">CSV 분석 예시</button>
     </div>
-    <label class="python-code-label" for="python-code-editor"><span>Python 코드</span><small>코드 내용은 워크북에 저장됩니다.</small></label>
-    <textarea id="python-code-editor" class="python-code-editor" data-field="${fieldId}" spellcheck="false" aria-label="Python 코드 입력" placeholder="Python 코드를 직접 입력하세요. 필요하면 위의 예시 버튼을 눌러 불러올 수 있습니다.">${escapeHTML(code)}</textarea>
+    <label class="python-code-label" for="${editorId}"><span>Python 코드</span><small>코드 내용은 워크북에 저장됩니다.</small></label>
+    <textarea id="${editorId}" class="python-code-editor" data-field="${fieldId}" spellcheck="false" aria-label="Python 코드 입력" placeholder="Python 코드를 직접 입력하세요. 필요하면 위의 예시 버튼을 눌러 불러올 수 있습니다.">${escapeHTML(code)}</textarea>
     <div class="python-run-row">
-      <span class="python-status" id="python-status">처음 실행할 때 Python과 분석 라이브러리를 불러오므로 잠시 시간이 걸릴 수 있습니다.</span>
+      <span class="python-status" data-python-status>${hasCachedOutput ? "마지막 실행 결과가 아래에 유지됩니다." : "처음 실행할 때 Python과 분석 라이브러리를 불러오므로 잠시 시간이 걸릴 수 있습니다."}</span>
       <button type="button" class="python-run-button" data-python-run>▶ 코드 실행</button>
     </div>
     <div class="python-output-wrap">
-      <div class="python-output-title"><span>실행 결과</span><span id="python-runtime-note"></span></div>
-      <pre class="python-output empty" id="python-output">실행 결과와 오류 메시지가 여기에 표시됩니다.</pre>
-      <div class="python-display-list" id="python-displays"></div>
-      <div class="python-plot-list" id="python-plots"></div>
+      <div class="python-output-title"><span>실행 결과</span><span data-python-runtime-note>${escapeHTML(cachedRuntime)}</span></div>
+      <pre class="python-output${hasCachedOutput ? "" : " empty"}" data-python-output>${escapeHTML(outputText)}</pre>
+      <div class="python-display-list" data-python-displays>${displayHTML}</div>
+      <div class="python-plot-list" data-python-plots>${plotHTML}</div>
     </div>
   </section>`;
+}
+
+function pythonSectionMarkup(sectionIndex = 0) {
+  const count = pythonCellCount(sectionIndex);
+  return `<div class="python-section-stack" id="python-section-${sectionIndex}">
+    ${Array.from({ length: count }, (_, cellIndex) => pythonLabMarkup(sectionIndex, cellIndex)).join("")}
+    <div class="python-add-row"><button type="button" class="python-add-button" data-add-python-cell="${sectionIndex}">＋ 코드 실행 추가</button></div>
+  </div>`;
+}
+
+function movePythonSectionState(fromSection, toSection) {
+  const fromCount = pythonCellCount(fromSection);
+  const toCount = pythonCellCount(toSection);
+  for (let cell = 0; cell < toCount; cell += 1) {
+    delete state.fields[pythonCodeFieldId(toSection, cell)];
+    delete pythonLabResults[pythonResultKey(toSection, cell)];
+  }
+  for (let cell = 0; cell < fromCount; cell += 1) {
+    const fromField = pythonCodeFieldId(fromSection, cell);
+    const toField = pythonCodeFieldId(toSection, cell);
+    if (Object.prototype.hasOwnProperty.call(state.fields, fromField)) state.fields[toField] = state.fields[fromField];
+    else delete state.fields[toField];
+    const fromResult = pythonLabResults[pythonResultKey(fromSection, cell)];
+    if (fromResult) pythonLabResults[pythonResultKey(toSection, cell)] = fromResult;
+    else delete pythonLabResults[pythonResultKey(toSection, cell)];
+  }
+  ensurePythonCellCounts()[toSection] = fromCount;
+}
+
+function deletePythonSectionState(sectionIndex) {
+  const count = pythonCellCount(sectionIndex);
+  for (let cell = 0; cell < count; cell += 1) {
+    delete state.fields[pythonCodeFieldId(sectionIndex, cell)];
+    delete pythonLabResults[pythonResultKey(sectionIndex, cell)];
+  }
+  delete ensurePythonCellCounts()[sectionIndex];
 }
 
 function loadScriptOnce(src) {
@@ -2558,13 +2729,13 @@ function loadScriptOnce(src) {
   });
 }
 
-async function getPyodideLab() {
+async function getPyodideLab(statusLab = null) {
   if (pyodideReadyPromise) return pyodideReadyPromise;
   pyodideReadyPromise = (async () => {
-    updatePythonLabStatus("Python 실행 환경을 불러오는 중…");
+    updatePythonLabStatus("Python 실행 환경을 불러오는 중…", statusLab);
     await loadScriptOnce(`${PYODIDE_BASE_URL}pyodide.js`);
     if (typeof globalThis.loadPyodide !== "function") throw new Error("Pyodide 초기화 함수를 찾지 못했습니다.");
-    updatePythonLabStatus("pandas·Matplotlib 등 분석 라이브러리를 준비하는 중…");
+    updatePythonLabStatus("pandas·Matplotlib 등 분석 라이브러리를 준비하는 중…", statusLab);
     const pyodide = await globalThis.loadPyodide({
       indexURL: PYODIDE_BASE_URL,
       packages: PYTHON_PACKAGES,
@@ -2572,7 +2743,7 @@ async function getPyodideLab() {
 
     // koreanize-matplotlib은 Python 3.14에서 제거된 distutils에 의존하므로
     // 패키지를 import하지 않고, 한글 폰트 파일을 직접 Matplotlib에 등록합니다.
-    updatePythonLabStatus("Matplotlib 한글 폰트를 준비하는 중…");
+    updatePythonLabStatus("Matplotlib 한글 폰트를 준비하는 중…", statusLab);
     try {
       const fontResponse = await fetch(KOREAN_MATPLOTLIB_FONT_URL, { cache: "force-cache" });
       if (!fontResponse.ok) throw new Error(`한글 폰트 다운로드 실패 (${fontResponse.status})`);
@@ -2590,7 +2761,7 @@ _font_name = font_manager.FontProperties(fname=_font_path).get_name()
 matplotlib.rcParams["font.family"] = _font_name
 matplotlib.rcParams["axes.unicode_minus"] = False
 `);
-      updatePythonLabStatus("Python 실행 준비 완료 · Matplotlib 한글 표시 가능");
+      updatePythonLabStatus("Python 실행 준비 완료 · Matplotlib 한글 표시 가능", statusLab);
     } catch (fontError) {
       console.warn("Matplotlib 한글 폰트 준비 실패", fontError);
       await pyodide.runPythonAsync(`
@@ -2599,73 +2770,67 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 matplotlib.rcParams["axes.unicode_minus"] = False
 `);
-      updatePythonLabStatus("Python 실행 준비 완료 · 한글 폰트는 불러오지 못했습니다.");
+      updatePythonLabStatus("Python 실행 준비 완료 · 한글 폰트는 불러오지 못했습니다.", statusLab);
     }
     return pyodide;
   })().catch((error) => {
     pyodideReadyPromise = null;
-    updatePythonLabStatus("Python 실행 환경을 준비하지 못했습니다.");
+    updatePythonLabStatus("Python 실행 환경을 준비하지 못했습니다.", statusLab);
     throw error;
   });
   return pyodideReadyPromise;
 }
 
-function updatePythonLabStatus(message) {
-  const status = document.querySelector("#python-status");
-  if (status) status.textContent = message;
+function updatePythonLabStatus(message, lab = null) {
+  const targets = lab ? [lab.querySelector("[data-python-status]")].filter(Boolean) : [...document.querySelectorAll("[data-python-status]")];
+  targets.forEach((status) => { status.textContent = message; });
 }
 
-function resetPythonOutput(message = "실행 중…") {
-  const output = document.querySelector("#python-output");
-  const displays = document.querySelector("#python-displays");
-  const plots = document.querySelector("#python-plots");
-  if (output) {
-    output.textContent = message;
-    output.classList.toggle("empty", !message || message === "실행 중…");
-  }
-  if (displays) displays.innerHTML = "";
-  if (plots) plots.innerHTML = "";
-}
-
-async function setPythonCsvFile(file) {
+async function setPythonCsvFile(file, sourceLab = null) {
   if (!file) return;
   if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") {
     showToast("CSV 파일만 선택할 수 있습니다.");
     return;
   }
   try {
-    updatePythonLabStatus("CSV 파일을 준비하는 중…");
-    const pyodide = await getPyodideLab();
+    updatePythonLabStatus("CSV 파일을 준비하는 중…", sourceLab);
+    const pyodide = await getPyodideLab(sourceLab);
     const bytes = new Uint8Array(await file.arrayBuffer());
     try { pyodide.FS.unlink("/data.csv"); } catch {}
     pyodide.FS.writeFile("/data.csv", bytes);
     pythonCsvFileName = file.name;
-    const name = document.querySelector("#python-file-name");
-    if (name) name.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
-    updatePythonLabStatus("CSV 준비 완료 · Python에서는 /data.csv 로 읽으세요.");
+    document.querySelectorAll("[data-python-file-name]").forEach((name) => {
+      name.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+    });
+    updatePythonLabStatus("CSV 준비 완료 · Python에서는 /data.csv 로 읽으세요.", sourceLab);
     showToast("CSV 파일을 Python 분석 환경에 불러왔습니다.");
   } catch (error) {
     console.error("Python CSV load failed", error);
-    updatePythonLabStatus("CSV 파일을 불러오지 못했습니다.");
+    updatePythonLabStatus("CSV 파일을 불러오지 못했습니다.", sourceLab);
     showToast("CSV 파일을 불러오지 못했습니다.");
   }
 }
 
-async function runPythonLab() {
+async function runPythonLab(trigger = null) {
   if (pythonLabRunning) return;
-  const editor = document.querySelector("#python-code-editor");
-  const runButton = document.querySelector("[data-python-run]");
-  if (!editor) return;
+  const runButton = trigger?.closest?.("[data-python-run]") ?? null;
+  const lab = runButton?.closest?.("[data-python-section]") ?? document.querySelector("[data-python-section]");
+  const editor = lab?.querySelector(".python-code-editor") ?? null;
+  if (!editor || !lab) return;
+  const sectionIndex = Number(lab.dataset.pythonSection ?? 0);
+  const cellIndex = Number(lab.dataset.pythonCell ?? 0);
+  const resultKey = pythonResultKey(sectionIndex, cellIndex);
   const code = String(editor.value ?? "").trim();
   if (!code) { showToast("실행할 Python 코드를 입력하세요."); return; }
 
   pythonLabRunning = true;
   if (runButton) { runButton.disabled = true; runButton.textContent = "실행 중…"; }
-  resetPythonOutput("실행 중…");
+  // 이전 실행 결과는 지우지 않습니다. 새 실행이 끝날 때까지 마지막 결과를 그대로 보여 줍니다.
+  updatePythonLabStatus("실행 중… · 마지막 결과는 아래에 유지됩니다.", lab);
   const started = performance.now();
 
   try {
-    const pyodide = await getPyodideLab();
+    const pyodide = await getPyodideLab(lab);
     pyodide.globals.set("__workbook_code", code);
     await pyodide.runPythonAsync(`
 import io, sys, contextlib, traceback, base64, json, ast
@@ -2728,38 +2893,51 @@ __workbook_result_json = json.dumps({
 `);
     const raw = pyodide.globals.get("__workbook_result_json");
     const result = JSON.parse(String(raw ?? "{}"));
-    const output = document.querySelector("#python-output");
+    const runtimeText = `${((performance.now() - started) / 1000).toFixed(1)}초`;
+    pythonLabResults[resultKey] = {
+      text: String(result.text ?? "").trim(),
+      html: String(result.html ?? "").trim(),
+      images: Array.isArray(result.images) ? result.images.slice() : [],
+      runtime: runtimeText,
+    };
+    const output = lab.querySelector("[data-python-output]");
     if (output) {
       const text = String(result.text ?? "").trim();
       const hasTable = Boolean(String(result.html ?? "").trim());
       output.textContent = text || (hasTable ? "DataFrame 결과가 아래 표에 표시되었습니다." : "코드가 정상적으로 실행되었습니다. 출력된 텍스트는 없습니다.");
       output.classList.remove("empty");
     }
-    const displays = document.querySelector("#python-displays");
+    const displays = lab.querySelector("[data-python-displays]");
     if (displays) {
       const tableHTML = String(result.html ?? "").trim();
       displays.innerHTML = tableHTML
         ? `<section class="python-dataframe-wrap"><div class="python-dataframe-title">DataFrame 결과</div>${tableHTML}</section>`
         : "";
     }
-    const plots = document.querySelector("#python-plots");
+    const plots = lab.querySelector("[data-python-plots]");
     if (plots) {
       plots.innerHTML = (result.images ?? []).map((base64, index) => {
         const src = `data:image/png;base64,${base64}`;
-        return `<article class="python-plot-card"><img src="${src}" alt="Python 그래프 ${index + 1}"><div class="python-plot-actions"><a href="${src}" download="python_graph_${index + 1}.png">PNG 저장</a></div></article>`;
+        return `<article class="python-plot-card"><img src="${src}" alt="Python 그래프 ${index + 1}"><div class="python-plot-actions"><a href="${src}" download="python_graph_${sectionIndex + 1}_${cellIndex + 1}_${index + 1}.png">PNG 저장</a></div></article>`;
       }).join("");
     }
-    const runtime = document.querySelector("#python-runtime-note");
-    if (runtime) runtime.textContent = `${((performance.now() - started) / 1000).toFixed(1)}초`;
-    updatePythonLabStatus("실행 완료");
+    const runtime = lab.querySelector("[data-python-runtime-note]");
+    if (runtime) runtime.textContent = runtimeText;
+    updatePythonLabStatus("실행 완료 · 이 결과는 다른 화면으로 이동해도 현재 접속 중에는 유지됩니다.", lab);
   } catch (error) {
     console.error("Python execution failed", error);
-    const output = document.querySelector("#python-output");
+    const errorText = `Python 실행 환경 오류\n${String(error?.message ?? error)}`;
+    pythonLabResults[resultKey] = { text: errorText, html: "", images: [], runtime: "" };
+    const output = lab.querySelector("[data-python-output]");
     if (output) {
-      output.textContent = `Python 실행 환경 오류\n${String(error?.message ?? error)}`;
+      output.textContent = errorText;
       output.classList.remove("empty");
     }
-    updatePythonLabStatus("실행 오류 · 인터넷 연결을 확인하세요.");
+    const displays = lab.querySelector("[data-python-displays]");
+    if (displays) displays.innerHTML = "";
+    const plots = lab.querySelector("[data-python-plots]");
+    if (plots) plots.innerHTML = "";
+    updatePythonLabStatus("실행 오류 · 인터넷 연결을 확인하세요.", lab);
   } finally {
     pythonLabRunning = false;
     if (runButton) { runButton.disabled = false; runButton.textContent = "▶ 코드 실행"; }
@@ -2899,7 +3077,7 @@ function renderExplore() {
             <div class="analysis-code-row">
               <button type="button" class="analysis-code-button${pythonLabOpenIndex === index ? " active" : ""}" data-toggle-python-lab="${index}">${pythonLabOpenIndex === index ? "Python 실행창 닫기" : "Python 코드 실행"}</button>
             </div>
-            ${pythonLabOpenIndex === index ? pythonLabMarkup(index) : ""}
+            ${pythonLabOpenIndex === index ? pythonSectionMarkup(index) : ""}
           </div>`;
         }).join("")}
         <div class="analysis-add-row">
@@ -4256,6 +4434,9 @@ function startTopic(topicId) {
   state.selfOutputNeedsSync = false;
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
+  state.pythonCellCounts = {};
+  pythonLabResults = Object.create(null);
+  pythonLabOpenIndex = null;
   state.summaryDraftInitialized = false;
   state.summaryManualEdits = {};
   state.customTopicMode = false;
@@ -4280,6 +4461,9 @@ function startCustomTopic() {
   state.referenceCount = 3;
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
+  state.pythonCellCounts = {};
+  pythonLabResults = Object.create(null);
+  pythonLabOpenIndex = null;
   state.summaryDraftInitialized = false;
   state.summaryManualEdits = {};
   state.selfOutputCustomized = false;
@@ -5910,7 +6094,8 @@ document.addEventListener("click", async (event) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
-  if (target.hasAttribute("data-open-resume-code")) { openResumeCodeModal(); return; }
+  if (target.hasAttribute("data-save-code")) { await startCodeSave(); return; }
+  if (target.hasAttribute("data-open-code")) { openResumeCodeModal("load"); return; }
   if (target.hasAttribute("data-close-resume-code")) { closeResumeCodeModal(); return; }
   if (target.hasAttribute("data-save-resume-code")) { await saveByResumeCode(); return; }
   if (target.hasAttribute("data-load-resume-code")) { await loadByResumeCode(); return; }
@@ -6061,19 +6246,13 @@ document.addEventListener("click", async (event) => {
         delete state.fields[currentContentKey];
       }
 
-      const nextPythonKey = `python-code-${index + 1}`;
-      const currentPythonKey = `python-code-${index}`;
-      if (Object.prototype.hasOwnProperty.call(state.fields, nextPythonKey)) {
-        state.fields[currentPythonKey] = state.fields[nextPythonKey];
-      } else {
-        delete state.fields[currentPythonKey];
-      }
+      movePythonSectionState(index + 1, index);
     }
 
     // 마지막에 남은 이전 값과 자동 연동 표식을 제거합니다.
     delete state.fields[`analysis-title-${count - 1}`];
     delete state.fields[`analysis-content-${count - 1}`];
-    delete state.fields[`python-code-${count - 1}`];
+    deletePythonSectionState(count - 1);
     for (let index = 0; index < count; index += 1) {
       delete state.fields[`_imported-analysis-title-${index}`];
     }
@@ -6158,13 +6337,55 @@ document.addEventListener("click", async (event) => {
   if (target.hasAttribute("data-toggle-python-lab")) {
     const index = Number(target.dataset.togglePythonLab);
     if (!Number.isInteger(index) || index < 0) return;
-    pythonLabOpenIndex = pythonLabOpenIndex === index ? null : index;
-    render(`#analysis-block-${index}`);
+    const willOpen = pythonLabOpenIndex !== index;
+    pythonLabOpenIndex = willOpen ? index : null;
+    // Python 실행창을 열 때 소제목 맨 위가 아니라 실제 코드 실행 영역으로 이동합니다.
+    // 닫을 때도 사용자가 누른 Python 버튼 위치를 유지합니다.
+    render(willOpen ? `#python-section-${index}` : `#analysis-block-${index} .analysis-code-row`);
     return;
   }
-  if (target.hasAttribute("data-python-run")) { await runPythonLab(); return; }
+  if (target.hasAttribute("data-add-python-cell")) {
+    const sectionIndex = Number(target.dataset.addPythonCell);
+    if (!Number.isInteger(sectionIndex) || sectionIndex < 0) return;
+    const currentCount = pythonCellCount(sectionIndex);
+    if (currentCount >= 6) { showToast("한 소제목에는 Python 실행창을 최대 6개까지 추가할 수 있습니다."); return; }
+    ensurePythonCellCounts()[sectionIndex] = currentCount + 1;
+    pythonLabOpenIndex = sectionIndex;
+    saveNow(true);
+    render(`#explore-python-${sectionIndex}-${currentCount}`);
+    window.setTimeout(() => document.querySelector(`#python-code-editor-${sectionIndex}-${currentCount}`)?.focus(), 300);
+    showToast(`Python 코드 실행 ${currentCount + 1}을 추가했습니다.`);
+    return;
+  }
+  if (target.hasAttribute("data-delete-python-cell")) {
+    const [sectionText, cellText] = String(target.dataset.deletePythonCell ?? "").split(":");
+    const sectionIndex = Number(sectionText);
+    const cellIndex = Number(cellText);
+    const count = pythonCellCount(sectionIndex);
+    if (!Number.isInteger(sectionIndex) || !Number.isInteger(cellIndex) || cellIndex < 0 || cellIndex >= count || count <= 1) return;
+    if (!window.confirm(`Python 코드 실행 ${cellIndex + 1}을 삭제하시겠습니까? 작성한 코드와 현재 실행 결과도 함께 삭제됩니다.`)) return;
+    for (let cell = cellIndex; cell < count - 1; cell += 1) {
+      const nextField = pythonCodeFieldId(sectionIndex, cell + 1);
+      const currentField = pythonCodeFieldId(sectionIndex, cell);
+      if (Object.prototype.hasOwnProperty.call(state.fields, nextField)) state.fields[currentField] = state.fields[nextField];
+      else delete state.fields[currentField];
+      const nextResult = pythonLabResults[pythonResultKey(sectionIndex, cell + 1)];
+      if (nextResult) pythonLabResults[pythonResultKey(sectionIndex, cell)] = nextResult;
+      else delete pythonLabResults[pythonResultKey(sectionIndex, cell)];
+    }
+    delete state.fields[pythonCodeFieldId(sectionIndex, count - 1)];
+    delete pythonLabResults[pythonResultKey(sectionIndex, count - 1)];
+    ensurePythonCellCounts()[sectionIndex] = count - 1;
+    saveNow(true);
+    const focusCell = Math.min(cellIndex, count - 2);
+    render(`#explore-python-${sectionIndex}-${focusCell}`);
+    showToast("Python 실행창을 삭제했습니다.");
+    return;
+  }
+  if (target.hasAttribute("data-python-run")) { await runPythonLab(target); return; }
   if (target.hasAttribute("data-python-example")) {
-    const editor = document.querySelector("#python-code-editor");
+    const lab = target.closest("[data-python-section]");
+    const editor = lab?.querySelector(".python-code-editor");
     if (!editor) return;
     const next = target.dataset.pythonExample === "csv" ? PYTHON_CSV_CODE : PYTHON_DEFAULT_CODE;
     editor.value = next;
@@ -6178,7 +6399,7 @@ document.addEventListener("click", async (event) => {
   if (target.hasAttribute("data-save-now")) { saveNow(false); return; }
   if (target.hasAttribute("data-reset")) {
     if (!window.confirm("이 브라우저에 저장된 작성 내용을 모두 지우고 새로 시작할까요?")) return;
-    localStorage.removeItem(STORAGE_KEY); state = defaultState(); resumeTargetView = "topics"; resumeVisible = false; render(); showToast("새 보고서를 시작합니다."); return;
+    localStorage.removeItem(STORAGE_KEY); state = defaultState(); pythonLabResults = Object.create(null); pythonLabOpenIndex = null; resumeTargetView = "topics"; resumeVisible = false; render(); showToast("새 보고서를 시작합니다."); return;
   }
   if (target.hasAttribute("data-resume-continue")) {
     resumeVisible = false;
@@ -6199,7 +6420,9 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key === "Enter" && event.target?.id === "resume-code-input") {
     event.preventDefault();
-    void saveByResumeCode();
+    const mode = document.querySelector("#resume-code-modal")?.dataset.resumeCodeMode;
+    if (mode === "load") void loadByResumeCode();
+    else void saveByResumeCode();
     return;
   }
   const pasteZone = event.target.closest?.("[data-research-photo-paste-zone]");
@@ -6291,7 +6514,7 @@ document.addEventListener("change", async (event) => {
   if (pythonCsvInput) {
     const file = pythonCsvInput.files?.[0] ?? null;
     pythonCsvInput.value = "";
-    await setPythonCsvFile(file);
+    await setPythonCsvFile(file, pythonCsvInput.closest("[data-python-section]"));
     return;
   }
   const photoInput = event.target.closest?.("[data-research-photo-upload]");
