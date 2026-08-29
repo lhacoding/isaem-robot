@@ -2353,7 +2353,7 @@ function renderTopics() {
           <small>샘플 대화에서는 질문하는 방법만 참고하고, 주제와 문장은 자신의 관심 분야에 맞게 바꾸세요.</small>
         </div>
         <div class="custom-topic-actions">
-          <a class="secondary-button external-button sample-guide-button" href="topic-sample.html">주제 찾기 샘플 보기 <span aria-hidden="true">→</span></a>
+          <a class="secondary-button external-button sample-guide-button" href="https://lhacoding.github.io/isaem-robot/topic-sample.html" target="_blank" rel="noopener noreferrer" data-open-topic-sample>주제 찾기 샘플 보기 <span aria-hidden="true">↗</span></a>
           <a class="secondary-button external-button" href="https://chatgpt.com/g/g-6a5ee884de68819198ca70650976d51c-tamgubogoseo-gaideu-gpts" target="_blank" rel="noopener noreferrer">내 주제 직접 찾기 <span aria-hidden="true">↗</span></a>
           <button type="button" class="primary-button" data-start-custom-topic>내가 찾은 주제로 탐구 시작하기</button>
         </div>
@@ -6238,6 +6238,11 @@ async function addResearchPhotoFiles(fileList, sectionIndex, sourceType = "file"
 document.addEventListener("click", async (event) => {
   const target = event.target.closest("button, a");
   if (!target) return;
+  if (target.hasAttribute("data-open-topic-sample")) {
+    event.preventDefault();
+    window.open(target.href, "_blank", "noopener,noreferrer");
+    return;
+  }
   if (target.hasAttribute("data-scroll-top")) {
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
