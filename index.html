@@ -1263,6 +1263,9 @@ const FIREBASE_CONFIG = {
 
 const FIREBASE_SDK_VERSION = "12.18.0";
 const FIREBASE_CLOUD_SAVE_DELAY = 5000;
+const INITIAL_URL_PARAMS = new URLSearchParams(location.search);
+const INITIAL_RESUME_CODE = String(INITIAL_URL_PARAMS.get("resumeCode") ?? "");
+const ADMIN_PREVIEW_MODE = INITIAL_URL_PARAMS.get("adminPreview") === "1";
 let firebaseContextPromise = null;
 let cloudSaveTimer = null;
 let cloudSaveInFlight = false;
@@ -1384,6 +1387,7 @@ function studentCloudMeta() {
 }
 
 function saveStatusText() {
+  if (ADMIN_PREVIEW_MODE) return "관리자 보기";
   if (!state.savedAt) return "자동 저장 대기 중";
   if (!firebaseConfigIsReady()) return `저장됨 · ${formatTime(state.savedAt)}`;
   if (cloudSaveInFlight || cloudSaveTimer) return "저장 중…";
@@ -1465,6 +1469,7 @@ async function saveToFirebaseCloud(silent = true) {
 }
 
 function scheduleFirebaseSave(immediate = false, silent = true) {
+  if (ADMIN_PREVIEW_MODE) return;
   if (!firebaseConfigIsReady() || !hasMeaningfulDraft()) return;
   cloudSaveQueued = true;
   window.clearTimeout(cloudSaveTimer);
@@ -1752,18 +1757,24 @@ async function saveByResumeCode() {
   }
 }
 
-async function loadByResumeCode() {
-  if (resumeCodeBusy) return;
-  const input = document.querySelector("#resume-code-input");
-  const code = normalizeResumeCode(input?.value);
+async function loadResumeCodeValue(rawCode, options = {}) {
+  if (resumeCodeBusy) return false;
+  const {
+    skipConfirm = false,
+    persistLocal = true,
+    scheduleCloud = true,
+    writeBackLabel = true,
+    showSuccess = true,
+  } = options;
+  const code = normalizeResumeCode(rawCode);
   if (!validResumeCode(code)) {
     showToast("저장코드는 공백을 제외하고 6~24자로 입력하세요.");
-    input?.focus();
-    return;
+    document.querySelector("#resume-code-input")?.focus();
+    return false;
   }
   if (!firebaseConfigIsReady()) {
     showToast("Firebase 설정이 완료되지 않아 저장코드를 사용할 수 없습니다.");
-    return;
+    return false;
   }
 
   resumeCodeBusy = true;
@@ -1777,27 +1788,31 @@ async function loadByResumeCode() {
     const docSnap = await ctx.getDoc(ref);
     if (!docSnap.exists()) {
       showToast("해당 저장코드로 저장된 보고서를 찾지 못했습니다.");
-      return;
+      return false;
     }
 
-    if (hasMeaningfulDraft() && !window.confirm("현재 브라우저에서 작성 중인 내용을 저장코드의 내용으로 바꿀까요?")) return;
+    if (!skipConfirm && hasMeaningfulDraft() && !window.confirm("현재 브라우저에서 작성 중인 내용을 저장코드의 내용으로 바꿀까요?")) return false;
 
     const data = docSnap.data() ?? {};
     state = loadedStateFromCode(data.state);
     state.resumeCodeHash = hash;
-    // 불러온 기기에서도 같은 저장코드를 화면에 표시하고 이후 업데이트에 연결합니다.
     state.resumeCodeLabel = code;
-    // 이전 버전에서 생성된 resume_codes 문서에도 코드 표시값을 보완합니다.
-    await ctx.setDoc(ref, { resumeCodeLabel: code, updatedAtClient: new Date().toISOString() }, { merge: true });
-    // 새 기기에서 불러온 뒤에는 현재 익명 계정의 일반 Firebase 백업으로 새로 연결합니다.
+    if (writeBackLabel) {
+      // 이전 버전에서 생성된 resume_codes 문서에도 코드 표시값을 보완합니다.
+      await ctx.setDoc(ref, { resumeCodeLabel: code, updatedAtClient: new Date().toISOString() }, { merge: true });
+    }
+    // 다른 기기나 관리자 미리보기에서 원 소유자의 일반 보고서 문서를 덮어쓰지 않도록 새 연결로 둡니다.
     state.cloudReportId = null;
     resumeVisible = false;
     resumeTargetView = ["draft", "explore", "report", "self"].includes(state.view) ? state.view : "draft";
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    if (persistLocal) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    }
     closeResumeCodeModal();
     render();
-    scheduleFirebaseSave(true, true);
-    showToast("저장코드의 보고서를 불러왔습니다.");
+    if (scheduleCloud) scheduleFirebaseSave(true, true);
+    if (showSuccess) showToast(ADMIN_PREVIEW_MODE ? `저장코드 ${code}의 워크북을 열었습니다.` : "저장코드의 보고서를 불러왔습니다.");
+    return true;
   } catch (error) {
     console.error("Resume-code load failed:", error);
     const errorCode = String(error?.code ?? "");
@@ -1806,10 +1821,22 @@ async function loadByResumeCode() {
     } else {
       showToast("저장코드 불러오기에 실패했습니다. Firebase 연결을 확인하세요.");
     }
+    return false;
   } finally {
     resumeCodeBusy = false;
     setResumeCodeButtonsDisabled(false);
   }
+}
+
+async function loadByResumeCode() {
+  const input = document.querySelector("#resume-code-input");
+  return loadResumeCodeValue(input?.value, {
+    skipConfirm: false,
+    persistLocal: true,
+    scheduleCloud: true,
+    writeBackLabel: true,
+    showSuccess: true,
+  });
 }
 
 const STORAGE_KEY = "isaem-inquiry-workbook-v5";
@@ -2094,6 +2121,10 @@ function hasMeaningfulDraft() {
 function saveNow(silent = true) {
   try {
     state.savedAt = new Date().toISOString();
+    if (ADMIN_PREVIEW_MODE) {
+      updateSaveStatus();
+      return true;
+    }
     if (!state.cloudReportId) state.cloudReportId = createCloudReportId();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     updateSaveStatus();
@@ -6680,38 +6711,56 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-try {
-  const rawSaved = localStorage.getItem(STORAGE_KEY);
-  if (rawSaved) {
-    const saved = JSON.parse(rawSaved);
-    if (saved && typeof saved === "object") {
-      state = {
-        ...defaultState(),
-        ...saved,
-        fields: saved.fields ?? {},
-        selectedMethods: saved.selectedMethods ?? {},
-        researchPhotos: Array.isArray(saved.researchPhotos) ? saved.researchPhotos : [],
-        summaryManualEdits: saved.summaryManualEdits && typeof saved.summaryManualEdits === "object" && !Array.isArray(saved.summaryManualEdits)
-          ? saved.summaryManualEdits
-          : {},
-      };
-      if (typeof saved.selfOutputCustomized !== "boolean" && String(state.fields["self-output"] ?? "").trim()) {
-        state.selfOutputCustomized = true;
+const normalizedInitialResumeCode = normalizeResumeCode(INITIAL_RESUME_CODE);
+
+if (!normalizedInitialResumeCode) {
+  try {
+    const rawSaved = localStorage.getItem(STORAGE_KEY);
+    if (rawSaved) {
+      const saved = JSON.parse(rawSaved);
+      if (saved && typeof saved === "object") {
+        state = {
+          ...defaultState(),
+          ...saved,
+          fields: saved.fields ?? {},
+          selectedMethods: saved.selectedMethods ?? {},
+          researchPhotos: Array.isArray(saved.researchPhotos) ? saved.researchPhotos : [],
+          summaryManualEdits: saved.summaryManualEdits && typeof saved.summaryManualEdits === "object" && !Array.isArray(saved.summaryManualEdits)
+            ? saved.summaryManualEdits
+            : {},
+        };
+        if (typeof saved.selfOutputCustomized !== "boolean" && String(state.fields["self-output"] ?? "").trim()) {
+          state.selfOutputCustomized = true;
+        }
+        resumeTargetView = ["draft","explore","report","self"].includes(saved.view) ? saved.view : "draft";
+        state.view = "topics";
+        resumeVisible = hasMeaningfulDraft();
       }
-      resumeTargetView = ["draft","explore","report","self"].includes(saved.view) ? saved.view : "draft";
-      state.view = "topics";
-      resumeVisible = hasMeaningfulDraft();
     }
+  } catch {
+    state = defaultState();
   }
-} catch {
+} else {
+  // 관리자 페이지에서 저장코드로 연 경우 현재 브라우저의 기존 작성 내용을 건드리지 않고
+  // URL의 코드 내용을 메모리로 바로 불러옵니다.
   state = defaultState();
+  resumeVisible = false;
 }
 
 render();
-if (firebaseConfigIsReady() && hasMeaningfulDraft()) {
+if (normalizedInitialResumeCode) {
+  void loadResumeCodeValue(normalizedInitialResumeCode, {
+    skipConfirm: true,
+    persistLocal: !ADMIN_PREVIEW_MODE,
+    scheduleCloud: !ADMIN_PREVIEW_MODE,
+    writeBackLabel: !ADMIN_PREVIEW_MODE,
+    showSuccess: true,
+  });
+} else if (firebaseConfigIsReady() && hasMeaningfulDraft()) {
   scheduleFirebaseSave(false, true);
   void restoreResumeCodeLabelFromFirebase();
 }
+
 </script>
 </body>
 </html>
