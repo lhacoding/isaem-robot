@@ -153,6 +153,38 @@
       border: 1px solid #d8d1c5;
       border-radius: 10px;
     }
+    .code-open-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 15px 17px;
+      background: #fbfaf7;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .code-open-card b { display: block; font-size: 13px; }
+    .code-open-card span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .code-open-actions { display: flex; gap: 7px; flex: 0 0 auto; }
+    .code-open-actions input {
+      width: 190px;
+      min-height: 40px;
+      padding: 9px 10px;
+      color: var(--ink);
+      background: white;
+      border: 1px solid #d8d1c5;
+      border-radius: 9px;
+    }
+    .code-link-button {
+      padding: 5px 8px;
+      color: #245e59;
+      font-size: 10px;
+      font-weight: 900;
+      background: #edf8f6;
+      border: 1px solid #cfe8e4;
+      border-radius: 7px;
+      white-space: nowrap;
+    }
 
     .table-card { padding: 0; overflow: hidden; }
     .table-head {
@@ -274,6 +306,9 @@
       .toolbar-card { grid-template-columns: 1fr 1fr; }
       .toolbar-card .field:first-child { grid-column: 1 / -1; }
       .login-card { grid-template-columns: 1fr; }
+      .code-open-card { align-items: stretch; flex-direction: column; }
+      .code-open-actions { width: 100%; }
+      .code-open-actions input { width: auto; flex: 1; min-width: 0; }
       .student-meta { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
     @media (max-width: 560px) {
@@ -285,6 +320,8 @@
       .summary-strip { grid-template-columns: 1fr 1fr; }
       .toolbar-card { grid-template-columns: 1fr; }
       .toolbar-card .field:first-child { grid-column: auto; }
+      .code-open-actions { flex-direction: column; }
+      .code-open-actions input, .code-open-actions button { width: 100%; }
       .student-meta { grid-template-columns: 1fr 1fr; }
       .modal-backdrop { padding: 0; }
       .modal { max-height: 100vh; border-radius: 0; }
@@ -309,12 +346,12 @@
     <section class="hero">
       <p class="eyebrow">FIREBASE REPORT VIEWER</p>
       <h1>학생이 저장한 탐구보고서를<br>웹에서 바로 확인합니다.</h1>
-      <p>학년·반·번호·이름·탐구주제로 검색하고, 학생별 완성 보고서와 자기평가서를 한 화면에서 확인할 수 있습니다. 학생이 올린 탐구 사진은 현재 워크북 정책에 따라 Firebase에 저장되지 않으므로 이 페이지에도 표시되지 않습니다.</p>
+      <p>학년·반·번호·이름·탐구주제·저장코드로 검색하고, 학생별 완성 보고서와 자기평가서를 한 화면에서 확인할 수 있습니다. 학생이 올린 탐구 사진은 현재 워크북 정책에 따라 Firebase에 저장되지 않으므로 이 페이지에도 표시되지 않습니다.</p>
     </section>
 
     <section class="setup-card" id="setup-card" hidden>
       <h2>Firebase 설정이 필요합니다.</h2>
-      <p><code>admin.html</code> 안의 <code>FIREBASE_CONFIG</code>와 <code>ADMIN_EMAILS</code>를 실제 값으로 바꾸세요. 학생용 <code>index.html</code>에 사용한 Firebase 설정값을 그대로 복사하면 됩니다.</p>
+      <p>Firebase 설정값과 관리자 계정이 이 파일에 등록되어 있어야 합니다. 설정을 변경한 경우 학생용 <code>index.html</code>과 동일한 Firebase 프로젝트인지 확인하세요.</p>
       <p>Firestore 보안 규칙에도 같은 관리자 Google 계정을 등록해야 실제 보고서를 읽을 수 있습니다.</p>
     </section>
 
@@ -339,7 +376,7 @@
       <section class="toolbar-card">
         <div class="field">
           <label for="search-input">검색</label>
-          <input id="search-input" type="search" placeholder="이름 · 번호 · 탐구주제 검색">
+          <input id="search-input" type="search" placeholder="이름 · 번호 · 탐구주제 · 저장코드 검색">
         </div>
         <div class="field">
           <label for="grade-filter">학년</label>
@@ -351,6 +388,17 @@
         </div>
         <button type="button" class="small-button" id="refresh-button">새로고침</button>
         <button type="button" class="small-button" id="clear-filter-button">검색 초기화</button>
+      </section>
+
+      <section class="code-open-card">
+        <div>
+          <b>저장코드로 보고서 열기</b>
+          <span>학생이 알려준 저장코드를 입력하면 저장코드에 연결된 최신 내용을 바로 엽니다.</span>
+        </div>
+        <div class="code-open-actions">
+          <input id="resume-code-input" type="text" maxlength="24" autocomplete="off" placeholder="저장코드 입력">
+          <button type="button" class="small-button" id="open-resume-code-button">코드로 열기</button>
+        </div>
       </section>
 
       <section class="table-card">
@@ -367,6 +415,7 @@
                 <th>번호</th>
                 <th>이름</th>
                 <th>탐구주제</th>
+                <th>저장코드</th>
                 <th>작성 단계</th>
                 <th>마지막 저장</th>
                 <th></th>
@@ -410,7 +459,8 @@
       projectId: "isaem-robot",
       storageBucket: "isaem-robot.firebasestorage.app",
       messagingSenderId: "675895890150",
-      appId: "1:675895890150:web:0779f4edfe688d9f7f6b27"
+      appId: "1:675895890150:web:0779f4edfe688d9f7f6b27",
+      measurementId: "G-FZG3BF2XYF"
     };
 
     // ========================================================================
@@ -530,6 +580,25 @@
       return String(report.topic ?? fields["draft-topic"] ?? "").trim() || "탐구주제 미입력";
     }
 
+    function safeResumeCode(report) {
+      return String(report?.resumeCodeLabel ?? report?.resumeCode ?? "").trim();
+    }
+
+    function normalizeResumeCode(value) {
+      return String(value ?? "").normalize("NFKC").trim().replace(/\s+/g, "").toUpperCase();
+    }
+
+    function validResumeCode(value) {
+      const code = normalizeResumeCode(value);
+      return code.length >= 6 && code.length <= 24;
+    }
+
+    async function resumeCodeHash(value) {
+      const bytes = new TextEncoder().encode(normalizeResumeCode(value));
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    }
+
     function valueOrEmpty(fields, key) {
       return String(fields?.[key] ?? "").trim();
     }
@@ -594,6 +663,7 @@
           <div><b>반</b><span>${escapeHTML(student.className || "-")}</span></div>
           <div><b>번호</b><span>${escapeHTML(student.number || "-")}</span></div>
           <div><b>이름</b><span>${escapeHTML(student.name || "-")}</span></div>
+          <div><b>저장코드</b><span>${escapeHTML(safeResumeCode(report) || "-")}</span></div>
         </div>`;
 
       let html = basic + `<section class="report-section"><h3>탐구주제</h3>${textBlock(safeTopic(report))}</section>`;
@@ -652,7 +722,7 @@
         if (grade && s.grade !== grade) return false;
         if (clazz && s.className !== clazz) return false;
         if (!q) return true;
-        const haystack = [s.grade, s.className, s.number, s.name, safeTopic(report)].join(" ").toLowerCase();
+        const haystack = [s.grade, s.className, s.number, s.name, safeTopic(report), safeResumeCode(report)].join(" ").toLowerCase();
         return haystack.includes(q);
       });
       renderTable();
@@ -667,6 +737,7 @@
           <td>${escapeHTML(s.number || "-")}</td>
           <td class="name">${escapeHTML(s.name || "이름 미입력")}</td>
           <td class="topic">${escapeHTML(safeTopic(report))}</td>
+          <td>${safeResumeCode(report) ? `<button type="button" class="code-link-button" data-resume-code="${escapeHTML(safeResumeCode(report))}">${escapeHTML(safeResumeCode(report))}</button>` : "-"}</td>
           <td><span class="stage-badge">${escapeHTML(stageLabel(report.currentView || report.state?.view))}</span></td>
           <td>${escapeHTML(formatDateTime(report))}</td>
           <td><button type="button" class="view-button" data-report-index="${index}">보고서 보기</button></td>
@@ -715,10 +786,37 @@
       }
     }
 
+    async function openReportByResumeCode(rawCode) {
+      clearError();
+      const code = normalizeResumeCode(rawCode);
+      const input = $("#resume-code-input");
+      if (!validResumeCode(code)) {
+        showError("저장코드는 공백을 제외하고 6~24자로 입력하세요.");
+        input?.focus();
+        return;
+      }
+      try {
+        const hash = await resumeCodeHash(code);
+        const ref = firestoreModule.doc(db, "resume_codes", hash);
+        const snap = await firestoreModule.getDoc(ref);
+        if (!snap.exists()) {
+          showError(`저장코드 '${code}'로 저장된 보고서를 찾지 못했습니다.`);
+          return;
+        }
+        const report = { ...snap.data(), _docId: snap.id, _path: snap.ref.path, resumeCodeLabel: code, _fromResumeCode: true };
+        if (input) input.value = code;
+        openReport(report);
+      } catch (error) {
+        console.error(error);
+        const message = String(error?.message ?? error ?? "저장코드 보고서를 불러오지 못했습니다.");
+        showError(`저장코드 보고서를 불러오지 못했습니다. Firestore의 resume_codes 읽기 규칙을 확인하세요. 오류: ${message}`);
+      }
+    }
+
     function openReport(report) {
       currentReport = report;
       modalTitle.textContent = safeTopic(report);
-      modalSubtitle.textContent = `${reportIdentity(report)} · 마지막 저장 ${formatDateTime(report)}`;
+      modalSubtitle.textContent = `${reportIdentity(report)}${safeResumeCode(report) ? ` · 저장코드 ${safeResumeCode(report)}` : ""} · 마지막 저장 ${formatDateTime(report)}`;
       modalBody.innerHTML = buildReportHTML(report);
       reportModal.hidden = false;
       document.body.style.overflow = "hidden";
@@ -821,10 +919,22 @@
     $("#grade-filter").addEventListener("change", applyFilters);
     $("#class-filter").addEventListener("change", applyFilters);
     rows.addEventListener("click", (event) => {
+      const codeButton = event.target.closest("[data-resume-code]");
+      if (codeButton) {
+        void openReportByResumeCode(codeButton.dataset.resumeCode);
+        return;
+      }
       const button = event.target.closest("[data-report-index]");
       if (!button) return;
       const index = Number(button.dataset.reportIndex);
       if (Number.isInteger(index) && filteredReports[index]) openReport(filteredReports[index]);
+    });
+    $("#open-resume-code-button").addEventListener("click", () => void openReportByResumeCode($("#resume-code-input").value));
+    $("#resume-code-input").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void openReportByResumeCode(event.currentTarget.value);
+      }
     });
     $("#close-modal-button").addEventListener("click", closeReport);
     $("#print-button").addEventListener("click", () => window.print());
