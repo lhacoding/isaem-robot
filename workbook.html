@@ -1438,7 +1438,7 @@ const steps = [
   ["explore", "3. 탐구 활동"],
   ["report", "4. 보고서 완성"],
   ["self", "5. 자기평가서 작성"],
-  ["sample", "샘플 예제"],
+  ["sample", "보고서 예시"],
 ];
 
 function headerHTML() {
@@ -1582,7 +1582,7 @@ function renderGuide() {
               <h3>사용할 때 기억하세요</h3>
               <ul>
                 <li>1단계부터 순서대로 작성하면 앞에서 입력한 내용이 다음 단계에 연결됩니다.</li>
-                <li>각 단계가 어렵다면 ‘샘플 예제’에서 어떤 내용을 작성하는지 먼저 확인하세요.</li>
+                <li>각 단계가 어렵다면 ‘보고서 예시’에서 어떤 내용을 작성하는지 먼저 확인하세요.</li>
                 <li>작성 내용은 현재 기기의 브라우저에 임시 저장되며, 마지막에는 Word 또는 한글 파일로 다운로드해 보완한 뒤 제출하세요.</li>
               </ul>
             </section>
@@ -2101,7 +2101,7 @@ function renderReport() {
       <div class="workspace-layout">
       ${sectionSidebar([
         ...(isCustom ? [["report-topic", "탐구 주제"]] : []),
-        ["report-motivation", "1. 탐구 동기 및 배경"],
+        ["report-motivation", "1. 탐구 동기 및 목적"],
         ["report-question", "2. 연구문제와 가설"],
         ["report-theory", "3. 이론적 배경"],
         ["report-method", "4. 자료 수집 기준 및 탐구 방법"],
@@ -2112,7 +2112,7 @@ function renderReport() {
         ["report-download", "9. 다운로드"],
       ], "완성 보고서 항목")}
       <div class="workspace-content">
-      ${fieldBlock(1,"final01","탐구 동기 및 배경",isCustom ? "탐구를 시작하게 된 계기와 이 보고서에서 알아보려는 내용을 직접 작성하세요." : "기획서의 탐구 동기와 목적을 가져왔습니다. 보고서 문장으로 다듬어 수정할 수 있습니다.",planExamples["draft-motivation-purpose"] ?? [],{auto:!isCustom,anchorId:"report-motivation"})}
+      ${fieldBlock(1,"final01","탐구 동기 및 목적",isCustom ? "탐구를 시작하게 된 계기와 이 보고서에서 알아보려는 내용을 직접 작성하세요." : "기획서의 탐구 동기와 목적을 가져왔습니다. 보고서 문장으로 다듬어 수정할 수 있습니다.",planExamples["draft-motivation-purpose"] ?? [],{auto:!isCustom,anchorId:"report-motivation"})}
       ${fieldBlock(2,"final02","연구문제와 가설",isCustom ? "이번 탐구에서 확인하려는 질문을 작성하고, 탐구 전에 예상한 결과가 있다면 가설로 함께 적으세요." : "기획서의 핵심 질문과 예상·가설을 가져왔습니다. 가설은 결과에 맞춰 바꾸지 말고 처음 예상을 남겨두세요.",planExamples["draft-question-hypothesis"] ?? [],{auto:!isCustom,anchorId:"report-question"})}
       ${fieldBlock(3,"final03","이론적 배경","주제와 관련된 교과 개념의 정의·원리·관계를 먼저 설명하고, 그 개념이 조사한 연구에서 어떤 기준으로 사용되는지 작성하세요.",examples.final03,{exampleLabel:"예시",anchorId:"report-theory"})}
       ${fieldBlock(4,"final04","자료 수집 기준 및 탐구 방법",isCustom ? "실제로 어떤 자료를 찾았고, 어떤 기준으로 선정·비교·정리했는지 작성하세요." : "기획서의 계획을 가져왔습니다. 실제 사용한 검색어, 자료 선정·제외 기준, 수집·구조화·비교 순서가 드러나도록 구체화하세요.",examples.final04,{auto:!isCustom,exampleLabel:"예시",anchorId:"report-method"})}
@@ -2764,7 +2764,7 @@ function renderSampleLegacy() {
     <main class="page-shell">
       <section class="hero sample-hero"><p class="eyebrow">MODEL REPORT · SAMPLE</p><h1>두통이 있을 때 아세트아미노펜과 이부프로펜 중 <span class="highlight">어떤 성분을 선택해야 할까?</span></h1><p>작용·효과·안전성에 따른 선택 기준 탐구</p></section>
       
-      <nav class="sample-toc" aria-label="샘플 예제 목차"><a href="#sample-plan">1. 탐구 기획서</a><a href="#sample-search">2. 자료 검색</a><a href="#sample-analysis">3. 자료 비교</a><a href="#sample-report">4. 완성 보고서</a><a href="#sample-self">5. 자기평가서</a></nav>
+      <nav class="sample-toc" aria-label="보고서 예시 목차"><a href="#sample-plan">1. 탐구 기획서</a><a href="#sample-search">2. 자료 검색</a><a href="#sample-analysis">3. 자료 비교</a><a href="#sample-report">4. 완성 보고서</a><a href="#sample-self">5. 자기평가서</a></nav>
 
       <details class="sample-section" id="sample-plan"><summary>01. 탐구 기획서 예시</summary><div class="sample-body">
         <h3>1. 탐구 주제</h3><blockquote>두통이 있을 때 아세트아미노펜과 이부프로펜 중 어떤 성분을 선택해야 할까?</blockquote>
@@ -2790,7 +2790,7 @@ function renderSampleLegacy() {
       </div></details>
 
       <details class="sample-section" id="sample-report"><summary>04. 완성 보고서 예시</summary><div class="sample-body">
-        <h3>01. 탐구 동기 및 배경</h3><blockquote>두통약은 쉽게 구할 수 있지만 같은 두통약이라도 주성분과 주의사항이 다르다. 특히 아세트아미노펜과 이부프로펜은 모두 통증 완화에 사용되지만 작용 원리와 안전성에 차이가 있다. 따라서 제품 이름이 아닌 성분과 연구 근거를 바탕으로 두 성분의 선택 기준을 알아보고자 하였다.</blockquote>
+        <h3>01. 탐구 동기 및 목적</h3><blockquote>두통약은 쉽게 구할 수 있지만 같은 두통약이라도 주성분과 주의사항이 다르다. 특히 아세트아미노펜과 이부프로펜은 모두 통증 완화에 사용되지만 작용 원리와 안전성에 차이가 있다. 따라서 제품 이름이 아닌 성분과 연구 근거를 바탕으로 두 성분의 선택 기준을 알아보고자 하였다.</blockquote>
         <h3>02. 연구문제와 가설</h3><blockquote>핵심 연구문제는 두 성분이 작용 원리, 긴장형 두통 완화 효과, 안전성에서 어떤 차이를 보이는지 확인하는 것이다. 이부프로펜은 일부 조건에서 빠른 효과를 보일 수 있지만 NSAID 관련 주의사항이 많고, 아세트아미노펜은 위장 관련 부담은 상대적으로 적지만 과다·중복복용에 따른 간 손상 위험이 중요한 기준이 될 것으로 예상하였다.</blockquote>
         <h3>03. 이론적 배경</h3><p>이부프로펜은 비스테로이드성 소염진통제(NSAID)로 사이클로옥시게나제와 프로스타글란딘 생성 과정을 억제하여 진통·해열·항염 작용을 나타낸다. 아세트아미노펜도 진통과 해열에 사용되지만 항염 효과는 상대적으로 약하며 정확한 작용기전에는 아직 완전히 밝혀지지 않은 부분이 있다. 따라서 두 성분은 모두 통증을 줄이지만 약리작용과 안전성에서 차이가 나타날 수 있다.</p>
         <h3>04. 자료 수집 기준 및 탐구 방법</h3><p>성인의 급성 긴장형 두통을 대상으로 한 체계적 문헌고찰과 무작위 대조 임상시험을 우선 선정하였다. 안전성은 FDA와 NHS 등 공공기관 자료를 활용하였다. 자료마다 연구 대상, 두통 유형, 약물과 제형, 측정시간, 통증 소실률, 부작용, 연구의 한계를 같은 표에 기록하였다. 서로 다른 연구의 수치를 단순 순위로 비교하지 않고 위약 대비 추가 효과와 연구 조건을 함께 해석하였다.</p>
@@ -3061,7 +3061,7 @@ function renderSample() {
     <main class="page-shell">
       <section class="hero sample-hero"><p class="eyebrow">MODEL REPORT · SAMPLE</p><h1>두통이 있을 때 아세트아미노펜과 이부프로펜 중 <span class="highlight">어떤 성분을 선택해야 할까?</span></h1><p>탐구보고서 작성 흐름을 보여주는 예시입니다. 실제 보고서 분량은 약 10쪽 내외가 적당합니다.</p></section>
       <div class="sample-layout">
-        <nav class="sample-toc" aria-label="샘플 예제 목차"><a href="#sample-topic">1. 주제 찾기 예시</a><a href="#sample-draft">2. 탐구 기획서 작성 예시</a><a href="#sample-explore">3. 탐구 활동 예시</a><a href="#sample-final">4. 보고서 완성 예시</a><a href="#sample-self-new">5. 자기평가서 작성 예시</a></nav>
+        <nav class="sample-toc" aria-label="보고서 예시 목차"><a href="#sample-topic">1. 주제 찾기 예시</a><a href="#sample-draft">2. 탐구 기획서 작성 예시</a><a href="#sample-explore">3. 탐구 활동 예시</a><a href="#sample-final">4. 보고서 완성 예시</a><a href="#sample-self-new">5. 자기평가서 작성 예시</a></nav>
         <div class="sample-content">
 
       <details class="sample-section" id="sample-topic"><summary>1. 주제 찾기 예시</summary><div class="sample-body">
@@ -3089,7 +3089,7 @@ function renderSample() {
       </div></details>
 
       <details class="sample-section" id="sample-final"><summary>4. 보고서 완성 예시</summary><div class="sample-body">
-        <h3>1. 탐구 동기 및 배경</h3><blockquote>두통약은 쉽게 구할 수 있지만 같은 두통약이라도 주성분과 주의사항이 다르다. 특히 아세트아미노펜과 이부프로펜은 모두 통증 완화에 사용되지만 작용 원리와 안전성에 차이가 있다. 따라서 제품 이름이 아닌 성분과 연구 근거를 바탕으로 두 성분의 선택 기준을 알아보고자 하였다.</blockquote>
+        <h3>1. 탐구 동기 및 목적</h3><blockquote>두통약은 쉽게 구할 수 있지만 같은 두통약이라도 주성분과 주의사항이 다르다. 특히 아세트아미노펜과 이부프로펜은 모두 통증 완화에 사용되지만 작용 원리와 안전성에 차이가 있다. 따라서 제품 이름이 아닌 성분과 연구 근거를 바탕으로 두 성분의 선택 기준을 알아보고자 하였다.</blockquote>
         <h3>2. 연구문제와 가설</h3><blockquote>핵심 연구문제는 두 성분이 작용 원리, 긴장형 두통 완화 효과, 안전성에서 어떤 차이를 보이는지 확인하는 것이다. 이부프로펜은 일부 조건에서 빠른 효과를 보일 수 있지만 NSAID 관련 주의사항이 많고, 아세트아미노펜은 위장 부담은 상대적으로 적지만 과다·중복복용에 따른 간 손상 위험이 중요한 기준이 될 것으로 예상하였다.</blockquote>
         <h3>3. 이론적 배경</h3><p>먼저 긴장형 두통과 편두통의 차이, 진통·해열·소염의 의미, COX와 프로스타글란딘의 역할, 약물의 제형·붕해·흡수·최고혈중농도 도달 시간의 차이를 조사하였다. 이부프로펜은 NSAID로 COX 경로를 억제하여 진통·해열·항염 작용을 나타낸다. 아세트아미노펜은 진통과 해열에 사용되지만 항염 효과는 상대적으로 약하며 정확한 작용기전에는 아직 완전히 밝혀지지 않은 부분이 있다. 이러한 개념은 효과 수치뿐 아니라 성분별 부작용이 나타나는 이유를 해석하는 데 필요하다.</p>
         <h3>4. 자료 수집 기준 및 탐구 방법</h3><p>성인의 급성 긴장형 두통을 대상으로 한 체계적 문헌고찰 2개와 두 성분을 직접 비교한 임상시험 1개를 효과 자료로 선정하였다. 안전성은 FDA와 NHS 자료를 사용하였다. 각 원문에서 대상·두통 유형·용량·제형·측정시간·통증 소실률·부작용·한계를 복사해 모은 뒤, 핵심어를 찾고 비슷한 내용을 묶어 BrainTooler에서 관계를 구조화하였다. 서로 다른 연구의 수치는 위약 대비 추가 효과와 연구 조건을 함께 보며 해석하였다.</p>
