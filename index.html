@@ -1641,6 +1641,7 @@ function defaultState() {
     analysisManualOutline: null,
     researchPhotos: [],
     summaryDraftInitialized: false,
+    summaryManualEdits: {},
     fields: {},
     selfOutputCustomized: false,
     selfOutputNeedsSync: false,
@@ -3315,24 +3316,32 @@ function initializeSummaryDraft(force = false) {
   const auto = buildAutoSummarySnapshot();
   if (!auto) return null;
 
-  const hasCompleteDraft = SUMMARY_DRAFT_FIELDS.every((key) =>
-    Object.prototype.hasOwnProperty.call(state.fields, key)
-  );
-
-  if (!force && hasCompleteDraft) {
-    state.summaryDraftInitialized = true;
-    return auto;
+  if (!state.summaryManualEdits || typeof state.summaryManualEdits !== "object" || Array.isArray(state.summaryManualEdits)) {
+    state.summaryManualEdits = {};
   }
 
+  let changed = false;
   auto.sections.forEach(([, value], index) => {
     const key = SUMMARY_DRAFT_FIELDS[index];
-    // 기존에 학생이 고친 요약은 유지하고, 새로 추가된 항목만 자동으로 채운다.
-    if (force || !Object.prototype.hasOwnProperty.call(state.fields, key)) {
-      state.fields[key] = summaryValueToText(value);
+    const autoText = summaryValueToText(value);
+    const manuallyEdited = Boolean(state.summaryManualEdits[key]);
+
+    // 보고서·탐구활동 내용이 바뀌면 자동 요약도 최신 내용으로 갱신한다.
+    // 학생이 이 요약 칸을 직접 수정한 경우에는 그 항목만 유지한다.
+    if (force || !manuallyEdited) {
+      if (String(state.fields[key] ?? "") !== autoText) {
+        state.fields[key] = autoText;
+        changed = true;
+      }
+      if (force && state.summaryManualEdits[key]) {
+        delete state.summaryManualEdits[key];
+        changed = true;
+      }
     }
   });
+
   state.summaryDraftInitialized = true;
-  scheduleSave();
+  if (changed) scheduleSave();
   return auto;
 }
 
@@ -3630,6 +3639,8 @@ function renderSelfEvaluation() {
   const selected = workflowSelection();
   if (!selected) return emptyState("먼저 탐구주제를 작성하세요.", "완성한 보고서를 바탕으로 자기평가서를 작성합니다.");
 
+  // 탐구활동에서 바뀐 참고자료·분석 소제목 등을 최신 보고서 상태로 먼저 맞춘다.
+  syncReportFromPrevious(false);
   initializeSummaryDraft(false);
 
   if (!state.selfOutputCustomized) {
@@ -3648,7 +3659,7 @@ function renderSelfEvaluation() {
         ["self-download", "4. 다운로드"],
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
-      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body"><p class="summary-guide">완성 보고서의 내용을 바탕으로 주요 내용을 자동으로 정리했습니다. 각 항목은 직접 수정할 수 있습니다.</p>${reportSummaryHTML()}</div></section>
+      <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body"><p class="summary-guide">완성 보고서와 탐구활동의 최신 내용을 바탕으로 자동 정리됩니다. 보고서 내용이 바뀌면 다시 반영되며, 여기에서 직접 수정한 항목은 그대로 유지됩니다.</p>${reportSummaryHTML()}</div></section>
       <section class="form-card guided-self-builder section-anchor" id="self-builder"><div class="self-builder-head"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><div class="self-reset-row"><button type="button" class="secondary-button" data-reset-self>자기평가서 초기화</button></div></div><p class="guide">8개 항목마다 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 선택한 뒤 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 이어집니다.</p><div class="guided-self-list">
         ${items.map((item,index) => guidedSelfRow(index + 1,item.id,item.title,item.examples,item.prefix,item.suffix)).join("")}
       </div></section>
@@ -4165,6 +4176,7 @@ function startTopic(topicId) {
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
   state.summaryDraftInitialized = false;
+  state.summaryManualEdits = {};
   state.customTopicMode = false;
   state.topicId = topicId;
   state.methodIndex = methodIndex;
@@ -4188,6 +4200,7 @@ function startCustomTopic() {
   state.analysisExtraCount = 0;
   state.analysisManualOutline = null;
   state.summaryDraftInitialized = false;
+  state.summaryManualEdits = {};
   state.selfOutputCustomized = false;
   state.selfOutputNeedsSync = false;
   state.view = "draft";
@@ -6046,6 +6059,7 @@ document.addEventListener("click", async (event) => {
     if (!window.confirm("자기평가서에서 작성·수정한 내용만 초기화할까요? 완성 보고서는 그대로 유지됩니다.")) return;
     SELF_PART_FIELDS.forEach((key) => delete state.fields[key]);
     SUMMARY_DRAFT_FIELDS.forEach((key) => delete state.fields[key]);
+    state.summaryManualEdits = {};
     delete state.fields["self-output"];
     state.summaryDraftInitialized = false;
     state.selfOutputCustomized = false;
@@ -6165,6 +6179,12 @@ document.addEventListener("input", (event) => {
   const element = event.target.closest("[data-field]");
   if (!element) return;
   state.fields[element.dataset.field] = element.value;
+  if (SUMMARY_DRAFT_FIELDS.includes(element.dataset.field)) {
+    if (!state.summaryManualEdits || typeof state.summaryManualEdits !== "object" || Array.isArray(state.summaryManualEdits)) {
+      state.summaryManualEdits = {};
+    }
+    state.summaryManualEdits[element.dataset.field] = true;
+  }
   if (!state.topicId && (
     element.dataset.field.startsWith("draft-")
     || element.dataset.field.startsWith("final")
@@ -6228,6 +6248,9 @@ try {
         fields: saved.fields ?? {},
         selectedMethods: saved.selectedMethods ?? {},
         researchPhotos: Array.isArray(saved.researchPhotos) ? saved.researchPhotos : [],
+        summaryManualEdits: saved.summaryManualEdits && typeof saved.summaryManualEdits === "object" && !Array.isArray(saved.summaryManualEdits)
+          ? saved.summaryManualEdits
+          : {},
       };
       if (typeof saved.selfOutputCustomized !== "boolean" && String(state.fields["self-output"] ?? "").trim()) {
         state.selfOutputCustomized = true;
