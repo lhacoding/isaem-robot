@@ -2464,8 +2464,8 @@ function researchPhotoGalleryHTML(sectionIndex, allowDelete = true, showEmpty = 
 
 const PYODIDE_VERSION = "314.0.6";
 const PYODIDE_BASE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
-const PYTHON_PACKAGES = ["numpy", "pandas", "matplotlib", "scikit-learn", "micropip"];
-const KOREANIZE_MATPLOTLIB_PACKAGE = "koreanize-matplotlib==0.1.1";
+const PYTHON_PACKAGES = ["numpy", "pandas", "matplotlib", "scikit-learn"];
+const KOREAN_MATPLOTLIB_FONT_URL = "https://cdn.jsdelivr.net/gh/fonts-archive/NanumGothic/NanumGothic.ttf";
 const PYTHON_DEFAULT_CODE = `import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -2571,22 +2571,37 @@ async function getPyodideLab() {
       packages: PYTHON_PACKAGES,
     });
 
-    // Pyodide에서는 Colab의 `!pip install` 명령을 사용할 수 없으므로
-    // 한글 Matplotlib 지원 패키지는 micropip으로 최초 1회 자동 설치합니다.
-    updatePythonLabStatus("Matplotlib 한글 표시를 준비하는 중…");
-    const micropip = pyodide.pyimport("micropip");
+    // koreanize-matplotlib은 Python 3.14에서 제거된 distutils에 의존하므로
+    // 패키지를 import하지 않고, 한글 폰트 파일을 직접 Matplotlib에 등록합니다.
+    updatePythonLabStatus("Matplotlib 한글 폰트를 준비하는 중…");
     try {
-      await micropip.install(KOREANIZE_MATPLOTLIB_PACKAGE);
-    } finally {
-      micropip.destroy?.();
-    }
-    await pyodide.runPythonAsync(`
+      const fontResponse = await fetch(KOREAN_MATPLOTLIB_FONT_URL, { cache: "force-cache" });
+      if (!fontResponse.ok) throw new Error(`한글 폰트 다운로드 실패 (${fontResponse.status})`);
+      const fontBytes = new Uint8Array(await fontResponse.arrayBuffer());
+      pyodide.FS.writeFile("/tmp/NanumGothic.ttf", fontBytes);
+      await pyodide.runPythonAsync(`
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import koreanize_matplotlib
+from matplotlib import font_manager
+
+_font_path = "/tmp/NanumGothic.ttf"
+font_manager.fontManager.addfont(_font_path)
+_font_name = font_manager.FontProperties(fname=_font_path).get_name()
+matplotlib.rcParams["font.family"] = _font_name
+matplotlib.rcParams["axes.unicode_minus"] = False
 `);
-    updatePythonLabStatus("Python 실행 준비 완료 · Matplotlib 한글 표시 가능");
+      updatePythonLabStatus("Python 실행 준비 완료 · Matplotlib 한글 표시 가능");
+    } catch (fontError) {
+      console.warn("Matplotlib 한글 폰트 준비 실패", fontError);
+      await pyodide.runPythonAsync(`
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+matplotlib.rcParams["axes.unicode_minus"] = False
+`);
+      updatePythonLabStatus("Python 실행 준비 완료 · 한글 폰트는 불러오지 못했습니다.");
+    }
     return pyodide;
   })().catch((error) => {
     pyodideReadyPromise = null;
