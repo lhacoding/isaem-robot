@@ -1255,11 +1255,41 @@ function cloudSafeFields(fields) {
 }
 
 function cloudStateSnapshot() {
-  return {
+  // Firestore에는 JSON으로 안전하게 직렬화되는 값만 보냅니다.
+  // undefined, DOM 객체 등 Firestore가 처리하지 못하는 값이 섞여도
+  // 전체 자동저장이 실패하지 않도록 한 번 정리합니다.
+  const snapshot = {
     ...state,
     researchPhotos: [],
     fields: cloudSafeFields(state.fields),
   };
+  return JSON.parse(JSON.stringify(snapshot));
+}
+
+function firebaseErrorInfo(error) {
+  const rawCode = String(error?.code ?? "").trim();
+  const code = rawCode.replace(/^firestore\//, "").replace(/^auth\//, "");
+  const message = String(error?.message ?? error ?? "Firebase 저장 오류");
+
+  if (/permission-denied|missing-or-insufficient-permissions/i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 권한 오류", detail: "Firestore 규칙을 확인하세요.", code: rawCode || "permission-denied" };
+  }
+  if (/unauthenticated|auth\//i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 인증 오류", detail: "Authentication의 익명 로그인을 확인하세요.", code: rawCode || "unauthenticated" };
+  }
+  if (/failed-precondition/i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 설정 오류", detail: "Firestore 설정 또는 필요한 색인을 확인하세요.", code: rawCode || "failed-precondition" };
+  }
+  if (/resource-exhausted/i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 사용량 한도", detail: "Firestore 사용량 또는 할당량을 확인하세요.", code: rawCode || "resource-exhausted" };
+  }
+  if (/unavailable|network|fetch|offline/i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 네트워크 오류", detail: "인터넷 연결 뒤 다시 저장하세요.", code: rawCode || "unavailable" };
+  }
+  if (/invalid-argument|unsupported field|undefined/i.test(`${rawCode} ${message}`)) {
+    return { label: "Firebase 데이터 오류", detail: "저장할 데이터 형식을 확인하세요.", code: rawCode || "invalid-argument" };
+  }
+  return { label: "Firebase 연결 확인 필요", detail: message, code: rawCode || code || "unknown" };
 }
 
 function studentCloudMeta() {
@@ -1275,7 +1305,7 @@ function saveStatusText() {
   if (!state.savedAt) return "입력 내용은 이 브라우저에 임시 자동 저장됩니다.";
   if (!firebaseConfigIsReady()) return `이 브라우저에 임시 저장됨 · ${formatTime(state.savedAt)}`;
   if (cloudSaveInFlight) return "브라우저 저장됨 · Firebase 저장 중…";
-  if (cloudSaveError) return "브라우저 저장됨 · Firebase 연결 확인 필요";
+  if (cloudSaveError) return `브라우저 저장됨 · ${cloudSaveError.label || "Firebase 연결 확인 필요"}`;
   if (cloudSavedAt) return `브라우저·Firebase에 저장됨 · ${formatTime(cloudSavedAt)}`;
   return `브라우저 저장됨 · Firebase 저장 대기 중`;
 }
@@ -1330,8 +1360,11 @@ async function saveToFirebaseCloud(silent = true) {
     return true;
   } catch (error) {
     console.error("Firebase cloud save failed:", error);
-    cloudSaveError = String(error?.message ?? error ?? "Firebase 저장 오류");
-    if (!silent) showToast("브라우저에는 저장했지만 Firebase 백업에 실패했습니다. Firebase 설정을 확인하세요.");
+    cloudSaveError = firebaseErrorInfo(error);
+    if (!silent) {
+      const codeText = cloudSaveError.code ? ` (${cloudSaveError.code})` : "";
+      showToast(`브라우저에는 저장했습니다. ${cloudSaveError.label}: ${cloudSaveError.detail}${codeText}`);
+    }
     return false;
   } finally {
     cloudSaveInFlight = false;
