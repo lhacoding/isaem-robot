@@ -3097,7 +3097,7 @@ function renderExplore() {
 
 function parseOutline() {
   const raw = String(state.fields["draft-outline"] ?? "");
-  return raw.split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 12);
+  return raw.split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 30);
 }
 
 function reportOutline(topic) {
@@ -3105,7 +3105,7 @@ function reportOutline(topic) {
     return state.analysisManualOutline
       .map((item) => String(item ?? "").trim())
       .filter(Boolean)
-      .slice(0, 12);
+      .slice(0, 30);
   }
 
   const written = parseOutline();
@@ -3400,62 +3400,57 @@ function selectCoreSentences(value, options = {}) {
   return selected.map((item) => item.sentence).join(" ");
 }
 
-function analysisSummaryItems(maxChars = 520) {
+function analysisSummaryBlockCount() {
   const selected = workflowSelection();
   const outline = selected ? reportOutline(selected.topic) : parseOutline();
-  const candidates = [];
+  let maxIndex = outline.length - 1;
 
-  outline.forEach((title, index) => {
-    const actualTitle = String(state.fields[`analysis-title-${index}`] ?? title).trim();
-    const content = stripAnalysisNumber(state.fields[`analysis-content-${index}`]).trim();
-    if (!content) return;
-    const sentences = summarySentenceList(content);
-    if (!sentences.length) return;
-
-    const titleBoost = /종합|해석|결론|가설|예상|판단|핵심 결과|결과 비교|공통점|차이점|원인/.test(actualTitle) ? 2.3
-      : /적용|의미/.test(actualTitle) ? 0.8
-      : /특징|자료/.test(actualTitle) ? 0.2 : 1.0;
-    sentences.forEach((sentence, sentenceIndex) => {
-      candidates.push({
-        title: actualTitle,
-        sentence,
-        blockIndex: index,
-        sentenceIndex,
-        score: summarySentenceScore(sentence, sentenceIndex, sentences.length, ["결과", "비교", "영향", "관계", "가설", "종합"]) + titleBoost,
-      });
-    });
+  // 사용자가 5-13처럼 소제목을 많이 추가한 경우에도 현재 작성된 모든 분석 칸을 찾습니다.
+  Object.keys(state.fields || {}).forEach((key) => {
+    const match = key.match(/^analysis-(?:title|content)-(\d+)$/);
+    if (match) maxIndex = Math.max(maxIndex, Number(match[1]));
   });
+  return Math.min(30, Math.max(0, maxIndex + 1));
+}
 
-  if (!candidates.length) return [];
-  candidates.sort((a, b) => b.score - a.score || a.blockIndex - b.blockIndex || a.sentenceIndex - b.sentenceIndex);
+function analysisSummaryItems() {
+  const selected = workflowSelection();
+  const outline = selected ? reportOutline(selected.topic) : parseOutline();
+  const count = analysisSummaryBlockCount();
+  const items = [];
 
-  const picked = [];
-  const usedBlocks = new Set();
-  let usedChars = 0;
+  for (let index = 0; index < count; index += 1) {
+    const fallbackTitle = outline[index] || `5-${index + 1}. 분석 내용 ${index + 1}`;
+    const actualTitle = String(state.fields[`analysis-title-${index}`] ?? fallbackTitle).trim() || fallbackTitle;
+    const content = stripAnalysisNumber(state.fields[`analysis-content-${index}`]).trim();
+    if (!content) continue;
 
-  // 먼저 서로 다른 소제목에서 핵심문장을 골라 결과 전체가 한쪽에 치우치지 않게 한다.
-  for (const item of candidates) {
-    if (picked.length >= 5) break;
-    if (usedBlocks.has(item.blockIndex)) continue;
-    const line = `${item.title} — ${item.sentence}`;
-    if (picked.length && usedChars + line.length > maxChars) continue;
-    picked.push(item);
-    usedBlocks.add(item.blockIndex);
-    usedChars += line.length;
+    const sentences = summarySentenceList(content);
+    if (!sentences.length) continue;
+
+    // 각 소제목에서 가장 핵심적인 문장 1개만 선택합니다.
+    // 이렇게 하면 특정 소제목이 두 번 반복되는 일을 막고, 5-1~5-13처럼
+    // 소제목이 많아도 최신 내용이 각 항목별로 요약에 반영됩니다.
+    const ranked = sentences.map((sentence, sentenceIndex) => ({
+      sentence,
+      sentenceIndex,
+      score: summarySentenceScore(sentence, sentenceIndex, sentences.length, [
+        "결과", "비교", "평균", "중앙값", "표준편차", "증가", "관계", "가설", "해석", "종합", "결론", "판단"
+      ]),
+    })).sort((a, b) => b.score - a.score || a.sentenceIndex - b.sentenceIndex);
+
+    items.push({
+      blockIndex: index,
+      title: actualTitle,
+      sentence: ranked[0].sentence,
+    });
   }
 
-  // 분량이 남으면 가장 중요한 문장을 한두 개 보충한다.
-  for (const item of candidates) {
-    if (picked.length >= 6) break;
-    if (picked.includes(item)) continue;
-    const line = `${item.title} — ${item.sentence}`;
-    if (usedChars + line.length > maxChars) continue;
-    picked.push(item);
-    usedChars += line.length;
-  }
+  if (!items.length) return [];
 
-  picked.sort((a, b) => a.blockIndex - b.blockIndex || a.sentenceIndex - b.sentenceIndex);
-  return picked.map((item) => `${item.title} — ${item.sentence}`);
+  // 작성된 모든 분석 소제목을 한 줄씩 반영합니다. 전체 길이 때문에 뒤쪽 소제목이
+  // 누락되지 않도록 별도의 글자 수 제한을 두지 않습니다.
+  return items.map((item) => `${item.title} — ${item.sentence}`);
 }
 
 function compactSummaryText(value, maxLength, preserveLines = false) {
@@ -3526,7 +3521,7 @@ function buildAutoSummarySnapshot() {
     maxSentences: 5,
     keywords: ["자료", "비교", "분석", "기준", "방법", "측정", "계산", "실험", "출처"],
   });
-  const results = analysisSummaryItems(980);
+  const results = analysisSummaryItems();
   const conclusionAndLimits = selectCoreSentences(state.fields.final06, {
     maxChars: 760,
     maxSentences: 6,
@@ -6314,12 +6309,25 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (target.hasAttribute("data-refresh-summary")) {
-    // 사용자가 버튼을 눌렀을 때만 직접 수정한 요약까지 현재 보고서·탐구활동 기준으로 다시 만든다.
+    // 화면에서 아직 포커스 중인 입력값까지 먼저 state에 확실히 반영합니다.
+    document.querySelectorAll("[data-field]").forEach((element) => {
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+        state.fields[element.dataset.field] = element.value;
+      }
+    });
+    document.querySelectorAll("[data-rich-field]").forEach((element) => {
+      state.fields[element.dataset.richField] = sanitizeClipHTML(element.innerHTML);
+    });
+
+    // 기존 요약과 수동수정 표시를 모두 지운 뒤 현재 탐구활동·완성 보고서에서 새로 생성합니다.
+    SUMMARY_DRAFT_FIELDS.forEach((key) => delete state.fields[key]);
+    state.summaryManualEdits = {};
+    state.summaryDraftInitialized = false;
     syncReportFromPrevious(false);
     initializeSummaryDraft(true);
     saveNow(true);
     render("#self-summary");
-    showToast("최신 내용을 반영했습니다.");
+    showToast("최신 탐구내용으로 요약을 다시 만들었습니다.");
     return;
   }
   if (target.hasAttribute("data-generate-self")) {
