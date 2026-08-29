@@ -6462,7 +6462,9 @@ async function saveByResumeCode() {
     scheduleFirebaseSave(true, true);
     closeResumeCodeModal();
     updateSaveStatus();
-    showToast("저장코드가 설정되었습니다. 이후에는 '코드 저장'을 누르면 바로 업데이트됩니다.");
+    const indicator = document.querySelector("#resume-code-indicator");
+    if (indicator) indicator.textContent = resumeCodeIndicatorText();
+    showToast("저장코드가 설정되었습니다. 이후에는 '저장'을 누르면 같은 코드에 바로 업데이트됩니다.");
   } catch (error) {
     console.error("Resume-code save failed:", error);
     const errorCode = String(error?.code ?? "");
