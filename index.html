@@ -1359,7 +1359,7 @@ function saveStatusText() {
   if (!firebaseConfigIsReady()) return `이 브라우저에 임시 저장됨 · ${formatTime(state.savedAt)}`;
   if (cloudSaveInFlight) return "브라우저 저장됨 · Firebase 저장 중…";
   if (cloudSaveError) return `브라우저 저장됨 · ${cloudSaveError.label || "Firebase 연결 확인 필요"}`;
-  if (cloudSavedAt) return `브라우저·Firebase에 저장됨 · ${formatTime(cloudSavedAt)}`;
+  if (cloudSavedAt) return "저장됨";
   return `브라우저 저장됨 · Firebase 저장 대기 중`;
 }
 
@@ -2537,7 +2537,6 @@ function pythonLabMarkup(sectionIndex = 0) {
       <div class="python-display-list" id="python-displays"></div>
       <div class="python-plot-list" id="python-plots"></div>
     </div>
-    <p class="python-lab-note">CSV 원본 파일과 실행 결과는 Firebase에 저장하지 않습니다. CSV 파일은 새로 접속할 때 다시 선택해야 하며, 필요한 그래프는 PNG로 저장한 뒤 ‘분석 결과 및 해석’의 사진 삽입에서 사용할 수 있습니다.</p>
   </section>`;
 }
 
