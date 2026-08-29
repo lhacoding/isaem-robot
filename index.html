@@ -711,45 +711,50 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .character-count { color: var(--muted); font-size: 11px; }
 .self-sync-note { margin: 10px 0; padding: 10px 12px; color: #657083; font-size: 11px; line-height: 1.65; background: #f4f6f8; border-radius: 9px; }
 .self-sync-note.pending { color: #7b4d20; background: #fff5df; border-left: 4px solid var(--gold); }
-.self-reset-row { display: flex; justify-content: flex-end; margin: 8px 0 14px; }
-.self-reset-row .secondary-button { color: #8f402f; border-color: #dfb7aa; background: #fffaf7; }
+.self-builder-head { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.self-builder-head .form-card-number,
+.self-builder-head h3 { margin: 0; }
+.self-builder-head .self-reset-row { margin-left: auto; }
+.self-reset-row { display: flex; justify-content: flex-end; margin: 0; }
+.self-reset-row .secondary-button { min-height: 38px; padding: 9px 13px; color: #8f402f; font-size: 11.5px; border-color: #dfb7aa; background: #fffaf7; }
 .self-reset-row .secondary-button:hover { color: white; background: var(--orange); border-color: var(--orange); }
 .self-writing-title { margin-top: 38px; padding-top: 22px; border-top: 2px solid var(--navy); }
-.guided-self-builder { padding-bottom: 8px; }
-.guided-self-list { display: grid; gap: 16px; margin-top: 18px; }
-.guided-self-row { padding: 20px; background: #fbfaf7; border: 1px solid #e2dbcf; border-radius: 14px; }
-.guided-self-row h4 { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; color: var(--ink); font-size: 15px; }
-.guided-self-row h4 span { display: inline-grid; width: 30px; height: 30px; place-items: center; color: white; font-size: 10px; background: var(--orange); border-radius: 50%; }
-.guided-example-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-bottom: 13px; }
-.guided-example-button { display: flex; align-items: flex-start; gap: 8px; min-height: 58px; padding: 11px 12px; color: #445065; font: inherit; font-size: 12px; line-height: 1.55; text-align: left; background: white; border: 1px solid #d9d4cb; border-radius: 10px; cursor: pointer; }
+.guided-self-builder { margin-top: 14px; padding: 22px 24px 24px; }
+.guided-self-builder > .guide { margin: 7px 0 13px; font-size: 13px; line-height: 1.65; }
+.guided-self-list { display: grid; gap: 12px; margin-top: 10px; }
+.guided-self-row { padding: 17px 18px; background: #ffffff; border: 1px solid #e4ddd3; border-radius: 14px; box-shadow: 0 1px 2px rgba(23,32,57,.025); }
+.guided-self-row h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--ink); font-size: 15px; }
+.guided-self-row h4 span { display: inline-grid; width: 28px; height: 28px; place-items: center; color: white; font-size: 10px; background: var(--orange); border-radius: 50%; }
+.guided-example-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+.guided-example-button { display: flex; align-items: flex-start; gap: 7px; padding: 10px 12px; color: #445065; font: inherit; font-size: 12px; line-height: 1.5; text-align: left; background: #fcfcfb; border: 1px solid #e3ddd4; border-radius: 10px; cursor: pointer; }
 .guided-example-button:hover { color: #7f422f; background: #fff9eb; border-color: var(--gold); transform: translateY(-1px); }
 .guided-example-button b { flex: 0 0 auto; color: var(--orange); }
-.guided-sentence { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 13px 14px; color: #38465c; font-size: 13px; line-height: 1.8; background: #f4f7f8; border-left: 4px solid var(--teal); border-radius: 0 10px 10px 0; }
+.guided-sentence { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 9px; padding: 12px 14px; color: #38465c; font-size: 13px; line-height: 1.65; background: #fbfcfd; border: 1px solid #dce4e8; border-radius: 11px; }
 .guided-sentence textarea {
   flex: 1 1 280px;
   min-width: 180px;
-  min-height: 48px;
-  height: 48px;
-  padding: 9px 10px;
+  min-height: 44px;
+  height: 44px;
+  padding: 8px 10px;
   color: var(--ink);
   font: inherit;
   font-weight: 750;
-  line-height: 1.5;
+  line-height: 1.45;
   background: white;
-  border: 1px solid #bfcbd0;
-  border-radius: 7px;
+  border: 1px solid #c8d3d8;
+  border-radius: 8px;
   resize: vertical;
 }
 .sample-guided-builder { margin-top: 18px; }
 .sample-guided-help { margin: 0 0 14px; color: #667085; font-size: 12px; line-height: 1.7; }
-.sample-guided-row { margin-top: 14px; padding: 18px; background: #fbfaf7; border: 1px solid #e2dbcf; border-radius: 13px; }
-.sample-guided-row h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 11px; color: var(--ink); }
+.sample-guided-row { margin-top: 14px; padding: 20px; background: #ffffff; border: 1px solid #e4ddd3; border-radius: 15px; box-shadow: 0 1px 2px rgba(23,32,57,.03); }
+.sample-guided-row h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--ink); }
 .sample-guided-row h4 span { display: inline-grid; width: 29px; height: 29px; place-items: center; color: white; font-size: 9px; background: var(--orange); border-radius: 50%; }
-.sample-guided-examples { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin: 0 0 11px; padding: 0; list-style: none; }
-.sample-guided-examples li { display: flex; align-items: flex-start; gap: 7px; margin: 0; padding: 10px 11px; color: #5c6574; font-size: 10px; line-height: 1.55; background: white; border: 1px solid #ddd7cd; border-radius: 9px; }
+.sample-guided-examples { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+.sample-guided-examples li { display: flex; align-items: flex-start; gap: 7px; margin: 0; padding: 11px 12px; color: #5c6574; font-size: 10px; line-height: 1.55; background: #fcfcfb; border: 1px solid #e3ddd4; border-radius: 10px; }
 .sample-guided-examples li.chosen { color: #74402e; background: #fff8e6; border-color: var(--gold); }
 .sample-guided-examples b { color: var(--orange); }
-.sample-guided-sentence { margin: 0; padding: 12px 14px; color: #38465c; background: #f4f7f8; border-left: 4px solid var(--teal); border-radius: 0 9px 9px 0; }
+.sample-guided-sentence { margin: 0; padding: 14px 16px; color: #38465c; background: #ffffff; border: 1px solid #dce4e8; border-radius: 12px; }
 .sample-guided-sentence mark { padding: 2px 4px; color: #6f3d2c; font-weight: 850; background: #fff0b8; border-radius: 4px; }
 
 .form-card h3, .content-card h3, .source-card h3, .summary-card h3, .mindmap-launch h3,
@@ -996,6 +1001,8 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 }
 
 @media (max-width: 720px) {
+  .self-builder-head { align-items: flex-start; flex-wrap: wrap; }
+  .self-builder-head .self-reset-row { margin-left: auto; }
   .page-shell { width: min(100% - 22px, 1280px); padding-top: 24px; }
   .hero, .sample-hero { min-height: auto; padding: 34px 26px; border-radius: 20px; }
   .hero h1 { font-size: 36px; }
@@ -1053,7 +1060,6 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
     resize: vertical;
   }
   .guided-example-button {
-    min-height: 48px;
     padding: 9px 10px;
     line-height: 1.45;
   }
@@ -1125,7 +1131,6 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
   }
 
   .guided-example-button {
-    min-height: 44px;
     padding: 8px 9px;
     font-size: 11px;
   }
@@ -1170,7 +1175,7 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 // 다운로드 시 문서에 포함됩니다.
 // ============================================================================
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA1nT1MM-8kylY65S0kJS-DD0VhVyH0ZOc",
+  apiKey: "AIzaSyA1nI1Mm-8kyV65S0KJS-DD0VhVyH0ZOc",
   authDomain: "isaem-robot.firebaseapp.com",
   projectId: "isaem-robot",
   storageBucket: "isaem-robot.firebasestorage.app",
@@ -1220,6 +1225,7 @@ async function getFirebaseContext() {
       auth,
       db: firestoreModule.getFirestore(firebaseApp),
       doc: firestoreModule.doc,
+      getDoc: firestoreModule.getDoc,
       setDoc: firestoreModule.setDoc,
       serverTimestamp: firestoreModule.serverTimestamp,
     };
@@ -1341,6 +1347,186 @@ function scheduleFirebaseSave(immediate = false, silent = true) {
     immediate ? 0 : FIREBASE_CLOUD_SAVE_DELAY
   );
   updateSaveStatus();
+}
+
+
+// ============================================================================
+// 저장코드로 이어쓰기
+// - 학생이 직접 정한 6~24자 저장코드를 SHA-256으로 해시해 Firestore 문서 ID로 사용합니다.
+// - 원래 저장코드 문자열은 Firestore에 저장하지 않습니다.
+// - 사진은 기존 정책대로 코드 저장에서 제외됩니다.
+// - 저장코드를 아는 사람은 해당 보고서를 불러올 수 있으므로 비밀번호처럼 공유하지 않도록 안내합니다.
+// ============================================================================
+const RESUME_CODE_COLLECTION = "resume_codes";
+let resumeCodeBusy = false;
+
+function normalizeResumeCode(value) {
+  return String(value ?? "")
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, "")
+    .toUpperCase();
+}
+
+function validResumeCode(value) {
+  const code = normalizeResumeCode(value);
+  return code.length >= 6 && code.length <= 24;
+}
+
+async function resumeCodeHash(value) {
+  const code = normalizeResumeCode(value);
+  const bytes = new TextEncoder().encode(code);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function closeResumeCodeModal() {
+  document.querySelector("#resume-code-modal")?.remove();
+}
+
+function openResumeCodeModal() {
+  closeResumeCodeModal();
+  document.body.insertAdjacentHTML("beforeend", `
+    <div class="modal-backdrop" id="resume-code-modal" role="dialog" aria-modal="true" aria-labelledby="resume-code-title">
+      <div class="modal">
+        <p class="eyebrow">CLOUD CONTINUE</p>
+        <h2 id="resume-code-title">저장코드로 이어쓰기</h2>
+        <p>학생이 직접 정한 <b>6~24자 저장코드</b>를 입력하면 현재 보고서를 Firebase에 저장하고, 다른 컴퓨터에서도 같은 코드를 입력해 불러올 수 있습니다.</p>
+        <label>
+          <span class="field-label">저장코드</span>
+          <input id="resume-code-input" autocomplete="off" maxlength="24" placeholder="예: 별빛7294">
+        </label>
+        <p class="input-note">저장코드는 비밀번호처럼 다른 사람과 공유하지 마세요. 업로드한 사진은 코드 저장에 포함되지 않으므로 Word/HWPX 파일도 반드시 내려받아 보관하세요.</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" data-close-resume-code>닫기</button>
+          <button type="button" class="secondary-button" data-load-resume-code>이 코드 불러오기</button>
+          <button type="button" class="primary-button" data-save-resume-code>이 코드로 저장</button>
+        </div>
+      </div>
+    </div>`);
+  window.setTimeout(() => document.querySelector("#resume-code-input")?.focus(), 0);
+}
+
+function setResumeCodeButtonsDisabled(disabled) {
+  document.querySelectorAll("[data-save-resume-code], [data-load-resume-code]").forEach((button) => {
+    button.disabled = disabled;
+  });
+}
+
+function loadedStateFromCode(snapshot) {
+  const safe = snapshot && typeof snapshot === "object" ? snapshot : {};
+  return {
+    ...defaultState(),
+    ...safe,
+    fields: safe.fields && typeof safe.fields === "object" ? safe.fields : {},
+    selectedMethods: safe.selectedMethods && typeof safe.selectedMethods === "object" ? safe.selectedMethods : {},
+    researchPhotos: [],
+    savedAt: new Date().toISOString(),
+  };
+}
+
+async function saveByResumeCode() {
+  if (resumeCodeBusy) return;
+  const input = document.querySelector("#resume-code-input");
+  const code = normalizeResumeCode(input?.value);
+  if (!validResumeCode(code)) {
+    showToast("저장코드는 공백을 제외하고 6~24자로 입력하세요.");
+    input?.focus();
+    return;
+  }
+  if (!hasMeaningfulDraft()) {
+    showToast("먼저 보고서 내용을 작성하세요.");
+    return;
+  }
+  if (!firebaseConfigIsReady()) {
+    showToast("Firebase 설정이 완료되지 않아 저장코드를 사용할 수 없습니다.");
+    return;
+  }
+
+  resumeCodeBusy = true;
+  setResumeCodeButtonsDisabled(true);
+  try {
+    saveNow(true);
+    const ctx = await getFirebaseContext();
+    if (!ctx?.auth?.currentUser) throw new Error("Firebase 익명 인증에 실패했습니다.");
+
+    const hash = await resumeCodeHash(code);
+    const ref = ctx.doc(ctx.db, RESUME_CODE_COLLECTION, hash);
+    const existing = await ctx.getDoc(ref);
+    if (existing.exists() && !window.confirm("이미 같은 저장코드로 저장된 보고서가 있습니다. 현재 내용으로 덮어쓸까요?")) return;
+
+    const selected = typeof workflowSelection === "function" ? workflowSelection() : null;
+    const topic = String(state.fields?.["draft-topic"] || selected?.topic?.question || "").trim();
+    const payload = {
+      schemaVersion: 1,
+      codeLength: code.length,
+      student: studentCloudMeta(),
+      topic,
+      updatedAt: ctx.serverTimestamp(),
+      updatedAtClient: new Date().toISOString(),
+      savedByUid: ctx.auth.currentUser.uid,
+      state: cloudStateSnapshot(),
+    };
+    await ctx.setDoc(ref, payload, { merge: false });
+    closeResumeCodeModal();
+    showToast("저장코드로 보고서를 저장했습니다. 코드를 꼭 메모하세요.");
+  } catch (error) {
+    console.error("Resume-code save failed:", error);
+    showToast("저장코드 저장에 실패했습니다. Firebase 연결과 규칙을 확인하세요.");
+  } finally {
+    resumeCodeBusy = false;
+    setResumeCodeButtonsDisabled(false);
+  }
+}
+
+async function loadByResumeCode() {
+  if (resumeCodeBusy) return;
+  const input = document.querySelector("#resume-code-input");
+  const code = normalizeResumeCode(input?.value);
+  if (!validResumeCode(code)) {
+    showToast("저장코드는 공백을 제외하고 6~24자로 입력하세요.");
+    input?.focus();
+    return;
+  }
+  if (!firebaseConfigIsReady()) {
+    showToast("Firebase 설정이 완료되지 않아 저장코드를 사용할 수 없습니다.");
+    return;
+  }
+
+  resumeCodeBusy = true;
+  setResumeCodeButtonsDisabled(true);
+  try {
+    const ctx = await getFirebaseContext();
+    if (!ctx?.auth?.currentUser) throw new Error("Firebase 익명 인증에 실패했습니다.");
+
+    const hash = await resumeCodeHash(code);
+    const ref = ctx.doc(ctx.db, RESUME_CODE_COLLECTION, hash);
+    const docSnap = await ctx.getDoc(ref);
+    if (!docSnap.exists()) {
+      showToast("해당 저장코드로 저장된 보고서를 찾지 못했습니다.");
+      return;
+    }
+
+    if (hasMeaningfulDraft() && !window.confirm("현재 브라우저에서 작성 중인 내용을 저장코드의 내용으로 바꿀까요? 사진은 불러오지 않습니다.")) return;
+
+    const data = docSnap.data() ?? {};
+    state = loadedStateFromCode(data.state);
+    // 새 기기에서 불러온 뒤에는 현재 익명 계정의 일반 Firebase 백업으로 새로 연결합니다.
+    state.cloudReportId = null;
+    resumeVisible = false;
+    resumeTargetView = ["draft", "explore", "report", "self"].includes(state.view) ? state.view : "draft";
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    closeResumeCodeModal();
+    render();
+    scheduleFirebaseSave(true, true);
+    showToast("저장코드의 보고서를 불러왔습니다. 사진은 포함되지 않습니다.");
+  } catch (error) {
+    console.error("Resume-code load failed:", error);
+    showToast("저장코드 불러오기에 실패했습니다. Firebase 연결과 규칙을 확인하세요.");
+  } finally {
+    resumeCodeBusy = false;
+    setResumeCodeButtonsDisabled(false);
+  }
 }
 
 const STORAGE_KEY = "isaem-inquiry-workbook-v5";
@@ -1693,6 +1879,7 @@ function headerHTML() {
       </nav>
       <div class="save-cluster">
         <span class="save-status" id="save-status">${saveStatusText()}</span>
+        <button type="button" class="plain-action" data-open-resume-code>저장코드</button>
         <button type="button" class="plain-action" data-save-now>지금 저장</button>
         <button type="button" class="plain-action" data-reset>새로 시작</button>
       </div>
@@ -1787,8 +1974,8 @@ function renderTopics() {
     <main class="page-shell">
       <section class="hero">
         <p class="eyebrow">1 · TOPIC FINDER</p>
-        <h1>관심 분야의 질문을 고르고 <span class="highlight">탐구 방법까지</span> 선택하세요.</h1>
-        <p>같은 주제도 직접 실험, 제작·검증, 데이터 분석, 모형·시뮬레이션, 논문·사례 조사 등 서로 다른 방식으로 탐구할 수 있습니다. 주제의 ‘탐구 방법 보기’를 눌러 자신에게 맞는 방법을 선택하세요.</p>
+        <h1>관심 분야의 질문과 <span class="highlight">탐구 방법</span>을 선택하세요.</h1>
+        <p>같은 주제도 직접 실험, 제작·검증, 데이터 분석, 모형·시뮬레이션, 논문·사례 조사 등 다양한 방식으로 탐구할 수 있습니다. 관심 있는 질문을 고른 뒤 ‘탐구 방법 보기’에서 실제로 수행할 방법을 선택하세요.</p>
       </section>
 
       <div class="section-head"><div><h2>계열 선택</h2><p>관심 있는 진로 계열을 먼저 선택하세요.</p></div></div>
@@ -1914,8 +2101,8 @@ function renderDraft() {
     <main class="page-shell">
       <section class="hero">
         <p class="eyebrow">2 · REPORT DRAFT</p>
-        <h1>탐구활동 전에 보고서의 <span class="highlight">전체 윤곽</span>을 먼저 잡으세요.</h1>
-        <p>${selected ? "탐구 동기·연구문제·필요한 이론·탐구 방법과 분석 소제목을 먼저 작성합니다. 실제 자료·결과·결론은 다음 단계의 탐구활동을 마친 뒤 보완하세요." : "직접 찾은 주제를 입력하고, 실제 탐구 결과를 제외한 보고서의 기본 구조를 먼저 작성하세요."}</p>
+        <h1>보고서의 <span class="highlight">전체 구조</span>를 먼저 설계하세요.</h1>
+        <p>${selected ? "탐구 동기와 목적, 연구문제와 가설, 필요한 이론, 탐구 방법, 분석할 내용을 미리 정리합니다. 이 단계에서는 탐구의 방향과 구조를 잡고, 실제 자료와 분석 결과는 탐구활동을 진행하며 채워 나갑니다." : "직접 찾은 주제를 입력하고 탐구 동기와 목적, 연구문제와 가설, 필요한 이론, 탐구 방법, 분석할 내용을 정리하여 탐구의 방향과 구조를 먼저 잡으세요."}</p>
       </section>
       ${selected ? selectedBanner() : ""}
       <div class="workspace-layout">
@@ -2032,8 +2219,8 @@ function renderExplore() {
     <main class="page-shell">
       <section class="hero">
         <p class="eyebrow">3 · RESEARCH</p>
-        <h1>선택한 방법으로 탐구하고 <span class="highlight">결과와 한계</span>를 기록하세요.</h1>
-        <p>실험·제작·데이터·모형·문헌 조사 중 선택한 방법의 절차에 따라 근거를 남기세요. 참고자료는 원문을 직접 확인하고, 측정값과 분석 결과는 수정하지 않은 원자료로 보관합니다.</p>
+        <h1>자료를 수집·분석하고 <span class="highlight">결과를 해석</span>하세요.</h1>
+        <p>선택한 방법에 따라 탐구를 수행합니다. 먼저 필요한 자료와 기록 항목을 정하고 측정값, 데이터, 참고자료 등의 원자료를 수집하세요. 이후 자료를 표·그래프·계산 결과 등으로 정리하고 비교하여 나타난 특징을 찾은 뒤, 그 의미와 한계를 해석해 기록하세요.</p>
       </section>
       ${banner}
       ${selected ? methodProcessMarkup(selected.method) : ""}
@@ -2296,7 +2483,7 @@ function renderReport() {
   ).some((id) => String(state.fields[id] ?? "").trim());
   return `
     <main class="page-shell">
-      <section class="hero"><p class="eyebrow">4 · FINAL REPORT</p><h1>탐구활동에서 작성한 내용을 <span class="highlight">최종 보완</span>해 보고서를 완성하세요.</h1><p>탐구활동의 ‘5. 분석 결과 및 해석’에서 작성한 소제목과 내용이 그대로 연결됩니다. 새로 작성하지 않고 문장 흐름, 근거와 출처, 해석과 한계를 마지막으로 점검하세요.</p></section>
+      <section class="hero"><p class="eyebrow">4 · FINAL REPORT</p><h1>탐구 결과를 바탕으로 <span class="highlight">보고서를 완성</span>하세요.</h1><p>탐구활동에서 작성한 분석 결과와 해석이 보고서에 연결됩니다. 새로운 내용을 처음부터 다시 작성하기보다 문장 흐름, 근거와 출처, 결과 해석, 결론과 한계가 자연스럽게 이어지는지 점검하고 보완하세요.</p></section>
       ${isCustom ? "" : workflowBanner(selected)}
       ${isCustom ? `<section class="form-card section-anchor" id="report-topic">
         <h3>탐구 주제</h3>
@@ -2929,7 +3116,7 @@ function renderSelfEvaluation() {
   const items = selfEvaluationItems(selected);
   return `
     <main class="page-shell">
-      <section class="hero"><p class="eyebrow">5 · SELF EVALUATION</p><h1>완성한 보고서를 보며 <span class="highlight">탐구 과정과 성장</span>을 돌아보세요.</h1><p>앞에서 작성한 보고서의 핵심 내용이 아래에 자동 정리됩니다. 이를 참고하여 자신의 실제 활동을 중심으로 자기평가서를 작성하세요.</p></section>
+      <section class="hero"><p class="eyebrow">5 · SELF EVALUATION</p><h1><span class="highlight">탐구 과정과 성장</span>을 정리하세요.</h1><p>앞에서 작성한 보고서의 핵심 내용이 자동으로 정리됩니다. 이를 참고하여 무엇을 탐구했고, 어떤 과정을 거쳤으며, 그 과정에서 무엇을 배우고 개선했는지 자신의 실제 활동을 중심으로 작성하세요.</p></section>
       <div class="workspace-layout">
       ${sectionSidebar([
         ["self-summary", "1. 탐구내용 요약정리"],
@@ -2939,7 +3126,7 @@ function renderSelfEvaluation() {
       ], "자기평가서 작성 항목")}
       <div class="workspace-content">
       <section class="summary-card summary-sheet-card section-anchor" id="self-summary"><header class="summary-sheet-heading"><h3>1. 탐구내용 요약정리</h3></header><div class="summary-sheet-body"><p class="summary-guide">완성 보고서의 내용을 바탕으로 주요 내용을 자동으로 정리했습니다. 각 항목은 직접 수정할 수 있습니다.</p>${reportSummaryHTML()}</div></section>
-      <section class="form-card guided-self-builder section-anchor" id="self-builder"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><p class="guide">8개 항목마다 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 선택한 뒤 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 이어집니다.</p><div class="self-reset-row"><button type="button" class="secondary-button" data-reset-self>자기평가서 초기화</button></div><div class="guided-self-list">
+      <section class="form-card guided-self-builder section-anchor" id="self-builder"><div class="self-builder-head"><span class="form-card-number">2.</span><h3>자기평가서 내용 채우기</h3><div class="self-reset-row"><button type="button" class="secondary-button" data-reset-self>자기평가서 초기화</button></div></div><p class="guide">8개 항목마다 선택한 탐구주제에 맞는 예시 3개가 제시됩니다. 가장 가까운 예시를 선택한 뒤 실제 탐구 내용에 맞게 고치면 자연스럽게 문장으로 이어집니다.</p><div class="guided-self-list">
         ${items.map((item,index) => guidedSelfRow(index + 1,item.id,item.title,item.examples,item.prefix,item.suffix)).join("")}
       </div></section>
       <section class="form-card section-anchor" id="self-output"><span class="form-card-number">3.</span><h3>자기평가서 완성하기</h3><p class="guide">입력한 항목을 바탕으로 문장을 연결합니다. 첫 문장에는 불필요한 연결어를 붙이지 않고, 앞뒤 내용에 따라 연결 표현을 조정합니다. 완성된 문장은 자신의 실제 활동과 표현에 맞게 다시 다듬어 주세요.</p><div class="report-actions"><button type="button" class="generate-button" data-generate-self>위 항목으로 문장 다시 만들기</button><span class="character-count" id="self-count">0자</span></div><p class="self-sync-note" id="self-sync-note"></p><textarea class="generated-box" data-field="self-output" rows="11" placeholder="위의 빈칸을 채우면 자기평가서가 자동으로 만들어집니다.">${escapeHTML(state.fields["self-output"] ?? "")}</textarea></section>
@@ -3269,8 +3456,8 @@ function renderSample() {
     <main class="page-shell">
       <section class="hero sample-hero">
         <p class="eyebrow">REPORT · SAMPLE</p>
-        <h1><span class="highlight">탐구보고서 완성 예시</span></h1>
-        <p>자료를 찾고 비교·계산한 과정이 실제 탐구보고서의 분석과 결론으로 어떻게 이어지는지 확인해 보세요.</p>
+        <h1>탐구보고서 <span class="highlight">작성 과정</span>을 예시로 확인하세요.</h1>
+        <p>주제 선정과 탐구 설계부터 자료 조사·비교·계산·분석, 결과 해석과 결론까지의 과정이 하나의 완성된 탐구보고서로 어떻게 이어지는지 확인해 보세요.</p>
       </section>
       <div class="sample-layout">
         <nav class="sample-toc" aria-label="샘플 예제 목차">
@@ -5100,6 +5287,10 @@ document.addEventListener("click", async (event) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
+  if (target.hasAttribute("data-open-resume-code")) { openResumeCodeModal(); return; }
+  if (target.hasAttribute("data-close-resume-code")) { closeResumeCodeModal(); return; }
+  if (target.hasAttribute("data-save-resume-code")) { await saveByResumeCode(); return; }
+  if (target.hasAttribute("data-load-resume-code")) { await loadByResumeCode(); return; }
   if (target.dataset.nav) {
     const next = target.dataset.nav;
     state.view = next;
@@ -5347,6 +5538,15 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && document.querySelector("#resume-code-modal")) {
+    closeResumeCodeModal();
+    return;
+  }
+  if (event.key === "Enter" && event.target?.id === "resume-code-input") {
+    event.preventDefault();
+    void saveByResumeCode();
+    return;
+  }
   const pasteZone = event.target.closest?.("[data-research-photo-paste-zone]");
   if (!pasteZone) return;
   const isPasteShortcut = (event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === "v";
