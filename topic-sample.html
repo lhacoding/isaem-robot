@@ -62,6 +62,21 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 .tools button:hover, .workbook-link:hover { background: rgba(255,255,255,.08); }
 .workbook-link { color: var(--navy); background: var(--gold); border-color: var(--gold); }
 .workbook-link:hover { background: #f2d96f; }
+.direct-find-link {
+  min-height:38px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  background:var(--teal);
+  border:1px solid #2f978d;
+  border-radius:9px;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:850;
+}
+.direct-find-link:hover { background:#116a62; }
 
 .hero { background: transparent; border: 0; }
 .hero-inner {
@@ -88,14 +103,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
   border-radius:50%;
   pointer-events:none;
 }
-.hero-eyebrow {
+.eyebrow {
   position:relative;
   z-index:1;
-  margin:0 0 12px;
+  margin:0 0 14px;
   color:var(--gold);
   font-size:11px;
   font-weight:950;
-  letter-spacing:.15em;
+  letter-spacing:.16em;
 }
 .hero h1 {
   position:relative;
@@ -108,14 +123,16 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
   line-height:1.17;
   letter-spacing:-.045em;
 }
-.hero p {
+.hero p:not(.eyebrow) {
   position:relative;
   z-index:1;
   max-width:none;
-  margin:0;
+  margin:20px 0 0;
   color:#d2dae7;
-  font-size:15px;
+  font-size:16px;
   line-height:1.85;
+  word-break:keep-all;
+  text-wrap:pretty;
 }
 
 .sample-flow-card {
@@ -144,14 +161,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
   font-size:10px;
 }
 .flow {
-  counter-reset: hero-flow;
   display:flex;
   align-items:center;
   flex-wrap:wrap;
   gap:8px 6px;
 }
 .flow span:not(.arrow) {
-  counter-increment:hero-flow;
   min-height:32px;
   display:inline-flex;
   align-items:center;
@@ -163,18 +178,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
   border-radius:10px;
   font-size:10px;
   font-weight:850;
-}
-.flow span:not(.arrow)::before {
-  content:counter(hero-flow, decimal-leading-zero);
-  min-width:21px;
-  height:21px;
-  display:grid;
-  place-items:center;
-  color:var(--navy);
-  background:var(--gold);
-  border-radius:50%;
-  font-size:7px;
-  font-weight:950;
 }
 .flow .arrow {
   padding:0;
@@ -326,8 +329,18 @@ pre code { padding:0; background:transparent; color:inherit; }
 .equation { margin:11px 0; padding:11px 13px; text-align:center; border-radius:9px; background:#f6f3ed; font-weight:800; }
 .next-step { margin-top:22px; padding:15px 17px; border:1px dashed #c9b879; border-radius:11px; background:#fffaf0; color:#4e5667; }
 hr { height:1px; margin:30px 0; border:0; background:#e4ddd2; }
-.footer { width:min(1280px, calc(100% - 30px)); margin:0 auto 38px; padding:26px 24px; color:#677083; text-align:center; font-size:11px; line-height:1.8; background:var(--panel); border:1px solid var(--line); border-radius:16px; }
-.back-top { position:fixed; right:18px; bottom:18px; width:44px; height:44px; display:grid; place-items:center; color:white; background:var(--navy); border:1px solid rgba(255,255,255,.2); border-radius:50%; text-decoration:none; box-shadow:0 10px 25px rgba(25,34,56,.18); font-size:18px; }
+.back-to-top-wrap { display:flex; justify-content:center; margin:34px 0 0; }
+.back-to-top-button {
+  padding:10px 16px;
+  color:#596478;
+  font-size:12px;
+  font-weight:850;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:999px;
+  box-shadow:0 5px 14px rgba(25,34,56,.05);
+}
+.back-to-top-button:hover { color:var(--ink); border-color:#b9b2a7; transform:translateY(-1px); }
 
 @media (max-width: 760px) {
   .top-inner { align-items:flex-start; flex-direction:column; gap:7px; padding:10px 0; }
@@ -335,11 +348,10 @@ hr { height:1px; margin:30px 0; border:0; background:#e4ddd2; }
   .tools { width:100%; justify-content:flex-start; }
   .hero-inner { margin-top:18px; padding:32px 24px; border-radius:20px; }
   .hero h1 { font-size:clamp(29px, 9vw, 42px); }
-  .hero p { font-size:14px; }
+  .hero p:not(.eyebrow) { font-size:14px; }
   .sample-flow-head { align-items:flex-start; flex-direction:column; gap:2px; }
   .flow { gap:7px 5px; }
   .flow span:not(.arrow) { min-height:32px; padding-right:9px; font-size:9px; }
-  .flow span:not(.arrow)::before { min-width:20px; height:20px; font-size:7px; }
   .flow .arrow { font-size:10px; }
   .usage-roadmap { padding:18px; }
   .usage-roadmap-head { align-items:flex-start; flex-direction:column; gap:4px; }
@@ -350,7 +362,7 @@ hr { height:1px; margin:30px 0; border:0; background:#e4ddd2; }
   .user-bubble { max-width:92%; }
   .assistant-content { padding:18px 16px 22px; }
   details.gpt-bubble > summary { align-items:flex-start; flex-direction:column; }
-  .footer { margin-bottom:76px; }
+  .back-to-top-button { width:auto; min-width:120px; }
 }
 </style>
 </head>
@@ -377,6 +389,7 @@ hr { height:1px; margin:30px 0; border:0; background:#e4ddd2; }
 
 <div class="tools">
 <a class="workbook-link" href="index.html">워크북으로 돌아가기</a>
+<a class="direct-find-link" href="https://chatgpt.com/g/g-6a5ee884de68819198ca70650976d51c-tamgubogoseo-gaideu-gpts" target="_blank" rel="noopener noreferrer">내 주제 직접 찾기 ↗</a>
 <button type="button" id="openAll">
 GPT 답변 모두 펼치기
 </button>
@@ -401,11 +414,11 @@ GPT 답변 모두 접기
 
 <div class="hero-inner">
 
-<p class="hero-eyebrow">1 · TOPIC SAMPLE</p>
+<p class="eyebrow">TOPIC SAMPLE</p>
 
-<h1>GPT와 대화하며 탐구 주제를 찾고 보고서까지 완성하는 과정을 확인하세요.</h1>
+<h1>실제 GPT 대화로 탐구보고서 작성 과정을 확인하세요.</h1>
 
-<p>학생이 GPT와 실제로 대화하면서 탐구 주제를 찾고, 연구문제를 설정하고, 탐구 방법을 설계한 뒤 실제 결과를 분석하여 최종 탐구보고서까지 완성해 가는 과정을 단계별로 확인할 수 있습니다.</p>
+<p>실제 GPT 대화를 따라 주제 선정, 연구문제 설정, 탐구 설계, 결과 분석, 최종 보고서 완성 과정을 단계별로 확인할 수 있습니다.</p>
 
 </div>
 
@@ -414,7 +427,7 @@ GPT 답변 모두 접기
 <section class="sample-flow-card" aria-label="탐구 진행 흐름">
   <div class="sample-flow-head">
     <strong>탐구 진행 흐름</strong>
-    <span>주제 찾기부터 세특 반영 요소 확인까지</span>
+    <span>GPT가 안내한 코드를 직접 입력·실행하고 결과를 확인·기록한 뒤, 분석·해석을 거쳐 결론을 도출합니다.</span>
   </div>
   <div class="flow">
     <span>학년·과목·진로</span><span class="arrow">→</span>
@@ -423,9 +436,11 @@ GPT 답변 모두 접기
     <span>탐구유형</span><span class="arrow">→</span>
     <span>주제확정</span><span class="arrow">→</span>
     <span>탐구설계</span><span class="arrow">→</span>
-    <span>실제 수행</span><span class="arrow">→</span>
-    <span>결과 분석</span><span class="arrow">→</span>
-    <span>보고서</span><span class="arrow">→</span>
+    <span>GPT 안내 코드 입력·실행</span><span class="arrow">→</span>
+    <span>실행 결과 확인·기록</span><span class="arrow">→</span>
+    <span>결과 분석·해석</span><span class="arrow">→</span>
+    <span>결론 도출</span><span class="arrow">→</span>
+    <span>보고서 완성</span><span class="arrow">→</span>
     <span>자기평가</span><span class="arrow">→</span>
     <span>세특 반영 요소</span>
   </div>
@@ -5658,22 +5673,12 @@ Colab 실행환경에 따라
 
 </section>
 
+<div class="back-to-top-wrap"><button type="button" class="back-to-top-button" id="scrollTopButton">↑ 맨 위로</button></div>
 
 </main>
 
 
 
-<footer class="footer">
-
-탐구보고서 작성 워크북 · 주제 찾기 샘플
-
-<br>
-
-주제 찾기 → 연구문제 → 탐구 설계 →
-실제 수행 → 결과 분석 → 탐구보고서 →
-자기평가서 → 세특 반영 요소 확인
-
-</footer>
 
 
 
@@ -5724,9 +5729,15 @@ document
     }
 );
 
+
+document
+.getElementById("scrollTopButton")
+.addEventListener("click", function(){
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 </script>
 
 
-<a class="back-top" href="#" aria-label="맨 위로">↑</a>
 </body>
 </html>
