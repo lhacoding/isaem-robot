@@ -581,7 +581,12 @@
     }
 
     function safeResumeCode(report) {
-      return String(report?.resumeCodeLabel ?? report?.resumeCode ?? "").trim();
+      return String(
+        report?.resumeCodeLabel ??
+        report?.resumeCode ??
+        report?.state?.resumeCodeLabel ??
+        ""
+      ).trim();
     }
 
     function normalizeResumeCode(value) {
@@ -763,6 +768,24 @@
       $("#count-today").textContent = String(todayCount);
     }
 
+    async function fillMissingResumeCodes(reports) {
+      const targets = reports.filter((report) => !safeResumeCode(report) && String(report?.resumeCodeHash ?? "").trim());
+      if (!targets.length) return;
+
+      await Promise.all(targets.map(async (report) => {
+        try {
+          const hash = String(report.resumeCodeHash ?? "").trim();
+          const ref = firestoreModule.doc(db, "resume_codes", hash);
+          const snap = await firestoreModule.getDoc(ref);
+          if (!snap.exists()) return;
+          const label = String(snap.data()?.resumeCodeLabel ?? snap.data()?.state?.resumeCodeLabel ?? "").trim();
+          if (label) report.resumeCodeLabel = label;
+        } catch (error) {
+          console.warn("저장코드 표시값 보완 실패:", error);
+        }
+      }));
+    }
+
     async function loadReports() {
       clearError();
       loadStatus.textContent = "Firebase에서 불러오는 중…";
@@ -775,6 +798,8 @@
           _path: docSnap.ref.path,
         }));
         allReports.sort((a,b) => (reportTime(b)?.getTime() || 0) - (reportTime(a)?.getTime() || 0));
+        // 보고서 문서에 코드 이름이 비어 있어도 hash가 있으면 resume_codes 문서에서 표시값을 보완합니다.
+        await fillMissingResumeCodes(allReports);
         updateSummary();
         updateFilterOptions();
         applyFilters();
@@ -802,6 +827,12 @@
         if (!snap.exists()) {
           showError(`저장코드 '${code}'로 저장된 보고서를 찾지 못했습니다.`);
           return;
+        }
+        // 이전 버전에서 코드 표시값이 저장되지 않은 문서라면 관리자가 코드를 알고 열었을 때 표시값을 보완합니다.
+        try {
+          await firestoreModule.setDoc(ref, { resumeCodeLabel: code, updatedAtClient: new Date().toISOString() }, { merge: true });
+        } catch (repairError) {
+          console.warn("저장코드 표시값 보완 실패:", repairError);
         }
         const report = { ...snap.data(), _docId: snap.id, _path: snap.ref.path, resumeCodeLabel: code, _fromResumeCode: true };
         if (input) input.value = code;
