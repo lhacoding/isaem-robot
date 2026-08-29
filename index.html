@@ -574,6 +574,13 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .python-plot-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 .python-plot-actions a { padding: 7px 10px; color: #245e59; font-size: 10px; font-weight: 900; text-decoration: none; background: #eef8f6; border: 1px solid #cae3df; border-radius: 8px; }
 .python-lab-note { margin: 12px 0 0; padding: 10px 12px; color: #6f5b35; font-size: 10px; line-height: 1.6; background: #fff9e9; border: 1px solid #ecdfb9; border-radius: 9px; }
+
+.analysis-code-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+.analysis-code-button { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 9px 13px; color: #285f69; font-size: 11px; font-weight: 900; background: #f4f9fa; border: 1px solid #c9dce1; border-radius: 9px; }
+.analysis-code-button:hover { color: white; background: var(--teal); border-color: var(--teal); }
+.analysis-code-button.active { color: white; background: var(--teal); border-color: var(--teal); }
+.analysis-block .python-lab-card { margin-top: 10px; padding: 18px; border-radius: 13px; box-shadow: none; }
+.analysis-block .python-lab-head h3 { font-size: 17px; }
 @media (max-width: 700px) {
   .python-lab-card { padding: 16px; }
   .python-lab-head { flex-direction: column; gap: 8px; }
@@ -2491,16 +2498,15 @@ print(df.describe(include="all"))
 let pyodideReadyPromise = null;
 let pythonCsvFileName = "";
 let pythonLabRunning = false;
+let pythonLabOpenIndex = null;
 
-function pythonLabIsVisibleForSelection(selected) {
-  return Boolean(selected?.method && methodTypeId(selected.method) === "data");
-}
-
-function pythonLabMarkup() {
-  const code = String(state.fields["python-code"] ?? PYTHON_DEFAULT_CODE);
-  return `<section class="python-lab-card section-anchor" id="explore-python">
+function pythonLabMarkup(sectionIndex = 0) {
+  const fieldId = `python-code-${sectionIndex}`;
+  const legacyCode = sectionIndex === 0 ? state.fields["python-code"] : undefined;
+  const code = String(state.fields[fieldId] ?? legacyCode ?? PYTHON_DEFAULT_CODE);
+  return `<section class="python-lab-card" id="explore-python-${sectionIndex}" data-python-section="${sectionIndex}">
     <div class="python-lab-head">
-      <div><h3>Python 데이터 분석</h3><p>별도 설치 없이 브라우저에서 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있습니다. 간단한 계산과 그래프 작성은 여기에서 바로 실행하세요.</p></div>
+      <div><h3>Python 코드 실행</h3><p>필요할 때만 열어 계산·데이터 분석·그래프 작성을 실행하세요. 별도 설치 없이 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있습니다.</p></div>
       <span class="python-lab-badge">브라우저 실행</span>
     </div>
     <div class="python-lab-tools">
@@ -2510,7 +2516,7 @@ function pythonLabMarkup() {
       <button type="button" class="python-example-button" data-python-example="csv">CSV 분석 예시</button>
     </div>
     <label class="python-code-label" for="python-code-editor"><span>Python 코드</span><small>코드 내용은 워크북에 저장됩니다.</small></label>
-    <textarea id="python-code-editor" class="python-code-editor" data-field="python-code" spellcheck="false" aria-label="Python 코드 입력">${escapeHTML(code)}</textarea>
+    <textarea id="python-code-editor" class="python-code-editor" data-field="${fieldId}" spellcheck="false" aria-label="Python 코드 입력">${escapeHTML(code)}</textarea>
     <div class="python-run-row">
       <span class="python-status" id="python-status">처음 실행할 때 Python과 분석 라이브러리를 불러오므로 잠시 시간이 걸릴 수 있습니다.</span>
       <button type="button" class="python-run-button" data-python-run>▶ 코드 실행</button>
@@ -2705,7 +2711,6 @@ function renderExplore() {
   const analysisTopic = analysisSelection?.topic ?? topic;
   const analysisOutline = reportOutline(analysisTopic);
   const analysisIsCustom = Boolean(analysisSelection?.custom);
-  const showPythonLab = pythonLabIsVisibleForSelection(selected);
 
   const banner = selected
     ? selectedBanner()
@@ -2732,7 +2737,6 @@ function renderExplore() {
         ["explore-keywords", "1. 추천 검색어"],
         ["explore-search-order", "2. 자료 찾는 순서"],
         ["explore-comparison", "3. 자료를 읽으며 확인할 항목"],
-        ...(showPythonLab ? [["explore-python", "Python 데이터 분석"]] : []),
         ["explore-references", "4. 확인한 참고자료 기록"],
         ["explore-structuring", "5. 분석 결과 및 해석"],
       ], "탐구 활동 항목")}
@@ -2753,7 +2757,6 @@ function renderExplore() {
 
       <section class="content-card section-anchor" id="explore-comparison"><span class="form-card-number">3.</span><h3>탐구 결과를 정리하며 확인할 항목</h3><ul class="check-list">${profile.checks.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul></section>
 
-      ${showPythonLab ? pythonLabMarkup() : ""}
 
       <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">기본 3개의 원자료 입력칸이 제공됩니다. 필요하면 ‘자료 추가’로 늘리거나 각 자료의 ‘삭제’ 버튼으로 줄일 수 있습니다. 최소 1개의 자료 입력칸은 유지되며, 작성한 자료는 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
       <section class="reference-grid">
@@ -2811,6 +2814,10 @@ function renderExplore() {
                 </div>
               </details>
             </div>
+            <div class="analysis-code-row">
+              <button type="button" class="analysis-code-button${pythonLabOpenIndex === index ? " active" : ""}" data-toggle-python-lab="${index}">${pythonLabOpenIndex === index ? "Python 실행창 닫기" : "Python 코드 실행"}</button>
+            </div>
+            ${pythonLabOpenIndex === index ? pythonLabMarkup(index) : ""}
           </div>`;
         }).join("")}
         <div class="analysis-add-row">
@@ -5942,11 +5949,20 @@ document.addEventListener("click", async (event) => {
       } else {
         delete state.fields[currentContentKey];
       }
+
+      const nextPythonKey = `python-code-${index + 1}`;
+      const currentPythonKey = `python-code-${index}`;
+      if (Object.prototype.hasOwnProperty.call(state.fields, nextPythonKey)) {
+        state.fields[currentPythonKey] = state.fields[nextPythonKey];
+      } else {
+        delete state.fields[currentPythonKey];
+      }
     }
 
     // 마지막에 남은 이전 값과 자동 연동 표식을 제거합니다.
     delete state.fields[`analysis-title-${count - 1}`];
     delete state.fields[`analysis-content-${count - 1}`];
+    delete state.fields[`python-code-${count - 1}`];
     for (let index = 0; index < count; index += 1) {
       delete state.fields[`_imported-analysis-title-${index}`];
     }
@@ -5967,6 +5983,8 @@ document.addEventListener("click", async (event) => {
 
     state.analysisManualOutline = remainingTitles;
     state.analysisExtraCount = 0;
+    if (pythonLabOpenIndex === deleteIndex) pythonLabOpenIndex = null;
+    else if (Number.isInteger(pythonLabOpenIndex) && pythonLabOpenIndex > deleteIndex) pythonLabOpenIndex -= 1;
 
     saveNow(true);
     const focusIndex = Math.min(deleteIndex, remainingTitles.length - 1);
@@ -6025,13 +6043,21 @@ document.addEventListener("click", async (event) => {
   if (target.hasAttribute("data-download-hwpx")) { await downloadReportHwpx(); return; }
   if (target.hasAttribute("data-download-self-word")) { downloadSelfWord(); return; }
   if (target.hasAttribute("data-download-self-hwpx")) { downloadSelfHwpx(); return; }
+  if (target.hasAttribute("data-toggle-python-lab")) {
+    const index = Number(target.dataset.togglePythonLab);
+    if (!Number.isInteger(index) || index < 0) return;
+    pythonLabOpenIndex = pythonLabOpenIndex === index ? null : index;
+    render(`#analysis-block-${index}`);
+    return;
+  }
   if (target.hasAttribute("data-python-run")) { await runPythonLab(); return; }
   if (target.hasAttribute("data-python-example")) {
     const editor = document.querySelector("#python-code-editor");
     if (!editor) return;
     const next = target.dataset.pythonExample === "csv" ? PYTHON_CSV_CODE : PYTHON_DEFAULT_CODE;
     editor.value = next;
-    state.fields["python-code"] = next;
+    const codeField = editor.dataset.field || "python-code-0";
+    state.fields[codeField] = next;
     scheduleSave();
     editor.focus();
     showToast(target.dataset.pythonExample === "csv" ? "CSV 분석 예시를 넣었습니다." : "기본 분석 예시를 넣었습니다.");
