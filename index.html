@@ -3450,7 +3450,9 @@ function analysisSummaryItems() {
 
   // 작성된 모든 분석 소제목을 한 줄씩 반영합니다. 전체 길이 때문에 뒤쪽 소제목이
   // 누락되지 않도록 별도의 글자 수 제한을 두지 않습니다.
-  return items.map((item) => `${item.title} — ${item.sentence}`);
+  // 요약에서는 소제목과 내용을 한 줄에 붙이지 않고, 보고서처럼
+  // 소제목을 먼저 표시한 뒤 다음 줄에 핵심 내용을 배치합니다.
+  return items.map((item) => `${item.title}\n${item.sentence}`);
 }
 
 function compactSummaryText(value, maxLength, preserveLines = false) {
@@ -3565,7 +3567,9 @@ const SUMMARY_DRAFT_FIELDS = [
 ];
 
 function summaryValueToText(value) {
-  if (Array.isArray(value)) return value.join("\n");
+  // 분석 결과처럼 소제목+내용으로 이루어진 배열은 항목 사이를 한 줄 띄워
+  // 읽기 쉽게 정리합니다.
+  if (Array.isArray(value)) return value.join("\n\n");
   return String(value ?? "");
 }
 
