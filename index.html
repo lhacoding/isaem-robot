@@ -545,6 +545,43 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .sync-panel b { color: #215f59; }
 .sync-panel p { margin: 5px 0 0; color: #52706d; font-size: 12px; line-height: 1.65; }
 
+
+.python-lab-card { margin-top: 16px; padding: 22px; background: #f8fbfc; border: 1px solid #d5e1e5; border-radius: 18px; box-shadow: 0 8px 22px rgba(25,34,56,.045); }
+.python-lab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.python-lab-head h3 { margin: 0; font-size: 20px; }
+.python-lab-head p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.python-lab-badge { flex: 0 0 auto; padding: 7px 10px; color: #285f69; font-size: 10px; font-weight: 900; background: #eaf4f6; border: 1px solid #c8dde2; border-radius: 999px; }
+.python-lab-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 15px 0 10px; }
+.python-file-button { display: inline-flex; align-items: center; justify-content: center; min-height: 39px; padding: 9px 13px; color: var(--ink); font-size: 11px; font-weight: 900; background: white; border: 1px solid #ccd8dc; border-radius: 9px; cursor: pointer; }
+.python-file-button:hover { color: var(--orange); border-color: #d7a493; background: #fffaf7; }
+.python-file-name { color: #647181; font-size: 11px; line-height: 1.5; }
+.python-example-button { min-height: 39px; padding: 9px 12px; color: #445065; font-size: 11px; font-weight: 850; background: white; border: 1px solid #d7dfe2; border-radius: 9px; }
+.python-example-button:hover { color: #245e59; border-color: #9fc5c0; background: #f2faf8; }
+.python-code-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 7px; color: #404b60; font-size: 12px; font-weight: 900; }
+.python-code-label small { color: var(--muted); font-size: 10px; font-weight: 700; }
+.python-code-editor { min-height: 230px; padding: 14px 15px; font-family: Consolas, "D2Coding", "Courier New", monospace; font-size: 12px; line-height: 1.6; tab-size: 4; background: #101820; color: #e8edf2; border: 1px solid #26323c; border-radius: 11px; resize: vertical; }
+.python-run-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.python-run-button { min-width: 112px; padding: 11px 16px; color: white; font-size: 12px; font-weight: 900; background: var(--teal); border: 0; border-radius: 10px; }
+.python-run-button:disabled { opacity: .58; cursor: wait; }
+.python-status { color: #667583; font-size: 11px; line-height: 1.5; }
+.python-output-wrap { margin-top: 13px; }
+.python-output-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; color: #404b60; font-size: 12px; font-weight: 900; }
+.python-output { min-height: 90px; max-height: 330px; margin: 0; padding: 13px 14px; color: #273347; font-family: Consolas, "D2Coding", "Courier New", monospace; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow: auto; background: white; border: 1px solid #d5dde1; border-radius: 10px; }
+.python-output.empty { color: #8c96a2; font-family: inherit; }
+.python-plot-list { display: grid; gap: 12px; margin-top: 12px; }
+.python-plot-card { padding: 12px; background: white; border: 1px solid #d5dde1; border-radius: 11px; }
+.python-plot-card img { display: block; width: 100%; max-height: 520px; object-fit: contain; background: white; }
+.python-plot-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+.python-plot-actions a { padding: 7px 10px; color: #245e59; font-size: 10px; font-weight: 900; text-decoration: none; background: #eef8f6; border: 1px solid #cae3df; border-radius: 8px; }
+.python-lab-note { margin: 12px 0 0; padding: 10px 12px; color: #6f5b35; font-size: 10px; line-height: 1.6; background: #fff9e9; border: 1px solid #ecdfb9; border-radius: 9px; }
+@media (max-width: 700px) {
+  .python-lab-card { padding: 16px; }
+  .python-lab-head { flex-direction: column; gap: 8px; }
+  .python-code-editor { min-height: 210px; font-size: 11px; }
+  .python-run-row { align-items: stretch; flex-direction: column; }
+  .python-run-button { width: 100%; }
+}
+
 .outline-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 16px; }
 .outline-chips span { padding: 7px 9px; color: #605a4e; font-size: 11px; background: #f2eee5; border-radius: 8px; }
 .analysis-block { margin-top: 14px; padding: 18px; background: #fbfaf7; border: 1px solid #e3ddd1; border-left: 4px solid var(--orange); border-radius: 12px; }
@@ -2408,6 +2445,239 @@ function researchPhotoGalleryHTML(sectionIndex, allowDelete = true, showEmpty = 
     </article>`).join("")}</div>`;
 }
 
+
+const PYODIDE_VERSION = "314.0.6";
+const PYODIDE_BASE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
+const PYTHON_PACKAGES = ["numpy", "pandas", "matplotlib", "scikit-learn"];
+const PYTHON_DEFAULT_CODE = `import pandas as pd
+import matplotlib.pyplot as plt
+
+# 직접 데이터를 입력한 간단한 예시
+data = {
+    "시간": [1, 2, 3, 4, 5],
+    "거리": [12, 25, 37, 51, 63]
+}
+
+df = pd.DataFrame(data)
+print(df)
+print("평균 거리:", df["거리"].mean())
+
+plt.plot(df["시간"], df["거리"], marker="o")
+plt.xlabel("Time")
+plt.ylabel("Distance")
+plt.title("Distance by time")
+plt.grid(True)
+plt.show()`;
+const PYTHON_CSV_CODE = `import pandas as pd
+import matplotlib.pyplot as plt
+
+# 위에서 CSV 파일을 선택하면 /data.csv 로 읽을 수 있습니다.
+df = pd.read_csv("/data.csv")
+
+print("행·열 개수:", df.shape)
+print(df.head())
+print("\\n기초 통계")
+print(df.describe(include="all"))
+
+# 아래 열 이름을 실제 CSV에 맞게 수정하세요.
+# x_col = "연도"
+# y_col = "값"
+# plt.plot(df[x_col], df[y_col], marker="o")
+# plt.xlabel(x_col)
+# plt.ylabel(y_col)
+# plt.title(f"{x_col}에 따른 {y_col} 변화")
+# plt.show()`;
+
+let pyodideReadyPromise = null;
+let pythonCsvFileName = "";
+let pythonLabRunning = false;
+
+function pythonLabIsVisibleForSelection(selected) {
+  return Boolean(selected?.method && methodTypeId(selected.method) === "data");
+}
+
+function pythonLabMarkup() {
+  const code = String(state.fields["python-code"] ?? PYTHON_DEFAULT_CODE);
+  return `<section class="python-lab-card section-anchor" id="explore-python">
+    <div class="python-lab-head">
+      <div><h3>Python 데이터 분석</h3><p>별도 설치 없이 브라우저에서 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있습니다. 간단한 계산과 그래프 작성은 여기에서 바로 실행하세요.</p></div>
+      <span class="python-lab-badge">브라우저 실행</span>
+    </div>
+    <div class="python-lab-tools">
+      <label class="python-file-button">CSV 파일 선택<input type="file" accept=".csv,text/csv" hidden data-python-csv></label>
+      <span class="python-file-name" id="python-file-name">${pythonCsvFileName ? escapeHTML(pythonCsvFileName) : "선택한 CSV 없음"}</span>
+      <button type="button" class="python-example-button" data-python-example="basic">기본 분석 예시</button>
+      <button type="button" class="python-example-button" data-python-example="csv">CSV 분석 예시</button>
+    </div>
+    <label class="python-code-label" for="python-code-editor"><span>Python 코드</span><small>코드 내용은 워크북에 저장됩니다.</small></label>
+    <textarea id="python-code-editor" class="python-code-editor" data-field="python-code" spellcheck="false" aria-label="Python 코드 입력">${escapeHTML(code)}</textarea>
+    <div class="python-run-row">
+      <span class="python-status" id="python-status">처음 실행할 때 Python과 분석 라이브러리를 불러오므로 잠시 시간이 걸릴 수 있습니다.</span>
+      <button type="button" class="python-run-button" data-python-run>▶ 코드 실행</button>
+    </div>
+    <div class="python-output-wrap">
+      <div class="python-output-title"><span>실행 결과</span><span id="python-runtime-note"></span></div>
+      <pre class="python-output empty" id="python-output">실행 결과와 오류 메시지가 여기에 표시됩니다.</pre>
+      <div class="python-plot-list" id="python-plots"></div>
+    </div>
+    <p class="python-lab-note">CSV 원본 파일과 실행 결과는 Firebase에 저장하지 않습니다. CSV 파일은 새로 접속할 때 다시 선택해야 하며, 필요한 그래프는 PNG로 저장한 뒤 ‘분석 결과 및 해석’의 사진 삽입에서 사용할 수 있습니다.</p>
+  </section>`;
+}
+
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (globalThis.loadPyodide) { resolve(); return; }
+    const existing = [...document.scripts].find((script) => script.src === src);
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", () => reject(new Error("Python 실행 모듈을 불러오지 못했습니다.")), { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Python 실행 모듈을 불러오지 못했습니다."));
+    document.head.appendChild(script);
+  });
+}
+
+async function getPyodideLab() {
+  if (pyodideReadyPromise) return pyodideReadyPromise;
+  pyodideReadyPromise = (async () => {
+    updatePythonLabStatus("Python 실행 환경을 불러오는 중…");
+    await loadScriptOnce(`${PYODIDE_BASE_URL}pyodide.js`);
+    if (typeof globalThis.loadPyodide !== "function") throw new Error("Pyodide 초기화 함수를 찾지 못했습니다.");
+    updatePythonLabStatus("pandas·Matplotlib 등 분석 라이브러리를 준비하는 중…");
+    const pyodide = await globalThis.loadPyodide({
+      indexURL: PYODIDE_BASE_URL,
+      packages: PYTHON_PACKAGES,
+    });
+    await pyodide.runPythonAsync(`import matplotlib\nmatplotlib.use("Agg")`);
+    updatePythonLabStatus("Python 실행 준비 완료");
+    return pyodide;
+  })().catch((error) => {
+    pyodideReadyPromise = null;
+    updatePythonLabStatus("Python 실행 환경을 준비하지 못했습니다.");
+    throw error;
+  });
+  return pyodideReadyPromise;
+}
+
+function updatePythonLabStatus(message) {
+  const status = document.querySelector("#python-status");
+  if (status) status.textContent = message;
+}
+
+function resetPythonOutput(message = "실행 중…") {
+  const output = document.querySelector("#python-output");
+  const plots = document.querySelector("#python-plots");
+  if (output) {
+    output.textContent = message;
+    output.classList.toggle("empty", !message || message === "실행 중…");
+  }
+  if (plots) plots.innerHTML = "";
+}
+
+async function setPythonCsvFile(file) {
+  if (!file) return;
+  if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") {
+    showToast("CSV 파일만 선택할 수 있습니다.");
+    return;
+  }
+  try {
+    updatePythonLabStatus("CSV 파일을 준비하는 중…");
+    const pyodide = await getPyodideLab();
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    try { pyodide.FS.unlink("/data.csv"); } catch {}
+    pyodide.FS.writeFile("/data.csv", bytes);
+    pythonCsvFileName = file.name;
+    const name = document.querySelector("#python-file-name");
+    if (name) name.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+    updatePythonLabStatus("CSV 준비 완료 · Python에서는 /data.csv 로 읽으세요.");
+    showToast("CSV 파일을 Python 분석 환경에 불러왔습니다.");
+  } catch (error) {
+    console.error("Python CSV load failed", error);
+    updatePythonLabStatus("CSV 파일을 불러오지 못했습니다.");
+    showToast("CSV 파일을 불러오지 못했습니다.");
+  }
+}
+
+async function runPythonLab() {
+  if (pythonLabRunning) return;
+  const editor = document.querySelector("#python-code-editor");
+  const runButton = document.querySelector("[data-python-run]");
+  if (!editor) return;
+  const code = String(editor.value ?? "").trim();
+  if (!code) { showToast("실행할 Python 코드를 입력하세요."); return; }
+
+  pythonLabRunning = true;
+  if (runButton) { runButton.disabled = true; runButton.textContent = "실행 중…"; }
+  resetPythonOutput("실행 중…");
+  const started = performance.now();
+
+  try {
+    const pyodide = await getPyodideLab();
+    pyodide.globals.set("__workbook_code", code);
+    await pyodide.runPythonAsync(`
+import io, sys, contextlib, traceback, base64, json
+
+__workbook_stdout = io.StringIO()
+__workbook_images = []
+
+with contextlib.redirect_stdout(__workbook_stdout), contextlib.redirect_stderr(__workbook_stdout):
+    try:
+        exec(__workbook_code, globals())
+    except Exception:
+        traceback.print_exc()
+
+try:
+    import matplotlib.pyplot as plt
+    for __workbook_num in plt.get_fignums():
+        __workbook_fig = plt.figure(__workbook_num)
+        __workbook_buffer = io.BytesIO()
+        __workbook_fig.savefig(__workbook_buffer, format="png", dpi=130, bbox_inches="tight")
+        __workbook_images.append(base64.b64encode(__workbook_buffer.getvalue()).decode("ascii"))
+    plt.close("all")
+except Exception as __workbook_plot_error:
+    print("[그래프 처리 오류]", __workbook_plot_error)
+
+__workbook_result_json = json.dumps({
+    "text": __workbook_stdout.getvalue(),
+    "images": __workbook_images,
+}, ensure_ascii=False)
+`);
+    const raw = pyodide.globals.get("__workbook_result_json");
+    const result = JSON.parse(String(raw ?? "{}"));
+    const output = document.querySelector("#python-output");
+    if (output) {
+      output.textContent = String(result.text ?? "").trim() || "코드가 정상적으로 실행되었습니다. 출력된 텍스트는 없습니다.";
+      output.classList.remove("empty");
+    }
+    const plots = document.querySelector("#python-plots");
+    if (plots) {
+      plots.innerHTML = (result.images ?? []).map((base64, index) => {
+        const src = `data:image/png;base64,${base64}`;
+        return `<article class="python-plot-card"><img src="${src}" alt="Python 그래프 ${index + 1}"><div class="python-plot-actions"><a href="${src}" download="python_graph_${index + 1}.png">PNG 저장</a></div></article>`;
+      }).join("");
+    }
+    const runtime = document.querySelector("#python-runtime-note");
+    if (runtime) runtime.textContent = `${((performance.now() - started) / 1000).toFixed(1)}초`;
+    updatePythonLabStatus("실행 완료");
+  } catch (error) {
+    console.error("Python execution failed", error);
+    const output = document.querySelector("#python-output");
+    if (output) {
+      output.textContent = `Python 실행 환경 오류\n${String(error?.message ?? error)}`;
+      output.classList.remove("empty");
+    }
+    updatePythonLabStatus("실행 오류 · 인터넷 연결을 확인하세요.");
+  } finally {
+    pythonLabRunning = false;
+    if (runButton) { runButton.disabled = false; runButton.textContent = "▶ 코드 실행"; }
+  }
+}
+
 function renderExplore() {
   const selected = activeTopic();
   const profile = selected ? methodProfile(selected.method) : methodProfile(null);
@@ -2435,6 +2705,7 @@ function renderExplore() {
   const analysisTopic = analysisSelection?.topic ?? topic;
   const analysisOutline = reportOutline(analysisTopic);
   const analysisIsCustom = Boolean(analysisSelection?.custom);
+  const showPythonLab = pythonLabIsVisibleForSelection(selected);
 
   const banner = selected
     ? selectedBanner()
@@ -2461,6 +2732,7 @@ function renderExplore() {
         ["explore-keywords", "1. 추천 검색어"],
         ["explore-search-order", "2. 자료 찾는 순서"],
         ["explore-comparison", "3. 자료를 읽으며 확인할 항목"],
+        ...(showPythonLab ? [["explore-python", "Python 데이터 분석"]] : []),
         ["explore-references", "4. 확인한 참고자료 기록"],
         ["explore-structuring", "5. 분석 결과 및 해석"],
       ], "탐구 활동 항목")}
@@ -2480,6 +2752,8 @@ function renderExplore() {
       </section>
 
       <section class="content-card section-anchor" id="explore-comparison"><span class="form-card-number">3.</span><h3>탐구 결과를 정리하며 확인할 항목</h3><ul class="check-list">${profile.checks.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul></section>
+
+      ${showPythonLab ? pythonLabMarkup() : ""}
 
       <section class="content-card section-anchor" id="explore-references"><span class="form-card-number">4.</span><h3>확인한 참고자료 기록</h3><p class="guide">기본 3개의 원자료 입력칸이 제공됩니다. 필요하면 ‘자료 추가’로 늘리거나 각 자료의 ‘삭제’ 버튼으로 줄일 수 있습니다. 최소 1개의 자료 입력칸은 유지되며, 작성한 자료는 보고서의 참고자료 항목으로 자동 연결됩니다.</p></section>
       <section class="reference-grid">
@@ -5751,6 +6025,18 @@ document.addEventListener("click", async (event) => {
   if (target.hasAttribute("data-download-hwpx")) { await downloadReportHwpx(); return; }
   if (target.hasAttribute("data-download-self-word")) { downloadSelfWord(); return; }
   if (target.hasAttribute("data-download-self-hwpx")) { downloadSelfHwpx(); return; }
+  if (target.hasAttribute("data-python-run")) { await runPythonLab(); return; }
+  if (target.hasAttribute("data-python-example")) {
+    const editor = document.querySelector("#python-code-editor");
+    if (!editor) return;
+    const next = target.dataset.pythonExample === "csv" ? PYTHON_CSV_CODE : PYTHON_DEFAULT_CODE;
+    editor.value = next;
+    state.fields["python-code"] = next;
+    scheduleSave();
+    editor.focus();
+    showToast(target.dataset.pythonExample === "csv" ? "CSV 분석 예시를 넣었습니다." : "기본 분석 예시를 넣었습니다.");
+    return;
+  }
   if (target.hasAttribute("data-save-now")) { saveNow(false); return; }
   if (target.hasAttribute("data-reset")) {
     if (!window.confirm("이 브라우저에 저장된 작성 내용을 모두 지우고 새로 시작할까요?")) return;
@@ -5857,6 +6143,13 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", async (event) => {
+  const pythonCsvInput = event.target.closest?.("[data-python-csv]");
+  if (pythonCsvInput) {
+    const file = pythonCsvInput.files?.[0] ?? null;
+    pythonCsvInput.value = "";
+    await setPythonCsvFile(file);
+    return;
+  }
   const photoInput = event.target.closest?.("[data-research-photo-upload]");
   if (photoInput) {
     const sectionIndex = Number(photoInput.dataset.analysisPhotoIndex);
