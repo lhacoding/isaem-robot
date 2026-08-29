@@ -392,12 +392,12 @@
 
       <section class="code-open-card">
         <div>
-          <b>저장코드로 보고서 열기</b>
-          <span>학생이 알려준 저장코드를 입력하면 저장코드에 연결된 최신 내용을 바로 엽니다.</span>
+          <b>저장코드로 워크북 열기</b>
+          <span>저장코드를 입력하면 학생용 워크북 사이트가 새 탭에서 열리고 해당 저장 내용까지 자동으로 불러옵니다.</span>
         </div>
         <div class="code-open-actions">
           <input id="resume-code-input" type="text" maxlength="24" autocomplete="off" placeholder="저장코드 입력">
-          <button type="button" class="small-button" id="open-resume-code-button">코드로 열기</button>
+          <button type="button" class="small-button" id="open-resume-code-button">워크북에서 열기</button>
         </div>
       </section>
 
@@ -471,6 +471,7 @@
     const ADMIN_EMAILS = ["lhahsc@gmail.com"];
 
     const FIREBASE_SDK_VERSION = "12.18.0";
+    const WORKBOOK_URL = "https://lhacoding.github.io/isaem-robot/";
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}`;
 
     const [appModule, authModule, firestoreModule] = await Promise.all([
@@ -811,7 +812,7 @@
       }
     }
 
-    async function openReportByResumeCode(rawCode) {
+    function openWorkbookByResumeCode(rawCode) {
       clearError();
       const code = normalizeResumeCode(rawCode);
       const input = $("#resume-code-input");
@@ -820,28 +821,13 @@
         input?.focus();
         return;
       }
-      try {
-        const hash = await resumeCodeHash(code);
-        const ref = firestoreModule.doc(db, "resume_codes", hash);
-        const snap = await firestoreModule.getDoc(ref);
-        if (!snap.exists()) {
-          showError(`저장코드 '${code}'로 저장된 보고서를 찾지 못했습니다.`);
-          return;
-        }
-        // 이전 버전에서 코드 표시값이 저장되지 않은 문서라면 관리자가 코드를 알고 열었을 때 표시값을 보완합니다.
-        try {
-          await firestoreModule.setDoc(ref, { resumeCodeLabel: code, updatedAtClient: new Date().toISOString() }, { merge: true });
-        } catch (repairError) {
-          console.warn("저장코드 표시값 보완 실패:", repairError);
-        }
-        const report = { ...snap.data(), _docId: snap.id, _path: snap.ref.path, resumeCodeLabel: code, _fromResumeCode: true };
-        if (input) input.value = code;
-        openReport(report);
-      } catch (error) {
-        console.error(error);
-        const message = String(error?.message ?? error ?? "저장코드 보고서를 불러오지 못했습니다.");
-        showError(`저장코드 보고서를 불러오지 못했습니다. Firestore의 resume_codes 읽기 규칙을 확인하세요. 오류: ${message}`);
-      }
+
+      if (input) input.value = code;
+      const url = new URL(WORKBOOK_URL);
+      url.searchParams.set("resumeCode", code);
+      // 관리자 화면에서 열 때는 학생 보고서가 새 익명 사용자 문서로 중복 저장되지 않도록 미리보기 모드로 엽니다.
+      url.searchParams.set("adminPreview", "1");
+      window.open(url.toString(), "_blank", "noopener,noreferrer");
     }
 
     function openReport(report) {
@@ -952,7 +938,7 @@
     rows.addEventListener("click", (event) => {
       const codeButton = event.target.closest("[data-resume-code]");
       if (codeButton) {
-        void openReportByResumeCode(codeButton.dataset.resumeCode);
+        openWorkbookByResumeCode(codeButton.dataset.resumeCode);
         return;
       }
       const button = event.target.closest("[data-report-index]");
@@ -960,11 +946,11 @@
       const index = Number(button.dataset.reportIndex);
       if (Number.isInteger(index) && filteredReports[index]) openReport(filteredReports[index]);
     });
-    $("#open-resume-code-button").addEventListener("click", () => void openReportByResumeCode($("#resume-code-input").value));
+    $("#open-resume-code-button").addEventListener("click", () => openWorkbookByResumeCode($("#resume-code-input").value));
     $("#resume-code-input").addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        void openReportByResumeCode(event.currentTarget.value);
+        openWorkbookByResumeCode(event.currentTarget.value);
       }
     });
     $("#close-modal-button").addEventListener("click", closeReport);
