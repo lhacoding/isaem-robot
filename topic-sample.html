@@ -427,7 +427,7 @@ GPT 답변 모두 접기
 <section class="sample-flow-card" aria-label="탐구 진행 흐름">
   <div class="sample-flow-head">
     <strong>탐구 진행 흐름</strong>
-    <span>GPT가 안내한 코드를 직접 입력·실행하고 결과를 확인·기록한 뒤, 분석·해석을 거쳐 결론을 도출합니다.</span>
+    <span>GPT와 대화하며 탐구 방향과 방법을 구체화하고, 필요한 코드를 직접 작성·수정해 실행 결과를 확인·기록한 뒤 분석·해석을 거쳐 결론을 도출합니다.</span>
   </div>
   <div class="flow">
     <span>학년·과목·진로</span><span class="arrow">→</span>
@@ -435,8 +435,9 @@ GPT 답변 모두 접기
     <span>연구문제</span><span class="arrow">→</span>
     <span>탐구유형</span><span class="arrow">→</span>
     <span>주제확정</span><span class="arrow">→</span>
+    <span>GPT와 탐구 방향 구체화</span><span class="arrow">→</span>
     <span>탐구설계</span><span class="arrow">→</span>
-    <span>GPT 안내 코드 입력·실행</span><span class="arrow">→</span>
+    <span>코드 작성·수정·실행</span><span class="arrow">→</span>
     <span>실행 결과 확인·기록</span><span class="arrow">→</span>
     <span>결과 분석·해석</span><span class="arrow">→</span>
     <span>결론 도출</span><span class="arrow">→</span>
@@ -447,7 +448,7 @@ GPT 답변 모두 접기
 </section>
 
 <section class="sample-note" aria-label="샘플 페이지 안내">
-  <strong>아래 내용은 GPT와 실제로 대화한 예시입니다.</strong> 입력 문구와 답변을 그대로 따라 쓰기보다, 어떤 순서로 질문하고 탐구를 구체화하는지 참고하세요. 주제를 정한 뒤에는 워크북에서 직접 탐구를 진행할 수 있습니다.
+  <strong>아래 내용은 GPT와 실제로 대화한 예시입니다.</strong> 입력 문구와 답변을 그대로 따라 쓰기보다, 어떤 순서로 질문하고 탐구를 구체화하는지 참고하세요. GPT의 제안도 그대로 받아들이지 않고 측정 횟수처럼 적절한지 다시 질문하고 수정하는 과정이 포함되어 있습니다. 주제를 정한 뒤에는 워크북에서 직접 탐구를 진행할 수 있습니다.
   <span class="workbook-now">현재 워크북에서는 탐구활동의 Python 코드 실행 기능을 이용해 pandas·Matplotlib 등의 분석을 바로 수행할 수 있으며, 필요한 경우 Google Colab을 함께 사용할 수 있습니다.</span>
 </section>
 
@@ -2451,7 +2452,7 @@ ChatGPT
 
 <tr>
 <td>반복 측정</td>
-<td>조건별 5회 권장</td>
+<td>조건별 5회 권장(초기 제안)</td>
 </tr>
 
 <tr>
@@ -3450,7 +3451,73 @@ Colab에서 코드를 실행한 뒤
 <section class="turn">
 
 <div class="turn-label">
-STEP 06 · 실제 코딩 · 측정 수행
+STEP 06 · 반복 횟수 검토 · 탐구 방법 보완
+</div>
+
+<div class="user-row">
+
+<div class="user-bubble">5번은 너무 작은 거 아니야? 실행시간이 매번 조금씩 달라질 수 있는데 10번 정도 반복하는 게 더 정확하지 않을까?</div>
+
+</div>
+
+<div class="gpt-row">
+
+<div class="gpt-wrap">
+
+<div class="gpt-name">
+
+<span class="gpt-dot">GPT</span>
+
+ChatGPT
+
+</div>
+
+<details class="gpt-bubble">
+
+<summary>반복 횟수를 다시 검토하고 탐구 방법 보완</summary>
+
+<div class="assistant-content">
+
+<p>좋은 지적입니다. <strong>5회는 기본적인 반복 측정으로 사용할 수 있지만</strong>, 실행시간처럼 컴퓨터 상태에 따라 조금씩 달라질 수 있는 값은 반복 횟수를 늘리면 우연한 변동의 영향을 줄이는 데 도움이 됩니다.</p>
+
+<p>이번 탐구에서는 데이터 크기가 100~3000개이고 세 알고리즘을 비교하므로, 실행 부담도 지나치게 크지 않습니다. 따라서 <strong>각 조건을 10회 반복</strong>하는 것으로 보완하는 편이 더 적절합니다.</p>
+
+<div class="callout">
+<strong>수정한 탐구 방법<br>각 데이터 개수마다 같은 원본 데이터를 사용해 세 알고리즘을 실행하고, 이 과정을 10회 반복하여 평균 실행시간을 비교한다.</strong>
+</div>
+
+<p>코드에서는 반복 횟수만 다음과 같이 바꾸면 됩니다.</p>
+
+<pre>repeat_count = 10</pre>
+
+<p>탐구활동 기록표도 1~5회에서 끝내지 않고 <strong>1~10회까지 기록</strong>하도록 늘립니다.</p>
+
+<p>가능하면 평균만 확인하지 말고 <strong>10회 측정값의 중앙값과 표준편차</strong>도 함께 살펴보세요. 평균과 중앙값이 크게 다르거나 표준편차가 크다면 특정 실행에서 시간이 많이 흔들렸는지 확인할 수 있습니다.</p>
+
+<div class="next-step">
+<strong>탐구 방법 보완</strong><br><br>
+처음 제안된 방법을 그대로 따르기보다 측정 횟수가 충분한지 검토하고, <strong>5회 → 10회</strong>로 직접 수정했습니다. 이제 수정한 조건으로 코드를 실행하고 결과를 기록합니다.
+</div>
+
+</div>
+
+</details>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+07
+========================================================= -->
+
+<section class="turn">
+
+<div class="turn-label">
+STEP 07 · 실제 코딩 · 측정 수행
 </div>
 
 
@@ -4053,11 +4120,11 @@ Colab의 실행환경,
 
 <br><br>
 
-실제로 각 조건을 5회 반복했다면
+위 값이 각 조건을 10회 반복한 평균이라면
 
 <br>
 
-<strong>5회 맞아</strong>
+<strong>10회 반복한 평균값이야</strong>
 
 </div>
 
@@ -4080,13 +4147,13 @@ Colab의 실행환경,
 <section class="turn">
 
 <div class="turn-label">
-STEP 07 · 반복 측정 조건 확인
+STEP 08 · 반복 측정 조건 확인
 </div>
 
 
 <div class="user-row">
 
-<div class="user-bubble">5회 맞아</div>
+<div class="user-bubble">10회 반복한 평균값이야</div>
 
 </div>
 
@@ -4109,7 +4176,7 @@ ChatGPT
 <details class="gpt-bubble">
 
 <summary>
-실제 결과와 5회 반복 조건을 반영한 최종 보고서
+10회 반복 조건과 실제 결과를 반영한 최종 보고서
 </summary>
 
 
@@ -4121,7 +4188,7 @@ ChatGPT
 
 <p>
 <strong>
-각 데이터 개수마다 5회 반복 실행한 평균값
+각 데이터 개수마다 10회 반복 실행한 평균값
 </strong>
 이라는 조건까지 반영해
 보고서 1~8번을 하나로 정리했습니다.
@@ -4210,7 +4277,7 @@ Python으로 직접 구현하고,
 Python 코드의 구현 방식과 실행환경에도
 영향을 받을 수 있으므로
 한 번의 실행 결과만 사용하지 않고
-동일 조건을 5회 반복 측정하여 평균값을 비교하였다.
+동일 조건을 10회 반복 측정하여 평균값을 비교하였다.
 </p>
 
 
@@ -4327,7 +4394,7 @@ Python 코드의 구현 방식과 실행환경에도
 
 <li>
 반복 횟수:
-각 조건당 5회
+각 조건당 10회
 </li>
 
 <li>
@@ -4414,13 +4481,13 @@ Python의
 컴퓨터 프로그램의 실행시간은
 실행환경의 상태에 따라 조금씩 달라질 수 있기 때문에
 각 데이터 개수에서
-각각의 알고리즘을 5회 반복 실행하였다.
+각각의 알고리즘을 10회 반복 실행하였다.
 </p>
 
 <div class="equation">
 
 평균 실행시간 =
-5회 실행시간의 합 ÷ 5
+10회 실행시간의 합 ÷ 10
 
 </div>
 
@@ -4680,7 +4747,7 @@ Python의
 버블 정렬, 선택 정렬, 삽입 정렬의
 실행시간 차이가 어떻게 변화하는지 알아보기 위해
 Python으로 세 알고리즘을 구현하고
-각 조건을 5회씩 반복 실행하여
+각 조건을 10회씩 반복 실행하여
 평균 실행시간을 비교하였다.
 </p>
 
@@ -4734,7 +4801,7 @@ Python으로 세 알고리즘을 구현하고
 둘째,
 Google Colab의 시스템 상태에 따라
 실행시간이 조금씩 달라질 수 있다.
-이를 줄이기 위해 각 조건을 5회 반복하고
+이를 줄이기 위해 각 조건을 10회 반복하고
 평균값을 사용하였다.
 </p>
 
@@ -4798,7 +4865,7 @@ Python으로 직접 구현한
 
 <li>
 Google Colab에서 데이터 개수별로
-각 5회 반복 실행하여 측정한 실행시간 자료
+각 10회 반복 실행하여 측정한 실행시간 자료
 </li>
 
 <li>
@@ -4857,7 +4924,7 @@ Google Colab에서 데이터 개수별로
 <section class="turn">
 
 <div class="turn-label">
-STEP 08 · 탐구 완료 후 자기평가서
+STEP 09 · 탐구 완료 후 자기평가서
 </div>
 
 
@@ -4900,7 +4967,7 @@ ChatGPT
 이제 실제로 수행한
 <strong>
 Python 구현,
-조건별 5회 반복 측정,
+조건별 10회 반복 측정,
 평균 실행시간 비교,
 오차·한계 분석
 </strong>
@@ -4993,7 +5060,7 @@ Google Colab으로 통일하고
 버블 정렬,
 선택 정렬,
 삽입 정렬을
-5회씩 반복 실행하고
+10회씩 반복 실행하고
 평균 실행시간을 계산하였다.
 </p>
 
@@ -5027,7 +5094,7 @@ Google Colab의 순간적인 실행환경에 따라
 <p>
 이를 줄이기 위해
 한 번의 결과만 사용하지 않고
-각 조건을 5회 반복 측정하여
+각 조건을 10회 반복 측정하여
 평균값을 비교하였다.
 </p>
 
@@ -5121,7 +5188,7 @@ Python으로
 선택 정렬,
 삽입 정렬을 직접 구현하고
 100개부터 3000개까지의 데이터를
-조건별로 5회 반복 실행하여
+조건별로 10회 반복 실행하여
 평균 실행시간을 비교하였다.
 </p>
 
@@ -5164,7 +5231,7 @@ Python으로
 
 <li>
 <strong>정량적 분석:</strong>
-각 조건을 5회 반복 측정하고
+각 조건을 10회 반복 측정하고
 평균 실행시간을 이용해 성능을 비교함.
 </li>
 
@@ -5228,7 +5295,7 @@ Python으로
 <section class="turn">
 
 <div class="turn-label">
-STEP 09 · 세특 참고자료 작성
+STEP 10 · 세특 참고자료 작성
 </div>
 
 
@@ -5281,7 +5348,7 @@ ChatGPT
 <p>
 Python으로 세 정렬 알고리즘을 직접 구현하고
 100개부터 3000개까지의 무작위 정수 데이터를
-동일 조건에서 각 5회 반복 실행하여
+동일 조건에서 각 10회 반복 실행하여
 평균 실행시간을 비교하였으며,
 데이터가 증가할수록
 세 알고리즘의 실행시간이 증가하고
@@ -5405,7 +5472,7 @@ Python으로 세 정렬 알고리즘 직접 구현
 <tr>
 <td><strong>측정·데이터</strong></td>
 <td>
-각 조건을 5회 반복하고 실행시간 측정
+각 조건을 10회 반복하고 실행시간 측정
 </td>
 <td>
 반복 측정에 기반한 정량적 탐구
@@ -5416,7 +5483,7 @@ Python으로 세 정렬 알고리즘 직접 구현
 <tr>
 <td><strong>계산</strong></td>
 <td>
-5회 실행시간의 평균,
+10회 실행시간의 평균,
 알고리즘 간 실행시간 차이·배수 비교
 </td>
 <td>
@@ -5464,7 +5531,7 @@ Colab 실행환경에 따라
 <td><strong>수정·대응 행동</strong></td>
 <td>
 1회 결과 대신
-조건별 5회 반복 후 평균 사용,
+조건별 10회 반복 후 평균 사용,
 동일 데이터 적용
 </td>
 <td>
@@ -5531,7 +5598,7 @@ Colab 실행환경에 따라
 
 <strong>
 동일 데이터 사용
-→ 5회 반복 측정
+→ 10회 반복 측정
 → 평균 계산
 → 성능 비교
 → 실행시간 차이의 원인 분석
@@ -5581,7 +5648,7 @@ Colab 실행환경에 따라
 </li>
 
 <li>
-가능하면 5회 개별 측정값도 원자료로 보관하기
+가능하면 10회 개별 측정값도 원자료로 보관하기
 </li>
 
 </ol>
@@ -5589,7 +5656,7 @@ Colab 실행환경에 따라
 
 <p>
 특히 평균값만 남기기보다
-1~5회의 개별 실행시간이 있으면
+1~10회의 개별 실행시간이 있으면
 반복 측정을 실제 수행했다는 근거가 더 명확해집니다.
 </p>
 
@@ -5656,10 +5723,10 @@ Colab 실행환경에 따라
     <div class="usage-step"><b>연구문제 설정</b><small>비교하거나 확인할 질문으로 구체화</small></div>
     <div class="usage-step"><b>3번 코딩·제어형 선택</b><small>실제 수행 가능한 탐구 방법 결정</small></div>
     <div class="usage-step"><b>2번 최종 주제 선택</b><small>탐구 범위와 비교 대상을 확정</small></div>
-    <div class="usage-step"><b>탐구보고서작성</b><small>실행 전 탐구 설계와 보고서 1~4 작성</small></div>
-    <div class="usage-step is-action"><b>Python 또는 Google Colab에서 실제 실행</b><small>코드를 실행해 직접 데이터를 생성</small></div>
-    <div class="usage-step is-action"><b>각 조건 5회 반복 측정</b><small>같은 조건에서 반복해 결과를 기록</small></div>
-    <div class="usage-step is-action"><b>실제 측정값 입력</b><small>측정한 결과를 바탕으로 분석 진행</small></div>
+    <div class="usage-step"><b>탐구보고서작성</b><small>GPT와 대화하며 탐구 설계·실행 방법·분석 항목을 구체화</small></div>
+    <div class="usage-step is-action"><b>Python 또는 Google Colab에서 실제 실행</b><small>필요한 코드를 작성·수정하며 직접 데이터를 생성</small></div>
+    <div class="usage-step is-action"><b>반복 측정·결과 기록</b><small>이 예시에서는 각 조건을 10회 반복 측정</small></div>
+    <div class="usage-step is-action"><b>실제 결과 입력</b><small>직접 얻은 측정값·관찰값·분석 결과를 바탕으로 분석 진행</small></div>
     <div class="usage-step"><b>결과 분석 및 최종 탐구보고서 완성</b><small>표·그래프·계산 결과와 해석을 연결</small></div>
     <div class="usage-step"><b>탐구완료</b><small>결론·한계·후속 탐구까지 정리</small></div>
     <div class="usage-step"><b>자기평가서 작성</b><small>탐구 과정과 배운 점을 자신의 활동으로 정리</small></div>
