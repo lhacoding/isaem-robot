@@ -568,6 +568,14 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
 .python-output-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; color: #404b60; font-size: 12px; font-weight: 900; }
 .python-output { min-height: 90px; max-height: 330px; margin: 0; padding: 13px 14px; color: #273347; font-family: Consolas, "D2Coding", "Courier New", monospace; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow: auto; background: white; border: 1px solid #d5dde1; border-radius: 10px; }
 .python-output.empty { color: #8c96a2; font-family: inherit; }
+.python-display-list { display: grid; gap: 10px; margin-top: 10px; }
+.python-dataframe-wrap { overflow-x: auto; border: 1px solid #d5dde1; border-radius: 10px; background: #fff; }
+.python-dataframe-title { padding: 9px 12px; border-bottom: 1px solid #e6ebee; color: #596579; font-size: 11px; font-weight: 900; background: #f8fafb; }
+.python-dataframe { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.45; }
+.python-dataframe th, .python-dataframe td { padding: 7px 10px; border-right: 1px solid #edf0f2; border-bottom: 1px solid #edf0f2; text-align: left; white-space: nowrap; }
+.python-dataframe th { font-weight: 900; background: #fbfcfc; }
+.python-dataframe tr:last-child th, .python-dataframe tr:last-child td { border-bottom: 0; }
+.python-dataframe th:last-child, .python-dataframe td:last-child { border-right: 0; }
 .python-plot-list { display: grid; gap: 12px; margin-top: 12px; }
 .python-plot-card { padding: 12px; background: white; border: 1px solid #d5dde1; border-radius: 11px; }
 .python-plot-card img { display: block; width: 100%; max-height: 520px; object-fit: contain; background: white; }
@@ -2456,7 +2464,8 @@ function researchPhotoGalleryHTML(sectionIndex, allowDelete = true, showEmpty = 
 
 const PYODIDE_VERSION = "314.0.6";
 const PYODIDE_BASE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
-const PYTHON_PACKAGES = ["numpy", "pandas", "matplotlib", "scikit-learn"];
+const PYTHON_PACKAGES = ["numpy", "pandas", "matplotlib", "scikit-learn", "micropip"];
+const KOREANIZE_MATPLOTLIB_PACKAGE = "koreanize-matplotlib==0.1.1";
 const PYTHON_DEFAULT_CODE = `import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -2507,7 +2516,7 @@ function pythonLabMarkup(sectionIndex = 0) {
   const code = String(state.fields[fieldId] ?? legacyCode ?? "");
   return `<section class="python-lab-card" id="explore-python-${sectionIndex}" data-python-section="${sectionIndex}">
     <div class="python-lab-head">
-      <div><h3>Python 코드 실행</h3><p>필요할 때만 열어 계산·데이터 분석·그래프 작성을 실행하세요. 별도 설치 없이 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있습니다.</p></div>
+      <div><h3>Python 코드 실행</h3><p>필요할 때만 열어 계산·데이터 분석·그래프 작성을 실행하세요. 별도 설치 없이 pandas·NumPy·Matplotlib·scikit-learn을 사용할 수 있고, Matplotlib 한글 표시도 자동으로 준비됩니다. 마지막 줄의 DataFrame은 표로 바로 표시됩니다.</p></div>
       <span class="python-lab-badge">브라우저 실행</span>
     </div>
     <div class="python-lab-tools">
@@ -2525,6 +2534,7 @@ function pythonLabMarkup(sectionIndex = 0) {
     <div class="python-output-wrap">
       <div class="python-output-title"><span>실행 결과</span><span id="python-runtime-note"></span></div>
       <pre class="python-output empty" id="python-output">실행 결과와 오류 메시지가 여기에 표시됩니다.</pre>
+      <div class="python-display-list" id="python-displays"></div>
       <div class="python-plot-list" id="python-plots"></div>
     </div>
     <p class="python-lab-note">CSV 원본 파일과 실행 결과는 Firebase에 저장하지 않습니다. CSV 파일은 새로 접속할 때 다시 선택해야 하며, 필요한 그래프는 PNG로 저장한 뒤 ‘분석 결과 및 해석’의 사진 삽입에서 사용할 수 있습니다.</p>
@@ -2560,8 +2570,23 @@ async function getPyodideLab() {
       indexURL: PYODIDE_BASE_URL,
       packages: PYTHON_PACKAGES,
     });
-    await pyodide.runPythonAsync(`import matplotlib\nmatplotlib.use("Agg")`);
-    updatePythonLabStatus("Python 실행 준비 완료");
+
+    // Pyodide에서는 Colab의 `!pip install` 명령을 사용할 수 없으므로
+    // 한글 Matplotlib 지원 패키지는 micropip으로 최초 1회 자동 설치합니다.
+    updatePythonLabStatus("Matplotlib 한글 표시를 준비하는 중…");
+    const micropip = pyodide.pyimport("micropip");
+    try {
+      await micropip.install(KOREANIZE_MATPLOTLIB_PACKAGE);
+    } finally {
+      micropip.destroy?.();
+    }
+    await pyodide.runPythonAsync(`
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import koreanize_matplotlib
+`);
+    updatePythonLabStatus("Python 실행 준비 완료 · Matplotlib 한글 표시 가능");
     return pyodide;
   })().catch((error) => {
     pyodideReadyPromise = null;
@@ -2578,11 +2603,13 @@ function updatePythonLabStatus(message) {
 
 function resetPythonOutput(message = "실행 중…") {
   const output = document.querySelector("#python-output");
+  const displays = document.querySelector("#python-displays");
   const plots = document.querySelector("#python-plots");
   if (output) {
     output.textContent = message;
     output.classList.toggle("empty", !message || message === "실행 중…");
   }
+  if (displays) displays.innerHTML = "";
   if (plots) plots.innerHTML = "";
 }
 
@@ -2627,14 +2654,44 @@ async function runPythonLab() {
     const pyodide = await getPyodideLab();
     pyodide.globals.set("__workbook_code", code);
     await pyodide.runPythonAsync(`
-import io, sys, contextlib, traceback, base64, json
+import io, sys, contextlib, traceback, base64, json, ast
 
 __workbook_stdout = io.StringIO()
 __workbook_images = []
+__workbook_html = ""
+__workbook_last_value = None
 
 with contextlib.redirect_stdout(__workbook_stdout), contextlib.redirect_stderr(__workbook_stdout):
     try:
-        exec(__workbook_code, globals())
+        # Colab/Jupyter처럼 마지막 줄이 표현식이면 한 번만 평가해 결과를 표시합니다.
+        __workbook_tree = ast.parse(__workbook_code, filename="<workbook>", mode="exec")
+        if __workbook_tree.body and isinstance(__workbook_tree.body[-1], ast.Expr):
+            __workbook_last_expr = __workbook_tree.body.pop()
+            if __workbook_tree.body:
+                __workbook_module = ast.Module(body=__workbook_tree.body, type_ignores=[])
+                ast.fix_missing_locations(__workbook_module)
+                exec(compile(__workbook_module, "<workbook>", "exec"), globals())
+            __workbook_expression = ast.Expression(body=__workbook_last_expr.value)
+            ast.fix_missing_locations(__workbook_expression)
+            __workbook_last_value = eval(compile(__workbook_expression, "<workbook>", "eval"), globals())
+        else:
+            exec(compile(__workbook_tree, "<workbook>", "exec"), globals())
+
+        if __workbook_last_value is not None:
+            try:
+                import pandas as pd
+                if isinstance(__workbook_last_value, pd.DataFrame):
+                    __workbook_html = __workbook_last_value.to_html(
+                        classes="python-dataframe", border=0, escape=True, max_rows=200, max_cols=50
+                    )
+                elif isinstance(__workbook_last_value, pd.Series):
+                    __workbook_html = __workbook_last_value.to_frame().to_html(
+                        classes="python-dataframe", border=0, escape=True, max_rows=200
+                    )
+                else:
+                    print(repr(__workbook_last_value))
+            except Exception:
+                print(repr(__workbook_last_value))
     except Exception:
         traceback.print_exc()
 
@@ -2651,6 +2708,7 @@ except Exception as __workbook_plot_error:
 
 __workbook_result_json = json.dumps({
     "text": __workbook_stdout.getvalue(),
+    "html": __workbook_html,
     "images": __workbook_images,
 }, ensure_ascii=False)
 `);
@@ -2658,8 +2716,17 @@ __workbook_result_json = json.dumps({
     const result = JSON.parse(String(raw ?? "{}"));
     const output = document.querySelector("#python-output");
     if (output) {
-      output.textContent = String(result.text ?? "").trim() || "코드가 정상적으로 실행되었습니다. 출력된 텍스트는 없습니다.";
+      const text = String(result.text ?? "").trim();
+      const hasTable = Boolean(String(result.html ?? "").trim());
+      output.textContent = text || (hasTable ? "DataFrame 결과가 아래 표에 표시되었습니다." : "코드가 정상적으로 실행되었습니다. 출력된 텍스트는 없습니다.");
       output.classList.remove("empty");
+    }
+    const displays = document.querySelector("#python-displays");
+    if (displays) {
+      const tableHTML = String(result.html ?? "").trim();
+      displays.innerHTML = tableHTML
+        ? `<section class="python-dataframe-wrap"><div class="python-dataframe-title">DataFrame 결과</div>${tableHTML}</section>`
+        : "";
     }
     const plots = document.querySelector("#python-plots");
     if (plots) {
