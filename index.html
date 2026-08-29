@@ -1446,6 +1446,7 @@ input::placeholder, textarea::placeholder { color: #9aa1ad; }
    - 입장 코드는 한국시간 기준 당일 월/일 4자리입니다.
    ========================================================= */
 body.access-locked { overflow: hidden; }
+body.access-locked #app { display: none !important; }
 .access-gate {
   position: fixed;
   inset: 0;
@@ -2049,29 +2050,9 @@ body.access-locked { overflow: hidden; }
       return ((daily ^ ((salt << 1) >>> 0) ^ 0x5a17c3d9) >>> 0).toString(36);
     }
 
-    function accessStampKey() {
-      return ['isaem', 'access', 'stamp'].join('_');
-    }
-
-    function expectedStamp() {
-      const { y, m, d } = seoulDateParts();
-      return `${y}${m}${d}:${todaySignature()}`;
-    }
-
     function unlock() {
       gate.hidden = true;
       document.body.classList.remove('access-locked');
-      try { localStorage.setItem(accessStampKey(), expectedStamp()); } catch (_) {}
-    }
-
-    function alreadyUnlockedToday() {
-      try { return localStorage.getItem(accessStampKey()) === expectedStamp(); }
-      catch (_) { return false; }
-    }
-
-    if (alreadyUnlockedToday()) {
-      unlock();
-      return;
     }
 
     input.addEventListener('input', () => {
