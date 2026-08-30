@@ -123,10 +123,10 @@ a { color: inherit; }
 .step-menu > .step-button.active .step-menu-caret {
   color: white;
 }
-/* 직접 찾기 예시 페이지: 평소에는 무색, 메뉴를 펼칠 때만 상위 버튼 강조 */
-.step-menu.topic-sample-menu:hover > .step-button,
-.step-menu.topic-sample-menu:focus-within > .step-button,
-.step-menu.topic-sample-menu.open > .step-button {
+/* 예시 페이지: 평소에는 무색, 메뉴를 펼칠 때만 상위 버튼 강조 */
+.step-menu.sample-page-menu:hover > .step-button,
+.step-menu.sample-page-menu:focus-within > .step-button,
+.step-menu.sample-page-menu.open > .step-button {
   color: white;
   background: var(--orange);
 }
@@ -186,23 +186,6 @@ a { color: inherit; }
   color: var(--ink);
   background: #f3efe7;
 }
-.step-dropdown button.current {
-  color: var(--ink);
-  background: #f3efe7;
-}
-.step-dropdown button.active,
-.step-dropdown a.active {
-  color: var(--navy);
-  background: #fff6c9;
-}
-.step-dropdown button.active:hover,
-.step-dropdown button.active:focus-visible,
-.step-dropdown a.active:hover,
-.step-dropdown a.active:focus-visible {
-  color: var(--navy);
-  background: #f5df79;
-}
-
 .nav-sample-button {
   display: inline-flex;
   align-items: center;
@@ -7394,20 +7377,20 @@ function headerHTML() {
       </button>
       <nav class="step-nav" aria-label="보고서 작성 단계">
         ${steps.map(([id, label]) => {
-          const active = (state.view === id || (state.view === "sample" && id === "report")) ? " active" : "";
+          const active = state.view === id ? " active" : "";
           if (id === "topics") return `
-            <div class="step-menu${state.view === "topicSample" ? " topic-sample-menu" : ""}" data-step-menu="topics">
+            <div class="step-menu${state.view === "topicSample" ? " sample-page-menu" : ""}" data-step-menu="topics">
               <button type="button" class="step-button${active}" data-nav="topics" data-step-menu-trigger aria-haspopup="true" aria-expanded="false">${label}<span class="step-menu-caret" aria-hidden="true">▼</span></button>
               <div class="step-dropdown" role="menu" aria-label="주제 찾기 메뉴">
-                <button type="button" class="${state.view === "topicSample" ? "current" : ""}" data-nav="topicSample" role="menuitem">직접 찾기 예시</button>
+                <button type="button" data-nav="topicSample" role="menuitem">직접 찾기 예시</button>
                 <a class="dropdown-direct" href="https://chatgpt.com/g/g-6a5ee884de68819198ca70650976d51c-tamgubogoseo-gaideu-gpts" target="_blank" rel="noopener noreferrer" role="menuitem">직접 찾기 ↗</a>
               </div>
             </div>`;
           if (id === "report") return `
-            <div class="step-menu" data-step-menu="report">
+            <div class="step-menu${state.view === "sample" ? " sample-page-menu" : ""}" data-step-menu="report">
               <button type="button" class="step-button${active}" data-nav="report" data-step-menu-trigger aria-haspopup="true" aria-expanded="false">${label}<span class="step-menu-caret" aria-hidden="true">▼</span></button>
               <div class="step-dropdown" role="menu" aria-label="보고서 완성 메뉴">
-                <button type="button" class="${state.view === "sample" ? "active" : ""}" data-nav="sample" role="menuitem">보고서 예시</button>
+                <button type="button" data-nav="sample" role="menuitem">보고서 예시</button>
               </div>
             </div>`;
           return `<button type="button" class="step-button${active}" data-nav="${id}">${label}</button>`;
