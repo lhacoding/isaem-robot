@@ -102,7 +102,7 @@ a { color: inherit; }
   z-index: 119;
   top: 100%;
   left: 0;
-  width: 100%;
+  width: calc(100% + 24px);
   height: 7px;
   content: "";
 }
@@ -112,7 +112,7 @@ a { color: inherit; }
   gap: 5px;
 }
 .step-menu-caret {
-  color: #9ea9bb;
+  color: currentColor;
   font-size: 9px;
   line-height: 1;
   transition: transform .18s ease;
@@ -120,11 +120,14 @@ a { color: inherit; }
 .step-menu:hover .step-menu-caret,
 .step-menu:focus-within .step-menu-caret,
 .step-menu.open .step-menu-caret { transform: rotate(180deg); }
+.step-menu > .step-button.active .step-menu-caret {
+  color: white;
+}
 .step-dropdown {
   position: absolute;
   z-index: 120;
   top: calc(100% + 5px);
-  left: 0;
+  left: 24px;
   display: none;
   width: 100%;
   min-width: 100%;
@@ -140,7 +143,7 @@ a { color: inherit; }
 .step-dropdown::before {
   position: absolute;
   top: -6px;
-  left: 50%;
+  left: calc(50% - 24px);
   width: 10px;
   height: 10px;
   content: "";
@@ -176,19 +179,18 @@ a { color: inherit; }
   color: var(--ink);
   background: #f3efe7;
 }
-.step-dropdown button[data-nav="topicSample"],
-.step-dropdown button[data-nav="sample"] {
+.step-dropdown button.active,
+.step-dropdown a.active {
   color: var(--navy);
   background: #fff6c9;
 }
-.step-dropdown button[data-nav="topicSample"]:hover,
-.step-dropdown button[data-nav="sample"]:hover,
-.step-dropdown button[data-nav="topicSample"]:focus-visible,
-.step-dropdown button[data-nav="sample"]:focus-visible {
+.step-dropdown button.active:hover,
+.step-dropdown button.active:focus-visible,
+.step-dropdown a.active:hover,
+.step-dropdown a.active:focus-visible {
   color: var(--navy);
   background: #f5df79;
 }
-.step-dropdown .dropdown-direct { color: var(--teal); }
 
 .nav-sample-button {
   display: inline-flex;
@@ -1744,61 +1746,90 @@ body.access-locked #app { display: none !important; }
 .topic-sample-page .sample-flow-card{
   width:min(1280px, calc(100% - 30px));
   margin:22px auto 0;
-  padding:18px 22px 20px;
+  padding:22px 24px 24px;
   color:var(--ink);
-  background:rgba(255,253,249,.96);
+  background:rgba(255,253,249,.98);
   border:1px solid var(--line);
-  border-radius:16px;
-  box-shadow:0 8px 22px rgba(25,34,56,.045);
+  border-radius:18px;
+  box-shadow:0 9px 26px rgba(25,34,56,.055);
 }
 .topic-sample-page .sample-flow-head{
   display:flex;
   align-items:baseline;
   justify-content:space-between;
-  gap:14px;
-  margin-bottom:14px;
+  gap:16px;
+  margin-bottom:18px;
+  padding-bottom:14px;
+  border-bottom:1px solid #ebe4d9;
 }
 .topic-sample-page .sample-flow-head strong{
-  font-size:13px;
-  font-weight:900;
+  color:var(--navy);
+  font-size:17px;
+  font-weight:950;
+  letter-spacing:-.025em;
 }
 .topic-sample-page .sample-flow-head span{
   color:var(--muted);
-  font-size:10px;
+  font-size:11px;
+  line-height:1.6;
 }
-.topic-sample-page .flow{
+.topic-sample-page .flow-roadmap{
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0, 1fr));
+  gap:24px;
   width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:nowrap;
-  gap:2px;
-  white-space:nowrap;
-  overflow:hidden;
 }
-.topic-sample-page .flow span:not(.arrow){
-  min-height:32px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  flex:0 1 auto;
-  padding:6px clamp(6px, .55vw, 9px);
-  color:#38435a;
-  background:#f6f3ed;
-  border:1px solid #e3ddd2;
-  border-radius:10px;
-  font-size:clamp(10px, .72vw, 12px);
-  font-weight:850;
-  letter-spacing:-.02em;
+.topic-sample-page .flow-step{
+  position:relative;
+  min-width:0;
+  min-height:112px;
+  padding:15px 9px 13px;
+  text-align:center;
+  background:linear-gradient(180deg, #fff 0%, #f8f6f1 100%);
+  border:1px solid #e1dbd0;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(25,34,56,.04);
 }
-.topic-sample-page .flow .arrow{
-  flex:0 0 auto;
-  padding:0 1px;
-  color:#b49a37;
-  background:transparent;
-  border:0;
-  font-size:clamp(10px, .7vw, 12px);
-  font-weight:900;
+.topic-sample-page .flow-step:not(:last-child)::after{
+  content:"→";
+  position:absolute;
+  z-index:2;
+  top:50%;
+  right:-20px;
+  color:#b79b35;
+  font-size:17px;
+  font-weight:950;
+  line-height:1;
+  transform:translateY(-50%);
+}
+.topic-sample-page .flow-num{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  margin:0 auto 9px;
+  color:#fff;
+  font-size:10px;
+  font-weight:950;
+  background:var(--teal);
+  border-radius:50%;
+}
+.topic-sample-page .flow-step strong{
+  display:block;
+  color:#344057;
+  font-size:12px;
+  font-weight:950;
+  line-height:1.35;
+  letter-spacing:-.025em;
+  word-break:keep-all;
+}
+.topic-sample-page .flow-step small{
+  display:block;
+  margin-top:6px;
+  color:#727b8a;
+  font-size:10px;
+  line-height:1.45;
+  word-break:keep-all;
 }
 .topic-sample-page .usage-roadmap{
   margin-top:4px;
@@ -1901,6 +1932,316 @@ body.access-locked #app { display: none !important; }
 .topic-sample-page .user-row{ display:flex; justify-content:flex-end; margin-bottom:16px; }
 .topic-sample-page .user-bubble{ max-width:78%; padding:13px 17px; color:white; background:var(--orange); border-radius:18px 18px 5px 18px; box-shadow:0 6px 18px rgba(185,81,57,.16); white-space:pre-wrap; }
 .topic-sample-page .gpt-row{ display:flex; justify-content:flex-start; }
+.topic-sample-page .conversation-skip{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  margin:2px 0 34px;
+  padding:34px 22px;
+  color:#60708a;
+  background:#dce8f5;
+  border:0;
+  overflow:hidden;
+  clip-path:polygon(
+    0% 10px,
+    1% 0,
+    2% 10px,
+    3% 0,
+    4% 10px,
+    5% 0,
+    6% 10px,
+    7% 0,
+    8% 10px,
+    9% 0,
+    10% 10px,
+    11% 0,
+    12% 10px,
+    13% 0,
+    14% 10px,
+    15% 0,
+    16% 10px,
+    17% 0,
+    18% 10px,
+    19% 0,
+    20% 10px,
+    21% 0,
+    22% 10px,
+    23% 0,
+    24% 10px,
+    25% 0,
+    26% 10px,
+    27% 0,
+    28% 10px,
+    29% 0,
+    30% 10px,
+    31% 0,
+    32% 10px,
+    33% 0,
+    34% 10px,
+    35% 0,
+    36% 10px,
+    37% 0,
+    38% 10px,
+    39% 0,
+    40% 10px,
+    41% 0,
+    42% 10px,
+    43% 0,
+    44% 10px,
+    45% 0,
+    46% 10px,
+    47% 0,
+    48% 10px,
+    49% 0,
+    50% 10px,
+    51% 0,
+    52% 10px,
+    53% 0,
+    54% 10px,
+    55% 0,
+    56% 10px,
+    57% 0,
+    58% 10px,
+    59% 0,
+    60% 10px,
+    61% 0,
+    62% 10px,
+    63% 0,
+    64% 10px,
+    65% 0,
+    66% 10px,
+    67% 0,
+    68% 10px,
+    69% 0,
+    70% 10px,
+    71% 0,
+    72% 10px,
+    73% 0,
+    74% 10px,
+    75% 0,
+    76% 10px,
+    77% 0,
+    78% 10px,
+    79% 0,
+    80% 10px,
+    81% 0,
+    82% 10px,
+    83% 0,
+    84% 10px,
+    85% 0,
+    86% 10px,
+    87% 0,
+    88% 10px,
+    89% 0,
+    90% 10px,
+    91% 0,
+    92% 10px,
+    93% 0,
+    94% 10px,
+    95% 0,
+    96% 10px,
+    97% 0,
+    98% 10px,
+    99% 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    99% 100%,
+    98% calc(100% - 10px),
+    97% 100%,
+    96% calc(100% - 10px),
+    95% 100%,
+    94% calc(100% - 10px),
+    93% 100%,
+    92% calc(100% - 10px),
+    91% 100%,
+    90% calc(100% - 10px),
+    89% 100%,
+    88% calc(100% - 10px),
+    87% 100%,
+    86% calc(100% - 10px),
+    85% 100%,
+    84% calc(100% - 10px),
+    83% 100%,
+    82% calc(100% - 10px),
+    81% 100%,
+    80% calc(100% - 10px),
+    79% 100%,
+    78% calc(100% - 10px),
+    77% 100%,
+    76% calc(100% - 10px),
+    75% 100%,
+    74% calc(100% - 10px),
+    73% 100%,
+    72% calc(100% - 10px),
+    71% 100%,
+    70% calc(100% - 10px),
+    69% 100%,
+    68% calc(100% - 10px),
+    67% 100%,
+    66% calc(100% - 10px),
+    65% 100%,
+    64% calc(100% - 10px),
+    63% 100%,
+    62% calc(100% - 10px),
+    61% 100%,
+    60% calc(100% - 10px),
+    59% 100%,
+    58% calc(100% - 10px),
+    57% 100%,
+    56% calc(100% - 10px),
+    55% 100%,
+    54% calc(100% - 10px),
+    53% 100%,
+    52% calc(100% - 10px),
+    51% 100%,
+    50% calc(100% - 10px),
+    49% 100%,
+    48% calc(100% - 10px),
+    47% 100%,
+    46% calc(100% - 10px),
+    45% 100%,
+    44% calc(100% - 10px),
+    43% 100%,
+    42% calc(100% - 10px),
+    41% 100%,
+    40% calc(100% - 10px),
+    39% 100%,
+    38% calc(100% - 10px),
+    37% 100%,
+    36% calc(100% - 10px),
+    35% 100%,
+    34% calc(100% - 10px),
+    33% 100%,
+    32% calc(100% - 10px),
+    31% 100%,
+    30% calc(100% - 10px),
+    29% 100%,
+    28% calc(100% - 10px),
+    27% 100%,
+    26% calc(100% - 10px),
+    25% 100%,
+    24% calc(100% - 10px),
+    23% 100%,
+    22% calc(100% - 10px),
+    21% 100%,
+    20% calc(100% - 10px),
+    19% 100%,
+    18% calc(100% - 10px),
+    17% 100%,
+    16% calc(100% - 10px),
+    15% 100%,
+    14% calc(100% - 10px),
+    13% 100%,
+    12% calc(100% - 10px),
+    11% 100%,
+    10% calc(100% - 10px),
+    9% 100%,
+    8% calc(100% - 10px),
+    7% 100%,
+    6% calc(100% - 10px),
+    5% 100%,
+    4% calc(100% - 10px),
+    3% 100%,
+    2% calc(100% - 10px),
+    1% 100%,
+    0% calc(100% - 10px)
+  );
+}
+.topic-sample-page .conversation-skip::before,
+.topic-sample-page .conversation-skip::after{
+  content:none;
+}
+.topic-sample-page .conversation-skip-card{
+  position:relative;
+  z-index:1;
+  flex:0 1 auto;
+  max-width:min(760px, 96%);
+  padding:6px 0;
+  text-align:center;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.topic-sample-page .conversation-skip-card b{
+  display:block;
+  color:#46556d;
+  font-size:13px;
+  font-weight:950;
+}
+.topic-sample-page .conversation-skip-card span{
+  display:block;
+  margin-top:6px;
+  color:#6a7a92;
+  font-size:13px;
+  line-height:1.72;
+  word-break:keep-all;
+}
+@media (max-width:700px){
+  .topic-sample-page .conversation-skip{
+    padding:24px 14px;
+    clip-path:polygon(
+      0% 6px,
+      4% 0,
+      8% 6px,
+      12% 0,
+      16% 6px,
+      20% 0,
+      24% 6px,
+      28% 0,
+      32% 6px,
+      36% 0,
+      40% 6px,
+      44% 0,
+      48% 6px,
+      52% 0,
+      56% 6px,
+      60% 0,
+      64% 6px,
+      68% 0,
+      72% 6px,
+      76% 0,
+      80% 6px,
+      84% 0,
+      88% 6px,
+      92% 0,
+      96% 6px,
+      100% 6px,
+      100% calc(100% - 6px),
+      96% calc(100% - 6px),
+      92% 100%,
+      88% calc(100% - 6px),
+      84% 100%,
+      80% calc(100% - 6px),
+      76% 100%,
+      72% calc(100% - 6px),
+      68% 100%,
+      64% calc(100% - 6px),
+      60% 100%,
+      56% calc(100% - 6px),
+      52% 100%,
+      48% calc(100% - 6px),
+      44% 100%,
+      40% calc(100% - 6px),
+      36% 100%,
+      32% calc(100% - 6px),
+      28% 100%,
+      24% calc(100% - 6px),
+      20% 100%,
+      16% calc(100% - 6px),
+      12% 100%,
+      8% calc(100% - 6px),
+      4% 100%,
+      0% calc(100% - 6px)
+    );
+  }
+  .topic-sample-page .conversation-skip-card b{
+    font-size:12px;
+  }
+  .topic-sample-page .conversation-skip-card span{
+    font-size:12px;
+    line-height:1.62;
+  }
+}
 .topic-sample-page .gpt-wrap{ width:100%; min-width:0; }
 .topic-sample-page .gpt-name{ display:flex; align-items:center; gap:8px; margin:0 0 8px 5px; color:#4c5669; font-size:12px; font-weight:900; }
 .topic-sample-page .gpt-dot{ width:28px; height:28px; display:grid; place-items:center; color:white; background:var(--teal); border-radius:50%; font-size:9px; font-weight:950; }
@@ -1954,11 +2295,44 @@ body.access-locked #app { display: none !important; }
 .topic-sample-page .hero-inner{ margin-top:18px; padding:32px 24px; border-radius:20px; }
 .topic-sample-page .hero h1{ font-size:clamp(29px, 9vw, 42px); }
 .topic-sample-page .hero p:not(.eyebrow){ font-size:14px; }
-.topic-sample-page .sample-flow-head{ align-items:flex-start; flex-direction:column; gap:2px; }
-.topic-sample-page .flow{ flex-wrap:wrap; white-space:normal; }
-.topic-sample-page .flow{ gap:7px 5px; }
-.topic-sample-page .flow span:not(.arrow){ min-height:32px; padding-right:9px; font-size:10px; }
-.topic-sample-page .flow .arrow{ font-size:11px; }
+.topic-sample-page .sample-flow-card{ padding:18px 16px 20px; }
+.topic-sample-page .sample-flow-head{ align-items:flex-start; flex-direction:column; gap:4px; margin-bottom:16px; }
+.topic-sample-page .sample-flow-head strong{ font-size:16px; }
+.topic-sample-page .sample-flow-head span{ font-size:10px; }
+.topic-sample-page .flow-roadmap{ grid-template-columns:1fr; gap:17px; }
+.topic-sample-page .flow-step{
+  min-height:0;
+  display:grid;
+  grid-template-columns:38px minmax(0, 1fr);
+  grid-template-rows:auto auto;
+  column-gap:10px;
+  padding:12px 14px;
+  text-align:left;
+}
+.topic-sample-page .flow-num{
+  grid-row:1 / 3;
+  align-self:center;
+  width:30px;
+  height:30px;
+  margin:0;
+}
+.topic-sample-page .flow-step strong{
+  align-self:end;
+  font-size:12px;
+}
+.topic-sample-page .flow-step small{
+  align-self:start;
+  margin-top:3px;
+  font-size:10px;
+}
+.topic-sample-page .flow-step:not(:last-child)::after{
+  content:"↓";
+  top:auto;
+  right:50%;
+  bottom:-17px;
+  font-size:14px;
+  transform:translateX(50%);
+}
 .topic-sample-page .usage-roadmap{ padding:18px; }
 .topic-sample-page .usage-roadmap-head{ align-items:flex-start; flex-direction:column; gap:4px; }
 .topic-sample-page .usage-roadmap-grid{ grid-template-columns:1fr; gap:8px; }
@@ -2097,21 +2471,48 @@ body.access-locked #app { display: none !important; }
 <section aria-label="탐구 진행 흐름" class="sample-flow-card">
 <div class="sample-flow-head">
 <strong>탐구 진행 흐름</strong>
-<span>GPT와 대화하며 탐구 방향과 방법을 구체화하고, 필요한 코드를 직접 작성·수정해 실행 결과를 확인·기록한 뒤 분석·해석을 거쳐 결론을 도출합니다.</span>
+<span>주제 찾기부터 직접 탐구, 보고서 작성과 자기평가까지 한눈에 확인하세요.</span>
 </div>
-<div class="flow">
-<span>학년·과목·진로</span><span class="arrow">→</span>
-<span>키워드·연구문제</span><span class="arrow">→</span>
-<span>주제 확정</span><span class="arrow">→</span>
-<span>GPT와 탐구 방향·방법 구체화</span><span class="arrow">→</span>
-<span>탐구 설계·직접 수행</span><span class="arrow">→</span>
-<span>결과 기록·분석</span><span class="arrow">→</span>
-<span>결론·보고서 완성</span><span class="arrow">→</span>
-<span>자기평가·세특 반영 요소</span>
+<div class="flow-roadmap">
+  <div class="flow-step">
+    <span class="flow-num">01</span>
+    <strong>기본 정보 입력</strong>
+    <small>학년 · 과목 · 진로</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">02</span>
+    <strong>주제 찾기</strong>
+    <small>키워드 탐색 · 연구문제 설정</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">03</span>
+    <strong>주제 확정</strong>
+    <small>최종 탐구주제 결정</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">04</span>
+    <strong>탐구 설계</strong>
+    <small>방법 · 조건 · 자료 · 코드 계획</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">05</span>
+    <strong>직접 탐구 수행</strong>
+    <small>실험 · 코딩 · 조사 · 데이터 분석</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">06</span>
+    <strong>결과 분석 · 보고서</strong>
+    <small>기록 · 해석 · 결론 · 한계</small>
+  </div>
+  <div class="flow-step">
+    <span class="flow-num">07</span>
+    <strong>탐구 마무리</strong>
+    <small>자기평가 · 세특 반영 요소</small>
+  </div>
 </div>
 </section>
 <section aria-label="샘플 페이지 안내" class="sample-note">
-<strong>아래 내용은 GPT와 실제로 대화한 예시입니다.</strong> 입력 문구와 답변을 그대로 따라 쓰기보다, 어떤 순서로 질문하고 탐구를 구체화하는지 참고하세요. GPT의 제안도 그대로 받아들이지 않고 측정 횟수처럼 적절한지 다시 질문하고 수정하는 과정이 포함되어 있습니다. 주제를 정한 뒤에는 워크북에서 직접 탐구를 진행할 수 있습니다.
+<strong>아래는 교과 개념을 바탕으로 GPT와 함께 주제를 찾고 탐구 방향을 구체화해 가는 실제 대화 예시입니다.</strong> 제안을 그대로 따르기보다 실행·확인과 추가 질문을 통해 탐구 방법을 수정·보완하는 흐름을 참고하세요.
   <span class="workbook-now">현재 워크북에서는 탐구활동의 Python 코드 실행 기능을 이용해 pandas·Matplotlib 등의 분석을 바로 수행할 수 있으며, 필요한 경우 Google Colab을 함께 사용할 수 있습니다.</span>
 </section>
 
@@ -4285,6 +4686,13 @@ ChatGPT
 </div>
 </section>
 
+<div class="conversation-skip" role="note" aria-label="중간 탐구 과정 일부 생략">
+  <div class="conversation-skip-card">
+    <b>중간 탐구 과정 생략</b>
+    <span>이 구간에서는 GPT가 제안한 코드를 직접 실행해 보고, 결과·오류를 다시 질문하며 코드와 탐구 조건을 수정·보완하는 대화가 이어집니다.</span>
+  </div>
+</div>
+
 <section class="turn">
 <div class="turn-label">
 STEP 07 · 실제 실행 결과 입력
@@ -5921,36 +6329,6 @@ Colab 실행환경에 따라
 </div>
 </section>
 
-<section class="turn">
-<div class="turn-label">
-전체 사용 흐름
-</div>
-<div class="gpt-row">
-<div class="gpt-wrap">
-<div class="usage-roadmap">
-<div class="usage-roadmap-head">
-<h3>처음 입력부터 탐구 마무리까지</h3>
-<p>실제 대화와 워크북에서 진행한 순서를 한눈에 확인하세요.</p>
-</div>
-<div class="usage-roadmap-grid">
-<div class="usage-step"><b>고1 정보 · 컴퓨터계열 입력</b><small>학년·과목·관심 진로를 먼저 제시</small></div>
-<div class="usage-step"><b>탐구 키워드 추천</b><small>교과와 진로를 연결한 탐구 방향 찾기</small></div>
-<div class="usage-step"><b>연구문제 설정</b><small>비교하거나 확인할 질문으로 구체화</small></div>
-<div class="usage-step"><b>3번 코딩·제어형 선택</b><small>실제 수행 가능한 탐구 방법 결정</small></div>
-<div class="usage-step"><b>2번 최종 주제 선택</b><small>탐구 범위와 비교 대상을 확정</small></div>
-<div class="usage-step"><b>탐구보고서작성</b><small>GPT와 대화하며 탐구 설계·실행 방법·분석 항목을 구체화</small></div>
-<div class="usage-step is-action"><b>Python 또는 Google Colab에서 실제 실행</b><small>필요한 코드를 작성·수정하며 직접 데이터를 생성</small></div>
-<div class="usage-step is-action"><b>반복 측정·결과 기록</b><small>이 예시에서는 각 조건을 10회 반복 측정</small></div>
-<div class="usage-step is-action"><b>실제 결과 입력</b><small>직접 얻은 측정값·관찰값·분석 결과를 바탕으로 분석 진행</small></div>
-<div class="usage-step"><b>결과 분석 및 최종 탐구보고서 완성</b><small>표·그래프·계산 결과와 해석을 연결</small></div>
-<div class="usage-step"><b>탐구완료</b><small>결론·한계·후속 탐구까지 정리</small></div>
-<div class="usage-step"><b>자기평가서 작성</b><small>탐구 과정과 배운 점을 자신의 활동으로 정리</small></div>
-<div class="usage-step is-finish"><b>세특 반영 요소 확인</b><small>수행 과정에서 드러난 역량과 성장 요소 점검</small></div>
-</div>
-</div>
-</div>
-</div>
-</section>
 <div class="back-to-top-wrap"><button class="back-to-top-button" data-scroll-top="" type="button">↑ 맨 위로</button></div>
 </main>
   </div>
@@ -6927,15 +7305,15 @@ function headerHTML() {
             <div class="step-menu" data-step-menu="topics">
               <button type="button" class="step-button${active}" data-nav="topics" data-step-menu-trigger aria-haspopup="true" aria-expanded="false">${label}<span class="step-menu-caret" aria-hidden="true">▼</span></button>
               <div class="step-dropdown" role="menu" aria-label="주제 찾기 메뉴">
-                <button type="button" data-nav="topicSample" role="menuitem">직접 찾기 예시</button>
-                <a class="dropdown-direct" href="https://chatgpt.com/g/g-6a5ee884de68819198ca70650976d51c-tamgubogoseo-gaideu-gpts" target="_blank" rel="noopener noreferrer" role="menuitem">직접 찾기 ↗</a>
+                <button type="button" class="${state.view === "topicSample" ? "active" : ""}" data-nav="topicSample" role="menuitem">직접 찾기 예시</button>
+                <a class="dropdown-direct" href="https://chatgpt.com/g/g-6a5ee884de68819198ca70650976d51c-tamgubogoseo-gaideu-gpts" target="_blank" rel="noopener noreferrer" role="menuitem" onclick="this.closest('.step-dropdown').querySelectorAll('.active').forEach(el => el.classList.remove('active')); this.classList.add('active');">직접 찾기 ↗</a>
               </div>
             </div>`;
           if (id === "report") return `
             <div class="step-menu" data-step-menu="report">
               <button type="button" class="step-button${active}" data-nav="report" data-step-menu-trigger aria-haspopup="true" aria-expanded="false">${label}<span class="step-menu-caret" aria-hidden="true">▼</span></button>
               <div class="step-dropdown" role="menu" aria-label="보고서 완성 메뉴">
-                <button type="button" data-nav="sample" role="menuitem">보고서 예시</button>
+                <button type="button" class="${state.view === "sample" ? "active" : ""}" data-nav="sample" role="menuitem">보고서 예시</button>
               </div>
             </div>`;
           return `<button type="button" class="step-button${active}" data-nav="${id}">${label}</button>`;
