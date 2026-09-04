@@ -238,6 +238,45 @@
     .delete-button:hover { background: #ffe6df; }
     .row-actions { display: flex; gap: 6px; align-items: center; }
 
+    .table-head-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+    .selected-count {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .bulk-delete-button {
+      padding: 8px 11px;
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      background: var(--danger);
+      border: 0;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .bulk-delete-button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+    .select-cell {
+      width: 42px;
+      text-align: center;
+    }
+    .select-cell input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--orange);
+      cursor: pointer;
+    }
+
     .error-banner {
       margin-top: 16px;
       padding: 13px 15px;
@@ -324,6 +363,8 @@
       .code-open-actions { width: 100%; }
       .code-open-actions input { width: auto; flex: 1; min-width: 0; }
       .student-meta { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .table-head { align-items: flex-start; flex-direction: column; }
+      .table-head-actions { width: 100%; justify-content: flex-start; }
     }
     @media (max-width: 560px) {
       .topbar { padding: 9px 11px; }
@@ -418,12 +459,19 @@
       <section class="table-card">
         <div class="table-head">
           <h2>학생 보고서 목록</h2>
-          <span id="load-status">Firebase에서 불러오는 중…</span>
+          <div class="table-head-actions">
+            <span class="selected-count" id="selected-count">선택 0건</span>
+            <button type="button" class="bulk-delete-button" id="bulk-delete-button" disabled>선택 삭제</button>
+            <span id="load-status">Firebase에서 불러오는 중…</span>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
+                <th class="select-cell">
+                  <input id="select-all-checkbox" type="checkbox" aria-label="현재 검색 결과 전체 선택">
+                </th>
                 <th>학년</th>
                 <th>반</th>
                 <th>번호</th>
@@ -515,6 +563,10 @@
     let allReports = [];
     let filteredReports = [];
     let currentReport = null;
+
+    // 체크한 보고서의 Firestore 문서 경로를 보관합니다.
+    // 검색/필터를 바꿔도 선택 상태는 유지되며, 새로고침하면 초기화됩니다.
+    const selectedPaths = new Set();
 
     function firebaseReady() {
       const required = [FIREBASE_CONFIG.apiKey, FIREBASE_CONFIG.projectId, FIREBASE_CONFIG.appId];
@@ -751,7 +803,14 @@
     function renderTable() {
       rows.innerHTML = filteredReports.map((report, index) => {
         const s = safeStudent(report);
+        const checked = report?._path && selectedPaths.has(report._path);
         return `<tr>
+          <td class="select-cell">
+            <input type="checkbox"
+              data-select-report-index="${index}"
+              aria-label="${escapeHTML(`${reportIdentity(report)} 선택`)}"
+              ${checked ? "checked" : ""}>
+          </td>
           <td>${escapeHTML(s.grade || "-")}</td>
           <td>${escapeHTML(s.className || "-")}</td>
           <td>${escapeHTML(s.number || "-")}</td>
@@ -771,6 +830,35 @@
       emptyCard.hidden = filteredReports.length > 0;
       $("#count-filtered").textContent = String(filteredReports.length);
       loadStatus.textContent = `${filteredReports.length}건 표시 · 최근 저장순`;
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+      // 이미 삭제되어 목록에서 사라진 경로는 선택 목록에서도 제거합니다.
+      const livePaths = new Set(allReports.map((report) => report?._path).filter(Boolean));
+      [...selectedPaths].forEach((path) => {
+        if (!livePaths.has(path)) selectedPaths.delete(path);
+      });
+
+      const selectedCount = selectedPaths.size;
+      $("#selected-count").textContent = `선택 ${selectedCount}건`;
+      $("#bulk-delete-button").disabled = selectedCount === 0;
+
+      const selectable = filteredReports.filter((report) => report?._path);
+      const selectedVisible = selectable.filter((report) => selectedPaths.has(report._path)).length;
+      const selectAll = $("#select-all-checkbox");
+      selectAll.checked = selectable.length > 0 && selectedVisible === selectable.length;
+      selectAll.indeterminate = selectedVisible > 0 && selectedVisible < selectable.length;
+      selectAll.disabled = selectable.length === 0;
+    }
+
+    function setVisibleSelection(checked) {
+      filteredReports.forEach((report) => {
+        if (!report?._path) return;
+        if (checked) selectedPaths.add(report._path);
+        else selectedPaths.delete(report._path);
+      });
+      renderTable();
     }
 
     function updateSummary() {
@@ -808,6 +896,8 @@
 
     async function loadReports() {
       clearError();
+      selectedPaths.clear();
+      updateSelectionUI();
       loadStatus.textContent = "Firebase에서 불러오는 중…";
       rows.innerHTML = "";
       try {
@@ -880,6 +970,63 @@
       } catch (error) {
         console.error(error);
         showError(`보고서를 삭제하지 못했습니다. Firestore 보안 규칙에서 관리자 계정의 delete 권한을 확인하세요. 오류: ${String(error?.message ?? error)}`);
+      }
+    }
+
+    async function deleteSelectedReports() {
+      clearError();
+
+      const targets = allReports.filter(
+        (report) => report?._path && selectedPaths.has(report._path)
+      );
+
+      if (!targets.length) {
+        showError("삭제할 보고서를 먼저 선택하세요.");
+        return;
+      }
+
+      const ok = window.confirm(
+        `선택한 보고서 ${targets.length}건을 삭제하시겠습니까?\n학생코드 연결 정보도 함께 삭제됩니다.\n삭제한 데이터는 되돌릴 수 없습니다.`
+      );
+      if (!ok) return;
+
+      const bulkButton = $("#bulk-delete-button");
+      bulkButton.disabled = true;
+      bulkButton.textContent = "삭제 중…";
+
+      try {
+        // Firestore 배치는 최대 500개 write까지 가능합니다.
+        // 보고서 1건당 report + resume_codes 최대 2개를 삭제하므로
+        // 한 번에 200개 보고서씩 나누어 안전하게 처리합니다.
+        const CHUNK_SIZE = 200;
+
+        for (let start = 0; start < targets.length; start += CHUNK_SIZE) {
+          const chunk = targets.slice(start, start + CHUNK_SIZE);
+          const batch = firestoreModule.writeBatch(db);
+
+          for (const report of chunk) {
+            batch.delete(firestoreModule.doc(db, report._path));
+
+            const code = safeResumeCode(report);
+            const savedHash = String(report?.resumeCodeHash ?? "").trim();
+            const hash = savedHash || (code ? await resumeCodeHash(code) : "");
+            if (hash) {
+              batch.delete(firestoreModule.doc(db, "resume_codes", hash));
+            }
+          }
+
+          await batch.commit();
+        }
+
+        selectedPaths.clear();
+        await loadReports();
+      } catch (error) {
+        console.error(error);
+        showError(`선택한 보고서를 삭제하지 못했습니다. Firestore 보안 규칙에서 관리자 계정의 delete 권한을 확인하세요. 오류: ${String(error?.message ?? error)}`);
+        updateSelectionUI();
+      } finally {
+        bulkButton.textContent = "선택 삭제";
+        updateSelectionUI();
       }
     }
 
@@ -988,6 +1135,26 @@
     $("#search-input").addEventListener("input", applyFilters);
     $("#grade-filter").addEventListener("change", applyFilters);
     $("#class-filter").addEventListener("change", applyFilters);
+
+    $("#select-all-checkbox").addEventListener("change", (event) => {
+      setVisibleSelection(event.currentTarget.checked);
+    });
+
+    $("#bulk-delete-button").addEventListener("click", deleteSelectedReports);
+
+    rows.addEventListener("change", (event) => {
+      const checkbox = event.target.closest("[data-select-report-index]");
+      if (!checkbox) return;
+
+      const index = Number(checkbox.dataset.selectReportIndex);
+      const report = Number.isInteger(index) ? filteredReports[index] : null;
+      if (!report?._path) return;
+
+      if (checkbox.checked) selectedPaths.add(report._path);
+      else selectedPaths.delete(report._path);
+      updateSelectionUI();
+    });
+
     rows.addEventListener("click", async (event) => {
       const codeButton = event.target.closest("[data-resume-code]");
       if (codeButton) {
