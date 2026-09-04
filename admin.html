@@ -225,6 +225,18 @@
       border-radius: 8px;
       white-space: nowrap;
     }
+    .delete-button {
+      padding: 8px 10px;
+      color: #8a3025;
+      font-size: 11px;
+      font-weight: 900;
+      background: #fff1ec;
+      border: 1px solid #edc1b6;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .delete-button:hover { background: #ffe6df; }
+    .row-actions { display: flex; gap: 6px; align-items: center; }
 
     .error-banner {
       margin-top: 16px;
@@ -394,12 +406,12 @@
 
       <section class="code-open-card">
         <div>
-          <b>저장코드로 워크북 열기</b>
-          <span>저장코드를 입력하면 학생용 워크북 사이트가 새 탭에서 열리고 해당 저장 내용까지 자동으로 불러옵니다.</span>
+          <b>학생코드로 원본 워크북 열기</b>
+          <span>학생코드를 입력하면 학생용 원본 워크북 사이트가 새 탭에서 열리고 해당 코드로 저장된 내용을 불러옵니다.</span>
         </div>
         <div class="code-open-actions">
-          <input id="resume-code-input" type="text" maxlength="24" autocomplete="off" placeholder="저장코드 입력">
-          <button type="button" class="small-button" id="open-resume-code-button">워크북에서 열기</button>
+          <input id="resume-code-input" type="text" maxlength="24" autocomplete="off" placeholder="학생코드 입력">
+          <button type="button" class="small-button" id="open-resume-code-button">원본 사이트에서 열기</button>
         </div>
       </section>
 
@@ -420,7 +432,7 @@
                 <th>저장코드</th>
                 <th>작성 단계</th>
                 <th>마지막 저장</th>
-                <th></th>
+                <th>관리</th>
               </tr>
             </thead>
             <tbody id="report-rows"></tbody>
@@ -748,7 +760,12 @@
           <td>${safeResumeCode(report) ? `<button type="button" class="code-link-button" data-resume-code="${escapeHTML(safeResumeCode(report))}">${escapeHTML(safeResumeCode(report))}</button>` : "-"}</td>
           <td><span class="stage-badge">${escapeHTML(stageLabel(report.currentView || report.state?.view))}</span></td>
           <td>${escapeHTML(formatDateTime(report))}</td>
-          <td><button type="button" class="view-button" data-report-index="${index}">보고서 보기</button></td>
+          <td>
+            <div class="row-actions">
+              <button type="button" class="view-button" data-open-report-index="${index}">보고서 열기</button>
+              <button type="button" class="delete-button" data-delete-report-index="${index}">삭제</button>
+            </div>
+          </td>
         </tr>`;
       }).join("");
       emptyCard.hidden = filteredReports.length > 0;
@@ -826,10 +843,44 @@
 
       if (input) input.value = code;
       const url = new URL(WORKBOOK_URL);
+      // 학생용 원본 사이트를 학생코드(resumeCode)로 직접 엽니다.
+      // adminPreview를 사용하지 않으므로 학생이 실제로 접속한 것과 같은 방식으로 열립니다.
       url.searchParams.set("resumeCode", code);
-      // 관리자 화면에서 열 때는 학생 보고서가 새 익명 사용자 문서로 중복 저장되지 않도록 미리보기 모드로 엽니다.
-      url.searchParams.set("adminPreview", "1");
       window.open(url.toString(), "_blank", "noopener,noreferrer");
+    }
+
+    async function deleteReport(report) {
+      clearError();
+      if (!report?._path) {
+        showError("삭제할 보고서의 Firestore 경로를 찾지 못했습니다.");
+        return;
+      }
+
+      const student = reportIdentity(report);
+      const topic = safeTopic(report);
+      const code = safeResumeCode(report);
+      const ok = window.confirm(
+        `${student}\n${topic}\n${code ? `학생코드: ${code}\n` : ""}\n이 보고서를 삭제하시겠습니까?\n삭제한 데이터는 되돌릴 수 없습니다.`
+      );
+      if (!ok) return;
+
+      try {
+        const batch = firestoreModule.writeBatch(db);
+        batch.delete(firestoreModule.doc(db, report._path));
+
+        // 학생코드 매핑도 함께 삭제하여 삭제된 보고서가 다시 열리지 않도록 합니다.
+        const savedHash = String(report?.resumeCodeHash ?? "").trim();
+        const hash = savedHash || (code ? await resumeCodeHash(code) : "");
+        if (hash) {
+          batch.delete(firestoreModule.doc(db, "resume_codes", hash));
+        }
+
+        await batch.commit();
+        await loadReports();
+      } catch (error) {
+        console.error(error);
+        showError(`보고서를 삭제하지 못했습니다. Firestore 보안 규칙에서 관리자 계정의 delete 권한을 확인하세요. 오류: ${String(error?.message ?? error)}`);
+      }
     }
 
     function openReport(report) {
@@ -937,16 +988,32 @@
     $("#search-input").addEventListener("input", applyFilters);
     $("#grade-filter").addEventListener("change", applyFilters);
     $("#class-filter").addEventListener("change", applyFilters);
-    rows.addEventListener("click", (event) => {
+    rows.addEventListener("click", async (event) => {
       const codeButton = event.target.closest("[data-resume-code]");
       if (codeButton) {
         openWorkbookByResumeCode(codeButton.dataset.resumeCode);
         return;
       }
-      const button = event.target.closest("[data-report-index]");
-      if (!button) return;
-      const index = Number(button.dataset.reportIndex);
-      if (Number.isInteger(index) && filteredReports[index]) openReport(filteredReports[index]);
+      const openButton = event.target.closest("[data-open-report-index]");
+      if (openButton) {
+        const index = Number(openButton.dataset.openReportIndex);
+        const report = Number.isInteger(index) ? filteredReports[index] : null;
+        if (!report) return;
+        const code = safeResumeCode(report);
+        if (!code) {
+          showError("이 보고서에는 학생코드가 없어 원본 사이트에서 열 수 없습니다.");
+          return;
+        }
+        openWorkbookByResumeCode(code);
+        return;
+      }
+
+      const deleteButton = event.target.closest("[data-delete-report-index]");
+      if (deleteButton) {
+        const index = Number(deleteButton.dataset.deleteReportIndex);
+        const report = Number.isInteger(index) ? filteredReports[index] : null;
+        if (report) await deleteReport(report);
+      }
     });
     $("#open-resume-code-button").addEventListener("click", () => openWorkbookByResumeCode($("#resume-code-input").value));
     $("#resume-code-input").addEventListener("keydown", (event) => {
