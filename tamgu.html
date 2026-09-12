@@ -6362,19 +6362,72 @@ function cloudSafeFields(fields) {
   );
 }
 
+// Firestore는 배열 안에 배열이 직접 들어가는 중첩 배열을 허용하지 않습니다.
+// 예: analysisTables의 cells = [["A", "B"], ["1", "2"]]
+// 중첩 배열만 작은 객체로 감싸 저장하고, 불러올 때 원래 배열로 복원합니다.
+const FIRESTORE_NESTED_ARRAY_KEY = "isaemNestedArray";
+
+function firestoreSafeValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      if (Array.isArray(item)) {
+        return {
+          [FIRESTORE_NESTED_ARRAY_KEY]: item.map((child) => firestoreSafeValue(child)),
+        };
+      }
+      return firestoreSafeValue(item);
+    });
+  }
+
+  if (value && typeof value === "object") {
+    const result = {};
+    Object.entries(value).forEach(([key, item]) => {
+      // Firestore는 undefined 값을 저장할 수 없으므로 객체 속성에서는 제외합니다.
+      if (typeof item === "undefined") return;
+      result[key] = firestoreSafeValue(item);
+    });
+    return result;
+  }
+
+  if (typeof value === "number" && !Number.isFinite(value)) return null;
+  return typeof value === "undefined" ? null : value;
+}
+
+function restoreFirestoreValue(value) {
+  if (Array.isArray(value)) return value.map((item) => restoreFirestoreValue(item));
+
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+    if (
+      keys.length === 1 &&
+      keys[0] === FIRESTORE_NESTED_ARRAY_KEY &&
+      Array.isArray(value[FIRESTORE_NESTED_ARRAY_KEY])
+    ) {
+      return value[FIRESTORE_NESTED_ARRAY_KEY].map((item) => restoreFirestoreValue(item));
+    }
+
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, restoreFirestoreValue(item)])
+    );
+  }
+
+  return value;
+}
+
 function cloudStateSnapshot() {
-  // Firestore에는 JSON으로 안전하게 직렬화되는 값만 보냅니다.
-  // undefined, DOM 객체 등 Firestore가 처리하지 못하는 값이 섞여도
-  // 전체 자동저장이 실패하지 않도록 한 번 정리합니다.
+  // 사진과 이미지 base64는 제외하고, Firestore가 허용하는 자료형으로 변환합니다.
   const snapshot = {
     ...state,
-    // 저장코드의 원문 표시는 교사용 관리자 화면과 다른 기기 이어쓰기를 위해 함께 저장합니다.
-    // 문서 ID로 사용하는 hash 자체는 state 내부에는 중복 저장하지 않습니다.
+    // 문서 ID로 쓰는 hash는 최상위 필드에 별도 저장하므로 state 내부에서는 제외합니다.
     resumeCodeHash: undefined,
     researchPhotos: [],
     fields: cloudSafeFields(state.fields),
   };
-  return JSON.parse(JSON.stringify(snapshot));
+
+  // JSON 직렬화로 DOM/함수/undefined 등을 먼저 제거한 뒤,
+  // Firestore에서 금지하는 중첩 배열까지 안전한 형태로 변환합니다.
+  const jsonSafe = JSON.parse(JSON.stringify(snapshot));
+  return firestoreSafeValue(jsonSafe);
 }
 
 function firebaseErrorInfo(error) {
@@ -6407,8 +6460,8 @@ function firebaseErrorInfo(error) {
   if (/unavailable|network|fetch|offline/i.test(combined)) {
     return { label: "Firebase 네트워크 오류", detail: "인터넷 연결 뒤 다시 저장하세요.", code: rawCode || "unavailable" };
   }
-  if (/invalid-argument|unsupported field|undefined/i.test(combined)) {
-    return { label: "Firebase 데이터 오류", detail: "저장할 데이터 형식을 확인하세요.", code: rawCode || "invalid-argument" };
+  if (/invalid-argument|unsupported field|nested arrays|undefined/i.test(combined)) {
+    return { label: "Firebase 데이터 오류", detail: "Firestore가 허용하지 않는 중첩 배열이나 값이 포함되어 있습니다. 수정본에서는 자동 변환하여 저장합니다.", code: rawCode || "invalid-argument" };
   }
   return { label: "Firebase 연결 확인 필요", detail: message, code: rawCode || code || "unknown" };
 }
@@ -6600,7 +6653,8 @@ function setResumeCodeButtonsDisabled(disabled) {
 }
 
 function loadedStateFromCode(snapshot) {
-  const safe = snapshot && typeof snapshot === "object" ? snapshot : {};
+  const restored = restoreFirestoreValue(snapshot);
+  const safe = restored && typeof restored === "object" ? restored : {};
   return {
     ...defaultState(),
     ...safe,
@@ -6810,7 +6864,8 @@ async function loadAdminReportDirect(ownerUid, reportId) {
     if (!snap.exists()) throw new Error("관리자 페이지에서 선택한 보고서를 찾지 못했습니다.");
 
     const data = snap.data() ?? {};
-    const savedState = data.state && typeof data.state === "object" ? data.state : {};
+    const restoredState = restoreFirestoreValue(data.state);
+    const savedState = restoredState && typeof restoredState === "object" ? restoredState : {};
     state = {
       ...defaultState(),
       ...savedState,
