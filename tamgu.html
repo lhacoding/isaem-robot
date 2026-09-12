@@ -6287,6 +6287,11 @@ const FIREBASE_CLOUD_SAVE_DELAY = 5000;
 const INITIAL_URL_PARAMS = new URLSearchParams(location.search);
 const INITIAL_RESUME_CODE = String(INITIAL_URL_PARAMS.get("resumeCode") ?? "");
 const ADMIN_PREVIEW_MODE = INITIAL_URL_PARAMS.get("adminPreview") === "1";
+// 관리자 페이지에서 저장코드가 없는 보고서도 원본 워크북 화면으로 열 수 있도록
+// Firestore 보고서의 소유 UID와 보고서 ID를 URL로 전달받습니다.
+const INITIAL_ADMIN_UID = String(INITIAL_URL_PARAMS.get("adminUid") ?? "").trim();
+const INITIAL_ADMIN_REPORT_ID = String(INITIAL_URL_PARAMS.get("adminReportId") ?? "").trim();
+const ADMIN_DIRECT_REPORT_MODE = Boolean(ADMIN_PREVIEW_MODE && INITIAL_ADMIN_UID && INITIAL_ADMIN_REPORT_ID);
 let firebaseContextPromise = null;
 let cloudSaveTimer = null;
 let cloudSaveInFlight = false;
@@ -6376,26 +6381,42 @@ function firebaseErrorInfo(error) {
   const rawCode = String(error?.code ?? "").trim();
   const code = rawCode.replace(/^firestore\//, "").replace(/^auth\//, "");
   const message = String(error?.message ?? error ?? "Firebase 저장 오류");
+  const combined = `${rawCode} ${message}`;
 
-  if (/permission-denied|missing-or-insufficient-permissions/i.test(`${rawCode} ${message}`)) {
-    return { label: "Firebase 권한 오류", detail: "Firestore 규칙을 확인하세요.", code: rawCode || "permission-denied" };
+  if (/permission-denied|missing-or-insufficient-permissions/i.test(combined)) {
+    return { label: "Firebase 권한 오류", detail: "Firestore 규칙에서 users/{uid}/reports와 resume_codes 읽기·쓰기를 허용했는지 확인하세요.", code: rawCode || "permission-denied" };
   }
-  if (/unauthenticated|auth\//i.test(`${rawCode} ${message}`)) {
-    return { label: "Firebase 인증 오류", detail: "Authentication의 익명 로그인을 확인하세요.", code: rawCode || "unauthenticated" };
+  if (/operation-not-allowed|configuration-not-found/i.test(combined)) {
+    return { label: "Firebase 익명 로그인 꺼짐", detail: "Firebase Console → Authentication → 로그인 방법 → 익명(Anonymous)을 사용 설정하세요.", code: rawCode || "auth/operation-not-allowed" };
   }
-  if (/failed-precondition/i.test(`${rawCode} ${message}`)) {
-    return { label: "Firebase 설정 오류", detail: "Firestore 설정 또는 필요한 색인을 확인하세요.", code: rawCode || "failed-precondition" };
+  if (/unauthorized-domain/i.test(combined)) {
+    return { label: "Firebase 도메인 오류", detail: "Authentication → 설정 → 승인된 도메인에 현재 사이트 도메인을 추가하세요.", code: rawCode || "auth/unauthorized-domain" };
   }
-  if (/resource-exhausted/i.test(`${rawCode} ${message}`)) {
+  if (/api-key-not-valid|api_key_invalid|requests-from-referer|referer.*blocked/i.test(combined)) {
+    return { label: "Firebase API 키 제한 오류", detail: "Firebase 웹 앱 설정과 Google Cloud의 API 키 HTTP 리퍼러 제한을 확인하세요.", code: rawCode || "auth/api-key-not-valid" };
+  }
+  if (/unauthenticated|auth\//i.test(combined)) {
+    return { label: "Firebase 인증 오류", detail: "Authentication의 익명 로그인 설정과 웹 앱 설정을 확인하세요.", code: rawCode || "unauthenticated" };
+  }
+  if (/failed-precondition/i.test(combined)) {
+    return { label: "Firebase 설정 오류", detail: "Firestore Database가 생성되어 있는지와 필요한 설정을 확인하세요.", code: rawCode || "failed-precondition" };
+  }
+  if (/resource-exhausted|quota/i.test(combined)) {
     return { label: "Firebase 사용량 한도", detail: "Firestore 사용량 또는 할당량을 확인하세요.", code: rawCode || "resource-exhausted" };
   }
-  if (/unavailable|network|fetch|offline/i.test(`${rawCode} ${message}`)) {
+  if (/unavailable|network|fetch|offline/i.test(combined)) {
     return { label: "Firebase 네트워크 오류", detail: "인터넷 연결 뒤 다시 저장하세요.", code: rawCode || "unavailable" };
   }
-  if (/invalid-argument|unsupported field|undefined/i.test(`${rawCode} ${message}`)) {
+  if (/invalid-argument|unsupported field|undefined/i.test(combined)) {
     return { label: "Firebase 데이터 오류", detail: "저장할 데이터 형식을 확인하세요.", code: rawCode || "invalid-argument" };
   }
   return { label: "Firebase 연결 확인 필요", detail: message, code: rawCode || code || "unknown" };
+}
+
+function showFirebaseActionError(actionLabel, error) {
+  const info = firebaseErrorInfo(error);
+  const codeText = info.code ? ` (${info.code})` : "";
+  showToast(`${actionLabel}에 실패했습니다. ${info.label}: ${info.detail}${codeText}`);
 }
 
 function studentCloudMeta() {
@@ -6634,12 +6655,7 @@ async function updateLinkedResumeCode({ silent = false } = {}) {
     return true;
   } catch (error) {
     console.error("Resume-code update failed:", error);
-    const errorCode = String(error?.code ?? "");
-    if (!silent) {
-      showToast(errorCode.includes("permission-denied")
-        ? "저장코드 저장 권한이 없습니다. Firestore 규칙을 확인하세요."
-        : "저장코드 업데이트에 실패했습니다. Firebase 연결을 확인하세요.");
-    }
+    if (!silent) showFirebaseActionError("저장코드 업데이트", error);
     return false;
   } finally {
     resumeCodeBusy = false;
@@ -6692,7 +6708,7 @@ async function recoverResumeCodeLabel() {
     showToast("저장코드를 다시 연결했습니다.");
   } catch (error) {
     console.error("Resume-code recovery failed:", error);
-    showToast("저장코드 확인 내용을 저장하지 못했습니다. Firebase 연결을 확인하세요.");
+    showFirebaseActionError("저장코드 확인 내용 저장", error);
   } finally {
     resumeCodeBusy = false;
     setResumeCodeButtonsDisabled(false);
@@ -6741,7 +6757,10 @@ async function saveByResumeCode() {
 
   resumeCodeBusy = true;
   setResumeCodeButtonsDisabled(true);
+  const previousHash = state.resumeCodeHash;
+  const previousLabel = state.resumeCodeLabel;
   try {
+    // Firebase가 실패하더라도 현재 브라우저의 작성 내용은 먼저 보존합니다.
     saveNow(true);
     const ctx = await getFirebaseContext();
     if (!ctx?.auth?.currentUser) throw new Error("Firebase 익명 인증에 실패했습니다.");
@@ -6755,13 +6774,12 @@ async function saveByResumeCode() {
       return;
     }
 
-    // 저장 전에 먼저 현재 state에 코드 이름을 연결해야 resume_codes 문서에도 표시값이 함께 저장됩니다.
+    // 저장 전에 현재 state에 코드 이름을 연결해야 Firebase 문서에도 표시값이 함께 저장됩니다.
     state.resumeCodeHash = hash;
     state.resumeCodeLabel = code;
     await ctx.setDoc(ref, resumeCodePayload(ctx), { merge: false });
     state.savedAt = new Date().toISOString();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
-    // 저장코드를 만든 즉시 일반 보고서 백업에도 코드 표시값을 연결해 admin.html에서 확인할 수 있게 합니다.
     scheduleFirebaseSave(true, true);
     closeResumeCodeModal();
     updateSaveStatus();
@@ -6770,15 +6788,59 @@ async function saveByResumeCode() {
     showToast("저장코드가 설정되었습니다. 이후에는 '저장'을 누르면 같은 코드에 바로 업데이트됩니다.");
   } catch (error) {
     console.error("Resume-code save failed:", error);
-    const errorCode = String(error?.code ?? "");
-    if (errorCode.includes("permission-denied")) {
-      showToast("저장코드 저장 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
-    } else {
-      showToast("저장코드 저장에 실패했습니다. Firebase 연결을 확인하세요.");
-    }
+    // 실패한 저장코드가 연결된 것처럼 남아 다음 저장을 방해하지 않도록 원상복구합니다.
+    state.resumeCodeHash = previousHash;
+    state.resumeCodeLabel = previousLabel;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    showFirebaseActionError("저장코드 저장", error);
   } finally {
     resumeCodeBusy = false;
     setResumeCodeButtonsDisabled(false);
+  }
+}
+
+async function loadAdminReportDirect(ownerUid, reportId) {
+  if (!ADMIN_DIRECT_REPORT_MODE) return false;
+  try {
+    const ctx = await getFirebaseContext();
+    if (!ctx?.auth?.currentUser) throw new Error("관리자 Firebase 로그인 정보를 찾지 못했습니다.");
+
+    const ref = ctx.doc(ctx.db, "users", ownerUid, "reports", reportId);
+    const snap = await ctx.getDoc(ref);
+    if (!snap.exists()) throw new Error("관리자 페이지에서 선택한 보고서를 찾지 못했습니다.");
+
+    const data = snap.data() ?? {};
+    const savedState = data.state && typeof data.state === "object" ? data.state : {};
+    state = {
+      ...defaultState(),
+      ...savedState,
+      fields: savedState.fields && typeof savedState.fields === "object" ? savedState.fields : {},
+      selectedMethods: savedState.selectedMethods && typeof savedState.selectedMethods === "object" ? savedState.selectedMethods : {},
+      analysisTables: savedState.analysisTables && typeof savedState.analysisTables === "object" && !Array.isArray(savedState.analysisTables) ? savedState.analysisTables : {},
+      analysisFlows: savedState.analysisFlows && typeof savedState.analysisFlows === "object" && !Array.isArray(savedState.analysisFlows) ? savedState.analysisFlows : {},
+      researchPhotos: [],
+      summaryManualEdits: savedState.summaryManualEdits && typeof savedState.summaryManualEdits === "object" && !Array.isArray(savedState.summaryManualEdits)
+        ? savedState.summaryManualEdits
+        : {},
+      cloudReportId: String(data.reportId ?? reportId),
+      resumeCodeHash: String(data.resumeCodeHash ?? "").trim() || null,
+      resumeCodeLabel: String(data.resumeCodeLabel ?? savedState.resumeCodeLabel ?? "").trim(),
+      savedAt: String(data.updatedAtClient ?? savedState.savedAt ?? new Date().toISOString()),
+    };
+
+    const savedView = String(data.currentView ?? savedState.view ?? "report");
+    state.view = ["topics", "draft", "explore", "report", "self", "sample", "topicSample"].includes(savedView)
+      ? savedView
+      : "report";
+    resumeVisible = false;
+    render();
+    showToast("관리자 보기로 보고서를 열었습니다.");
+    return true;
+  } catch (error) {
+    console.error("Admin direct report load failed:", error);
+    const info = firebaseErrorInfo(error);
+    showToast(`관리자 보고서를 열지 못했습니다. ${info.label}${info.code ? ` (${info.code})` : ""}`);
+    return false;
   }
 }
 
@@ -6840,12 +6902,7 @@ async function loadResumeCodeValue(rawCode, options = {}) {
     return true;
   } catch (error) {
     console.error("Resume-code load failed:", error);
-    const errorCode = String(error?.code ?? "");
-    if (errorCode.includes("permission-denied")) {
-      showToast("저장코드 불러오기 권한이 없습니다. Firestore 규칙에 resume_codes 허용 규칙을 게시하세요.");
-    } else {
-      showToast("저장코드 불러오기에 실패했습니다. Firebase 연결을 확인하세요.");
-    }
+    showFirebaseActionError("저장코드 불러오기", error);
     return false;
   } finally {
     resumeCodeBusy = false;
@@ -12709,7 +12766,7 @@ document.addEventListener("visibilitychange", () => {
 
 const normalizedInitialResumeCode = normalizeResumeCode(INITIAL_RESUME_CODE);
 
-if (!normalizedInitialResumeCode) {
+if (!normalizedInitialResumeCode && !ADMIN_DIRECT_REPORT_MODE) {
   try {
     const rawSaved = localStorage.getItem(STORAGE_KEY);
     if (rawSaved) {
@@ -12739,14 +12796,16 @@ if (!normalizedInitialResumeCode) {
     state = defaultState();
   }
 } else {
-  // 관리자 페이지에서 저장코드로 연 경우 현재 브라우저의 기존 작성 내용을 건드리지 않고
-  // URL의 코드 내용을 메모리로 바로 불러옵니다.
+  // 관리자 페이지에서 연 경우 현재 브라우저의 기존 작성 내용을 건드리지 않고
+  // URL로 지정된 Firebase 보고서 또는 저장코드를 메모리로 바로 불러옵니다.
   state = defaultState();
   resumeVisible = false;
 }
 
 render();
-if (normalizedInitialResumeCode) {
+if (ADMIN_DIRECT_REPORT_MODE) {
+  void loadAdminReportDirect(INITIAL_ADMIN_UID, INITIAL_ADMIN_REPORT_ID);
+} else if (normalizedInitialResumeCode) {
   void loadResumeCodeValue(normalizedInitialResumeCode, {
     skipConfirm: true,
     persistLocal: !ADMIN_PREVIEW_MODE,
